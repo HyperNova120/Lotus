@@ -18,7 +18,6 @@ namespace CsMinecraftClient
 
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
             await Login.login(configuration);
-            ConfidentialClientApplicationBuilder.Create((string)configuration["AzureApp:AppID"]!).WithCertificate();
         }
     }
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0Fdbard5nXo=",
+  "dgSpecHash": "cep3a+xyqMM=",
   "success": true,
-  "projectFilePath": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
+  "projectFilePath": "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.dotnet.platformabstractions\\3.1.6\\microsoft.dotnet.platformabstractions.3.1.6.nupkg.sha512",
@@ -16,7 +16,9 @@
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\9.0.5\\microsoft.extensions.filesystemglobbing.9.0.5.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.5\\microsoft.extensions.primitives.9.0.5.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.identity.client\\4.73.0-preview\\microsoft.identity.client.4.73.0-preview.nupkg.sha512",
+    "C:\\Users\\amess\\.nuget\\packages\\microsoft.identity.client.broker\\4.72.1\\microsoft.identity.client.broker.4.72.1.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.identity.client.extensions.msal\\4.73.0-preview\\microsoft.identity.client.extensions.msal.4.73.0-preview.nupkg.sha512",
+    "C:\\Users\\amess\\.nuget\\packages\\microsoft.identity.client.nativeinterop\\0.18.1\\microsoft.identity.client.nativeinterop.0.18.1.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\microsoft.identitymodel.abstractions\\6.35.0\\microsoft.identitymodel.abstractions.6.35.0.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\silk.net\\2.22.0\\silk.net.2.22.0.nupkg.sha512",
     "C:\\Users\\amess\\.nuget\\packages\\silk.net.core\\2.22.0\\silk.net.core.2.22.0.nupkg.sha512",

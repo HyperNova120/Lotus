@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {}
+    "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {}
   },
   "projects": {
-    "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {
+    "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
+        "projectUniqueName": "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
         "projectName": "minecraftClient",
-        "projectPath": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
+        "projectPath": "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
         "packagesPath": "C:\\Users\\amess\\.nuget\\packages\\",
-        "outputPath": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\obj\\",
+        "outputPath": "f:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -54,6 +54,10 @@
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
               "version": "[9.0.5, )"
+            },
+            "Microsoft.Identity.Client.Broker": {
+              "target": "Package",
+              "version": "[4.72.1, )"
             },
             "Microsoft.Identity.Client.Extensions.Msal": {
               "target": "Package",

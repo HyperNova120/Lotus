@@ -9,6 +9,8 @@
       "minecraftClient/1.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Json": "9.0.5",
+          "Microsoft.Identity.Client.Broker": "4.72.1",
+          "Microsoft.Identity.Client.Extensions.Msal": "4.73.0-preview",
           "Silk.NET": "2.22.0"
         },
         "runtime": {
@@ -125,6 +127,80 @@
           "lib/net9.0/Microsoft.Extensions.Primitives.dll": {
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.525.21509"
+          }
+        }
+      },
+      "Microsoft.Identity.Client/4.73.0-preview": {
+        "dependencies": {
+          "Microsoft.IdentityModel.Abstractions": "6.35.0",
+          "System.Diagnostics.DiagnosticSource": "6.0.1"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Identity.Client.dll": {
+            "assemblyVersion": "4.73.0.0",
+            "fileVersion": "4.73.0.0"
+          }
+        }
+      },
+      "Microsoft.Identity.Client.Broker/4.72.1": {
+        "dependencies": {
+          "Microsoft.Identity.Client": "4.73.0-preview",
+          "Microsoft.Identity.Client.NativeInterop": "0.18.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Identity.Client.Broker.dll": {
+            "assemblyVersion": "4.72.1.0",
+            "fileVersion": "4.72.1.0"
+          }
+        }
+      },
+      "Microsoft.Identity.Client.Extensions.Msal/4.73.0-preview": {
+        "dependencies": {
+          "Microsoft.Identity.Client": "4.73.0-preview",
+          "System.Security.Cryptography.ProtectedData": "4.5.0"
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Identity.Client.Extensions.Msal.dll": {
+            "assemblyVersion": "4.73.0.0",
+            "fileVersion": "4.73.0.0"
+          }
+        }
+      },
+      "Microsoft.Identity.Client.NativeInterop/0.18.1": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Identity.Client.NativeInterop.dll": {
+            "assemblyVersion": "0.18.1.0",
+            "fileVersion": "0.18.1.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-x64/native/libmsalruntime.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/msalruntime_arm64.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/msalruntime.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/msalruntime_x86.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Microsoft.IdentityModel.Abstractions/6.35.0": {
+        "runtime": {
+          "lib/net6.0/Microsoft.IdentityModel.Abstractions.dll": {
+            "assemblyVersion": "6.35.0.0",
+            "fileVersion": "6.35.0.41201"
           }
         }
       },
@@ -284,9 +360,30 @@
         }
       },
       "System.Buffers/4.5.1": {},
+      "System.Diagnostics.DiagnosticSource/6.0.1": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
       "System.Memory/4.5.5": {},
       "System.Numerics.Vectors/4.5.0": {},
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
+      "System.Security.Cryptography.ProtectedData/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
       "System.Text.Encodings.Web/8.0.0": {},
       "System.Text.Json/8.0.0": {
         "dependencies": {
@@ -422,6 +519,41 @@
       "path": "microsoft.extensions.primitives/9.0.5",
       "hashPath": "microsoft.extensions.primitives.9.0.5.nupkg.sha512"
     },
+    "Microsoft.Identity.Client/4.73.0-preview": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NayE09unMdBrI1UcOnz5hLK+lsOTjXZbhz0k+xp8uVrSrUHjHwIBFzJpWsaladJ2YSpEonAKsMaaPaHbPgc8aA==",
+      "path": "microsoft.identity.client/4.73.0-preview",
+      "hashPath": "microsoft.identity.client.4.73.0-preview.nupkg.sha512"
+    },
+    "Microsoft.Identity.Client.Broker/4.72.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-joCHeBe+CJjGQfonV3q4joMXp87g3UiTaX9AXweDrOlyRi5RX3DMAYKIOUG8etvbBzaL5m2RoTIioXC3NTS4aQ==",
+      "path": "microsoft.identity.client.broker/4.72.1",
+      "hashPath": "microsoft.identity.client.broker.4.72.1.nupkg.sha512"
+    },
+    "Microsoft.Identity.Client.Extensions.Msal/4.73.0-preview": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3CvCzs16IZRxnLEudNa/pQDUUoBmQof8IrIw4cN+Lx2Xun7EsOR5WDiQvnunlI3g+9mQzl7V+zBdwFxK1iS4iw==",
+      "path": "microsoft.identity.client.extensions.msal/4.73.0-preview",
+      "hashPath": "microsoft.identity.client.extensions.msal.4.73.0-preview.nupkg.sha512"
+    },
+    "Microsoft.Identity.Client.NativeInterop/0.18.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oMkIwj4ugqOiGFkMWl/OUG/ndB1cYE5ZNhX+J4Jrj7ojT+lmBCBYcajLpvztIO+Is2Eo6qJxSsFLrCUo4UiCrg==",
+      "path": "microsoft.identity.client.nativeinterop/0.18.1",
+      "hashPath": "microsoft.identity.client.nativeinterop.0.18.1.nupkg.sha512"
+    },
+    "Microsoft.IdentityModel.Abstractions/6.35.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xuR8E4Rd96M41CnUSCiOJ2DBh+z+zQSmyrYHdYhD6K4fXBcQGVnRCFQ0efROUYpP+p0zC1BLKr0JRpVuujTZSg==",
+      "path": "microsoft.identitymodel.abstractions/6.35.0",
+      "hashPath": "microsoft.identitymodel.abstractions.6.35.0.nupkg.sha512"
+    },
     "Silk.NET/2.22.0": {
       "type": "package",
       "serviceable": true,
@@ -527,6 +659,13 @@
       "path": "system.buffers/4.5.1",
       "hashPath": "system.buffers.4.5.1.nupkg.sha512"
     },
+    "System.Diagnostics.DiagnosticSource/6.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KiLYDu2k2J82Q9BJpWiuQqCkFjRBWVq4jDzKKWawVi9KWzyD0XG3cmfX0vqTQlL14Wi9EufJrbL0+KCLTbqWiQ==",
+      "path": "system.diagnostics.diagnosticsource/6.0.1",
+      "hashPath": "system.diagnostics.diagnosticsource.6.0.1.nupkg.sha512"
+    },
     "System.Memory/4.5.5": {
       "type": "package",
       "serviceable": true,
@@ -547,6 +686,13 @@
       "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
       "path": "system.runtime.compilerservices.unsafe/6.0.0",
       "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    },
+    "System.Security.Cryptography.ProtectedData/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wLBKzFnDCxP12VL9ANydSYhk59fC4cvOr9ypYQLPnAj48NQIhqnjdD2yhP8yEKyBJEjERWS9DisKL7rX5eU25Q==",
+      "path": "system.security.cryptography.protecteddata/4.5.0",
+      "hashPath": "system.security.cryptography.protecteddata.4.5.0.nupkg.sha512"
     },
     "System.Text.Encodings.Web/8.0.0": {
       "type": "package",

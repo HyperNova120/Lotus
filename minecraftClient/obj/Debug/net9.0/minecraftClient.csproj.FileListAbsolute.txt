@@ -58,3 +58,14 @@ f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.
 f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\obj\Debug\net9.0\minecraftClient.csproj.AssemblyReference.cache
 f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\obj\Debug\net9.0\minecraf.B9328AD0.Up2Date
 f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\appsettings.json
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\Microsoft.Identity.Client.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\Microsoft.Identity.Client.Broker.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\Microsoft.Identity.Client.NativeInterop.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\System.Security.Cryptography.ProtectedData.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\runtimes\linux-x64\native\libmsalruntime.so
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\runtimes\win-arm64\native\msalruntime_arm64.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\runtimes\win-x64\native\msalruntime.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\runtimes\win-x86\native\msalruntime_x86.dll
+f:\coding_projects\cSharpMinecraftClient\cs_code\minecraftClient\bin\Debug\net9.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
