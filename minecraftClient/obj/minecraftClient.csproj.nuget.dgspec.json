@@ -1,0 +1,88 @@
+{
+  "format": 1,
+  "restore": {
+    "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {}
+  },
+  "projects": {
+    "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
+        "projectName": "minecraftClient",
+        "projectPath": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\minecraftClient.csproj",
+        "packagesPath": "C:\\Users\\amess\\.nuget\\packages\\",
+        "outputPath": "F:\\coding_projects\\cSharpMinecraftClient\\cs_code\\minecraftClient\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\amess\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[9.0.5, )"
+            },
+            "Microsoft.Identity.Client.Extensions.Msal": {
+              "target": "Package",
+              "version": "[4.73.0-preview, )"
+            },
+            "Silk.NET": {
+              "target": "Package",
+              "version": "[2.22.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
