@@ -41,14 +41,13 @@ public static class HttpServer
         return HttpUtility.ParseQueryString(listener.GetContext().Request.Url!.Query);
     }
 
-    public static async Task<string> PostRequest(string postURL, FormUrlEncodedContent content)
+    public static async Task<HttpResponseMessage> SendRequest(HttpRequestMessage msg)
     {
         if (httpClient == null)
         {
             httpClient = new HttpClient();
         }
-        var response = await httpClient.PostAsync(postURL, content);
-        var responseString = await response.Content.ReadAsStringAsync();
-        return responseString;
+        var response = await httpClient.SendAsync(msg);
+        return response;
     }
 }

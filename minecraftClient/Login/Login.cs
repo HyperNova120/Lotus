@@ -1,8 +1,12 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -17,16 +21,46 @@ public static class Login
 
     private static AuthenticationResult AuthResult;
 
+    private static TokenAuthCert? XboxLiveAuth;
+
     public static async Task<bool> login(IConfigurationRoot config)
     {
         configuration = config;
 
         AuthResult = await GetUserAuth();
-        Logging.LogDebug(
+        /* Logging.LogDebug(
             $"AuthResult: \n\tAccount:{AuthResult.Account}\n\tExpires On:{AuthResult.ExpiresOn}\n\tAccess Token:{AuthResult.AccessToken}"
-        );
+        ); */
+        await AuthWithXboxLive(AuthResult.AccessToken);
 
         return true;
+    }
+
+    private static async Task AuthWithXboxLive(string accessToken)
+    {
+        HttpRequestMessage msg = new HttpRequestMessage();
+        msg.Method = HttpMethod.Post;
+        msg.RequestUri = new Uri("https://user.auth.xboxlive.com/user/authenticate");
+        msg.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        XboxLiveAuthModel tmp = new XboxLiveAuthModel(accessToken);
+
+        string serializedContent = JsonSerializer.Serialize(tmp);
+        //Logging.LogDebug("HTTP REQUEST:\n" + serializedContent);
+
+        msg.Content = new StringContent(serializedContent, Encoding.UTF8, "application/json");
+        HttpResponseMessage response = await HttpServer.SendRequest(msg);
+        //Logging.LogDebug("HTTP Response:\n" + response.ToString());
+        var responsetmp = await response.Content.ReadAsStringAsync();
+        //Logging.LogDebug("HTTP Content:\n" + responsetmp);
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            Logging.LogInfo("XboxLive Authentication Failed");
+            return;
+        }
+        XboxLiveAuth = JsonSerializer.Deserialize<TokenAuthCert>(responsetmp);
+
+        await Task.Delay(1);
     }
 
     private static async Task<AuthenticationResult> GetUserAuth()
