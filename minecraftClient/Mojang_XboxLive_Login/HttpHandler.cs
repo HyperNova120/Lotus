@@ -1,23 +1,22 @@
+using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 using Silk.NET.OpenAL;
-using System.Collections.Specialized;
 
-public static class HttpServer
+public static class HttpHandler
 {
     static HttpListener? listener;
     static HttpClient? httpClient = null;
 
-    public static void openServer()
+    public static void openServer(string url)
     {
         if (listener != null)
         {
             return;
         }
         listener = new HttpListener();
-        listener.Prefixes.Add(Login.redirect_uri + "/");
+        listener.Prefixes.Add(url + "/");
         listener.Start();
-
     }
 
     public static void closeServer()
@@ -29,7 +28,6 @@ public static class HttpServer
         listener.Stop();
         listener.Close();
         listener = null;
-
     }
 
     public static NameValueCollection? GetQueries()
@@ -49,5 +47,18 @@ public static class HttpServer
         }
         var response = await httpClient.SendAsync(msg);
         return response;
+    }
+
+    public static HttpRequestMessage CreateHttpRequestMessage(
+        HttpMethod httpMethod,
+        string Uri,
+        HttpContent? httpContent
+    )
+    {
+        HttpRequestMessage msg = new HttpRequestMessage();
+        msg.Method = httpMethod;
+        msg.RequestUri = new Uri(Uri);
+        msg.Content = httpContent;
+        return msg;
     }
 }
