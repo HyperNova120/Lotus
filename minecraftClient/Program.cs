@@ -19,8 +19,7 @@ namespace CsMinecraftClient
         static async Task Main(string[] args)
         {
             Console.BackgroundColor = ConsoleColor.Black;
-
-            Logging.LogDebug("sha1(Notch) : " + EncryptionHandler.MinecraftHexDigest(Encoding.UTF8.GetBytes("Notch")));
+            Logging.mut = new Mutex();
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -62,10 +61,7 @@ namespace CsMinecraftClient
             );
             Logging.LogDebug(ConnectionHandler.SendPacket(loginStartPacket).ToString()); */
 
-            while (true)
-            {
-                await Task.Delay(10);
-            }
+            await Task.Delay(-1);
         }
     }
 }

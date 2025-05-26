@@ -68,22 +68,37 @@ namespace MinecraftNetworking.Connection
                     {
                         Logging.LogDebug($"Received {numBytesReceived} Bytes");
                         byte[] packetBytes = receivedBuffer.Take(numBytesReceived).ToArray();
-                        MinecraftServerPacket serverPacket = MinecraftPacketHandler.DecodePacket(
-                            packetBytes
-                        );
-                        switch (connectionState)
+                        bool firstRun = true;
+                        while (packetBytes.Length != 0)
                         {
-                            case ConnectionState.STATUS:
-                                _ = StatusHandler.ProcessPacket(serverPacket);
-                                break;
-                            case ConnectionState.LOGIN:
-                                _ = LoginHandler.ProcessPacket(serverPacket);
-                                break;
-                            default:
-                                Logging.LogError(
-                                    $"ReceiveConnections State {connectionState} Not Implemented"
-                                );
-                                break;
+                            int debugTmp = packetBytes.Length;
+                            (MinecraftServerPacket? serverPacket, packetBytes) =
+                                MinecraftPacketHandler.DecodePacket(packetBytes, firstRun);
+
+                            if (serverPacket == null)
+                            {
+                                Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
+                                return;
+                            }
+                            Logging.LogDebug(
+                                $"Processed {debugTmp - packetBytes.Length} bytes, {packetBytes.Length} remaining"
+                            );
+
+                            switch (connectionState)
+                            {
+                                case ConnectionState.STATUS:
+                                    await StatusHandler.ProcessPacket(serverPacket!);
+                                    break;
+                                case ConnectionState.LOGIN:
+                                    await LoginHandler.ProcessPacket(serverPacket!);
+                                    break;
+                                default:
+                                    Logging.LogError(
+                                        $"ReceiveConnections State {connectionState} Not Implemented"
+                                    );
+                                    break;
+                            }
+                            firstRun = false;
                         }
                     }
                 }

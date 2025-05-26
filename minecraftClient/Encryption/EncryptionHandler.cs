@@ -22,17 +22,51 @@ public static class EncryptionHandler
         GenerateSharedSecret();
 
         SHA1 sha1 = SHA1.Create();
+
         sha1.TransformBlock(Encoding.ASCII.GetBytes(serverID), 0, serverID.Length, null, 0);
         sha1.TransformBlock(SharedSecret, 0, SharedSecret.Length, null, 0);
         sha1.TransformFinalBlock(serverPublicKey, 0, serverPublicKey.Length);
-        return MinecraftHexDigest(sha1.Hash!);
+        return MinecraftHexDigest(sha1.Hash!.Reverse().ToArray());
     }
 
     public static string MinecraftHexDigest(byte[] bytes)
     {
-        var bitInt = new BigInteger(bytes.Reverse().ToArray());
-        return bitInt.ToString("x").ToLower();
+        var bitInt = new BigInteger(bytes);
+        string hex;
+        if (bitInt < 0)
+        {
+            // toss in a negative sign if the interpreted number is negative
+            hex = "-" + (-bitInt).ToString("x").TrimStart('0');
+        }
+        else
+        {
+            hex = bitInt.ToString("x").TrimStart('0');
+        }
+
+        Logging.LogDebug($"MinecraftHexDigest:{bitInt.ToString()} HEX:{hex}");
+        return hex;
     }
+
+    /* public static String MinecraftShaDigest(String input)
+    {
+        var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
+        // Reverse the bytes since BigInteger uses little endian
+        Array.Reverse(hash);
+
+        BigInteger b = new BigInteger(hash);
+        // very annoyingly, BigInteger in C# tries to be smart and puts in
+        // a leading 0 when formatting as a hex number to allow roundtripping
+        // of negative numbers, thus we have to trim it off.
+        if (b < 0)
+        {
+            // toss in a negative sign if the interpreted number is negative
+            return "-" + (-b).ToString("x").TrimStart('0');
+        }
+        else
+        {
+            return b.ToString("x").TrimStart('0');
+        }
+    } */
 
     private static void GenerateSharedSecret()
     {

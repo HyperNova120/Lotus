@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using MinecraftNetworking.Compression;
 using MinecraftNetworking.Types;
 
@@ -73,9 +74,12 @@ namespace MinecraftNetworking
             }
         }
 
-        public static MinecraftServerPacket DecodePacket(byte[] bytes)
+        public static (MinecraftServerPacket? firstpacket, byte[] remainingBytes) DecodePacket(
+            byte[] bytes,
+            bool firstRun = true
+        )
         {
-            if (IsEncryptionEnabled)
+            if (IsEncryptionEnabled && firstRun)
             {
                 Logging.LogDebug("MinecraftPacketHandler DecodePacket Decrypt Packet");
                 bytes = EncryptionHandler.DecryptData(bytes);
@@ -84,61 +88,105 @@ namespace MinecraftNetworking
             {
                 //has packet length
 
-                (int packet_length, int packet_length_numBytesRead) = VarInt_VarLong.DecodeVarInt(
-                    bytes
-                );
-                byte[] remainingBytes = bytes.Skip(packet_length_numBytesRead).ToArray();
+                (int compressed_packet_length, int packet_length_numBytesRead) =
+                    VarInt_VarLong.DecodeVarInt(bytes);
 
-                if (packet_length != remainingBytes.Length)
+                if (compressed_packet_length > bytes.Length - packet_length_numBytesRead)
                 {
                     Logging.LogError(
-                        $"Received Packet Data Length mismatch with actual length; packet_length:{packet_length} remainingBytes.Length:{remainingBytes.Length}"
+                        $"Received Packet Data Length mismatch with actual length; packet_length:{compressed_packet_length} remainingBytes.Length:{bytes.Length - packet_length_numBytesRead}"
                     );
+                    return (null, []);
                 }
 
-                (int data_length, int data_length_numBytesRead) = VarInt_VarLong.DecodeVarInt(
-                    remainingBytes
-                );
-                remainingBytes = remainingBytes.Skip(data_length_numBytesRead).ToArray();
+                byte[] packetData = new ArraySegment<byte>(
+                    bytes,
+                    packet_length_numBytesRead,
+                    compressed_packet_length
+                ).ToArray();
 
-                byte[] uncompressed_data = remainingBytes;
-                if (data_length != 0)
+                bytes = bytes.Skip(packet_length_numBytesRead + compressed_packet_length).ToArray();
+
+                (int uncompressed_data_length, int data_length_numBytesRead) =
+                    VarInt_VarLong.DecodeVarInt(packetData);
+                packetData = packetData.Skip(data_length_numBytesRead).ToArray();
+
+                if (uncompressed_data_length != 0)
                 {
-                    //compressed
-                    uncompressed_data = ZlibCompressionHandler.Decompress(remainingBytes);
-                    if (data_length != uncompressed_data.Length)
+                    packetData = ZlibCompressionHandler.Decompress(packetData);
+                    if (packetData.Length != uncompressed_data_length)
                     {
                         Logging.LogError(
-                            $"Compression Length mismatch with actual length; data_length:{data_length} uncompressed_data.Length:{uncompressed_data.Length}"
+                            $"DecodePacket; Compression error, given uncompressed_data_length:{uncompressed_data_length} actual length:{packetData.Length}"
                         );
+                        return (null, []);
                     }
                 }
 
                 (int packet_id, int packet_id_numBytesRead) = VarInt_VarLong.DecodeVarInt(
-                    uncompressed_data
+                    packetData
                 );
-                remainingBytes = uncompressed_data.Skip(packet_id_numBytesRead).ToArray();
+                packetData = packetData.Skip(packet_id_numBytesRead).ToArray();
+                MinecraftServerPacket returner = new(packet_id, packetData);
 
-                Logging.LogDebug(
-                    $"compressed length:{bytes.Length}; packet_length:{packet_length}; data_length:{data_length}; uncompressed_data.Length:{uncompressed_data.Length}"
-                );
-                MinecraftServerPacket returner = new(packet_id, remainingBytes);
-                return returner;
+                return (returner, bytes);
+
+                /*  if (compressed_packet_length > bytes.Length - packet_length_numBytesRead)
+                    {
+                        Logging.LogError(
+                            $"Received Packet Data Length mismatch with actual length; packet_length:{compressed_packet_length} remainingBytes.Length:{bytes.Length - packet_length_numBytesRead}"
+                        );
+                    }
+ 
+                    byte[] packetBytes = new ArraySegment<byte>(
+                        bytes,
+                        packet_length_numBytesRead,
+                        compressed_packet_length
+                    ).ToArray();
+ 
+                    (int data_length, int data_length_numBytesRead) = VarInt_VarLong.DecodeVarInt(
+                        packetBytes
+                    );
+                    packetBytes = packetBytes.Skip(data_length_numBytesRead).ToArray();
+ 
+                    byte[] uncompressed_data = packetBytes;
+                    if (data_length != 0)
+                    {
+                        //compressed
+                        uncompressed_data = ZlibCompressionHandler.Decompress(packetBytes);
+                        if (data_length != uncompressed_data.Length)
+                        {
+                            Logging.LogError(
+                                $"Compression Length mismatch with actual length; data_length:{data_length} uncompressed_data.Length:{uncompressed_data.Length}"
+                            );
+                        }
+                    }
+ 
+                    (int packet_id, int packet_id_numBytesRead) = VarInt_VarLong.DecodeVarInt(
+                        uncompressed_data
+                    );
+                    packetBytes = uncompressed_data.Skip(packet_id_numBytesRead).ToArray();
+ 
+                    Logging.LogDebug(
+                        $"compressed length:{bytes.Length}; packet_length:{compressed_packet_length}; data_length:{data_length}; uncompressed_data.Length:{uncompressed_data.Length}"
+                    );
+                    MinecraftServerPacket returner = new(packet_id, packetBytes);
+                    return (returner, bytes.Skip(packet_length_numBytesRead + compressed_packet_length).ToArray()); */
             }
             else
             {
                 //only data length
                 (int dataLength, int numDataBytes) = VarInt_VarLong.DecodeVarInt(bytes);
-                ArraySegment<byte> remainingBytes = new System.ArraySegment<byte>(
+                ArraySegment<byte> packetBytes = new System.ArraySegment<byte>(
                     bytes,
                     numDataBytes,
-                    bytes.Length - numDataBytes
+                    dataLength
                 );
 
-                if (dataLength != remainingBytes.Count)
+                if (dataLength != packetBytes.Count)
                 {
                     Logging.LogError(
-                        $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} remainingBytes.Count:{remainingBytes.Count}"
+                        $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} packetBytes.Count:{packetBytes.Count}"
                     );
                 }
                 else
@@ -147,18 +195,18 @@ namespace MinecraftNetworking
                 }
 
                 (int packetId, int numPacketIDBytes) = VarInt_VarLong.DecodeVarInt(
-                    remainingBytes.ToArray()
+                    packetBytes.ToArray()
                 );
 
                 MinecraftServerPacket returner = new(
                     packetId,
                     new ArraySegment<byte>(
-                        remainingBytes.ToArray(),
+                        packetBytes.ToArray(),
                         numPacketIDBytes,
-                        remainingBytes.ToArray().Length - numPacketIDBytes
+                        packetBytes.ToArray().Length - numPacketIDBytes
                     ).ToArray()
                 );
-                return returner;
+                return (returner, bytes.Skip(packetBytes.Count + numDataBytes).ToArray());
             }
         }
     }

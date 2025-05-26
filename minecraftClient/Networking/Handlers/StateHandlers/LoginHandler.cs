@@ -19,16 +19,16 @@ namespace MinecraftNetworking.StateHandlers
             switch (packet.protocol_id)
             {
                 case 0x00:
-                    _ = HandleLoginDisconnect(packet);
+                    await HandleLoginDisconnect(packet);
                     break;
                 case 0x01:
-                    _ = HandleEncryptionRequest(packet);
+                    await HandleEncryptionRequest(packet);
                     break;
                 case 0x02:
                     Logging.LogInfo("Login Success");
                     break;
                 case 0x03:
-                    _ = HandleSetCompression(packet);
+                    await HandleSetCompression(packet);
                     break;
                 default:
                     Logging.LogError(

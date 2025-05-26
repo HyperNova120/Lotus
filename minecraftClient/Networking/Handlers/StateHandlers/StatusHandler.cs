@@ -12,10 +12,10 @@ namespace MinecraftNetworking.StateHandlers
             switch (packet.protocol_id)
             {
                 case 0x00:
-                    _ = HandleStatusResponse(packet);
+                    await HandleStatusResponse(packet);
                     break;
                 case 0x01:
-                    _ = HandleStatusPingResponse(packet);
+                    await HandleStatusPingResponse(packet);
                     break;
                 default:
                     Logging.LogError(
