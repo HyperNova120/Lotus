@@ -1,9 +1,0 @@
-namespace MinecraftAuthModels
-{
-    public class MinecraftServerAuthModel
-    {
-        public string accessToken { get; set; }
-        public string selectedProfile { get; set; }
-        public string serverId { get; set; }
-    }
-}

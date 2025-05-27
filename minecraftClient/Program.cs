@@ -1,16 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
+﻿using Core_Engine;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Identity.Client;
-using MinecraftNetworking;
-using MinecraftNetworking.Connection;
-using MinecraftNetworking.Packets;
-using MinecraftNetworking.StateHandlers;
 
 namespace CsMinecraftClient
 {
@@ -24,25 +13,31 @@ namespace CsMinecraftClient
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
-            if (!await MojangLogin.login(configuration))
-            {
-                Logging.LogInfo("User not signed in, cannot continue");
-                return;
-            }
 
-            string serverIp = ConsoleUtils.AskUserLineResponseQuestion("Enter Server IP")!;
-            if (!ConnectionHandler.ConnectToServer(serverIp))
-            {
-                Logging.LogInfo("Unable to connect to server");
-                return;
-            }
+            Environment.SetEnvironmentVariable("AppID", (string)configuration!["AzureApp:AppID"]!);
 
+            /*  if (!await MojangLogin.login(configuration))
+             {
+                 Logging.LogInfo("User not signed in, cannot continue");
+                 return;
+             } */
+
+            Core_Engine.Core_Engine.InitCore();
+            await Core_Engine.Core_Engine.GoInteractiveMode();
+
+            /*  string serverIp = ConsoleUtils.AskUserLineResponseQuestion("Enter Server IP")!;
+             if (!ConnectionHandler.ConnectToServer(serverIp))
+             {
+                 Logging.LogInfo("Unable to connect to server");
+                 return;
+             }
+  */
             /* StatusHandler.SendStatusRequest(serverIp);
             await Task.Delay(5000);
             StatusHandler.SendPingRequest();
             await Task.Delay(5000); */
-            Logging.LogInfo("Attempting Server Login Start");
-            await LoginHandler.LoginToServer(serverIp);
+            /*  Logging.LogInfo("Attempting Server Login Start");
+             await LoginHandler.LoginToServer(serverIp); */
 
             /* Logging.LogDebug(
                 "Sent: " + ConnectionHandler.SendPacket(new HandshakePacket(serverIp, 1)).ToString()
@@ -61,7 +56,7 @@ namespace CsMinecraftClient
             );
             Logging.LogDebug(ConnectionHandler.SendPacket(loginStartPacket).ToString()); */
 
-            await Task.Delay(-1);
+            //await Task.Delay(-1);
         }
     }
 }
