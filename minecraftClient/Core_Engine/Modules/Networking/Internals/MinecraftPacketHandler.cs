@@ -87,20 +87,13 @@ namespace Core_Engine.Modules.Networking.Internals
         }
 
         public static (MinecraftServerPacket? firstpacket, byte[] remainingBytes) DecodePacket(
-            byte[] bytes,
-            bool firstRun = true
+            byte[] bytes
         )
         {
-            if (IsEncryptionEnabled && firstRun)
-            {
-                Logging.LogDebug("MinecraftPacketHandler DecodePacket Decrypt Packet");
-                bytes = Core_Engine
-                    .GetModule<Networking>("Networking")!
-                    .encryption.DecryptData(bytes);
-            }
             if (IsCompressionEnabled)
             {
                 //has packet length
+                Logging.LogDebug("Decoding Compressed Packet");
 
                 (int compressed_packet_length, int packet_length_numBytesRead) =
                     VarInt_VarLong.DecodeVarInt(bytes);

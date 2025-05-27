@@ -1,0 +1,24 @@
+using Core_Engine.Modules.Networking.Types;
+
+namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
+{
+    public class CookieResponsepacket : MinecraftPacket
+    {
+        public string Key;
+        byte[] Payload;
+
+        public CookieResponsepacket()
+        {
+            protocol_id = 0x01;
+        }
+
+        public override byte[] GetBytes()
+        {
+            return
+            [
+                .. StringN.GetBytes(Key),
+                .. PrefixedOptional.GetBytes(PrefixedArray.GetBytes(Payload)),
+            ];
+        }
+    }
+}

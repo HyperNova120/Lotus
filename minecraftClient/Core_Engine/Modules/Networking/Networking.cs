@@ -1,10 +1,13 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Core_Engine.EngineEventArgs;
 using Core_Engine.Interfaces;
 using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Packets;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Configuration;
 using Microsoft.Identity.Client.NativeInterop;
+using Org.BouncyCastle.Asn1.Icao;
 
 namespace Core_Engine.Modules.Networking
 {
@@ -14,7 +17,7 @@ namespace Core_Engine.Modules.Networking
         public ConnectionState connectionState { get; set; } = ConnectionState.NONE;
         public Encryption encryption { get; private set; } = new();
 
-        private CancellationTokenSource? cancellationTokenSourse;
+        private SocketAsyncEventArgs socketAsyncEventArgs = new();
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
@@ -24,16 +27,16 @@ namespace Core_Engine.Modules.Networking
             RegisterEvent.Invoke("LOGIN_Packet_Received");
         }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent) { }
-
-        public void ExposeData(Action<string, Func<object?>> ExposeDataCallback)
+        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
         {
-            ExposeDataCallback.Invoke(
-                "Networking_connectionState",
-                () =>
-                {
-                    return connectionState;
-                }
+            SubscribeToEvent.Invoke(
+                "SERVERLOGIN_loginSuccessful",
+                new EventHandler(
+                    (sender, args) =>
+                    {
+                        connectionState = ConnectionState.CONFIGURATION;
+                    }
+                )
             );
         }
 
@@ -48,7 +51,9 @@ namespace Core_Engine.Modules.Networking
             connectionState = ConnectionState.NONE;
             encryption = new();
             MinecraftPacketHandler.Init();
-            cancellationTokenSourse = new();
+            socketAsyncEventArgs = new();
+            ResetBuffer();
+            socketAsyncEventArgs.Completed += ReceiveCompleted;
         }
 
         public int SendPacket(MinecraftPacket packet)
@@ -81,8 +86,7 @@ namespace Core_Engine.Modules.Networking
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             TcpSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             TcpSocket.Connect(endPoint);
-            cancellationTokenSourse = new();
-            _ = HandleIncomingPackets();
+            TcpSocket.ReceiveAsync(socketAsyncEventArgs);
             return true;
         }
 
@@ -93,93 +97,114 @@ namespace Core_Engine.Modules.Networking
                 return;
             }
             Logging.LogDebug("Disconnect from Server");
-            if (cancellationTokenSourse != null)
-            {
-                cancellationTokenSourse!.Cancel();
-            }
-            TcpSocket.EndReceive();
             TcpSocket.Disconnect(false);
             TcpSocket.Close();
             InitNetworking();
         }
 
-        private async Task HandleIncomingPackets()
+        private void ResetBuffer()
         {
-            CancellationToken cancellationToken = cancellationTokenSourse!.Token;
-            cancellationToken.ThrowIfCancellationRequested();
-
-            SocketAsyncEventArgs eventArgs = new SocketAsyncEventArgs();
             byte[] receivedBuffer = new byte[0x3FFFFF];
-            eventArgs.SetBuffer(receivedBuffer, 0, receivedBuffer.Length);
-            eventArgs.Completed += (object sender, SocketAsyncEventArgs e) => { };
+            socketAsyncEventArgs.SetBuffer(receivedBuffer, 0, receivedBuffer.Length);
+        }
+
+        private void ReceiveCompleted(object sender, SocketAsyncEventArgs e)
+        {
+            Logging.LogDebug("ReceiveCompleted");
             try
             {
-                while (TcpSocket != null && TcpSocket.Connected)
+                if (ProcessReceive(e))
                 {
-                    int numBytesReceived = await TcpSocket.ReceiveAsync(
-                        receivedBuffer,
-                        SocketFlags.None,
-                        cancellationToken
-                    );
-                    if (cancellationToken.IsCancellationRequested)
+                    ResetBuffer();
+                    if (TcpSocket != null)
                     {
-                        Logging.LogDebug("Connection Cancellation requested");
-                        cancellationTokenSourse = null;
-                        return;
+                        TcpSocket.ReceiveAsync(e);
                     }
-                    Logging.LogDebug("ReceiveConnections; numBytesReceived, " + numBytesReceived);
-                    if (numBytesReceived == 0)
+                    else
                     {
-                        //connection probably closed from remote
-                        Logging.LogInfo("Connection Closed by Remote Host");
-                        cancellationTokenSourse = null;
-                        DisconnectFromServer();
-                        return;
-                    }
-                    byte[] packetBytes = receivedBuffer.Take(numBytesReceived).ToArray();
-                    bool firstRun = true;
-                    while (packetBytes.Length != 0)
-                    {
-                        (MinecraftServerPacket? serverPacket, packetBytes) =
-                            MinecraftPacketHandler.DecodePacket(packetBytes, firstRun);
-
-                        if (serverPacket == null)
-                        {
-                            Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
-                            cancellationTokenSourse = null;
-                            DisconnectFromServer();
-                            return;
-                        }
-                        switch (connectionState)
-                        {
-                            case ConnectionState.STATUS:
-                                Core_Engine.InvokeEvent(
-                                    "STATUS_Packet_Received",
-                                    new PacketReceivedEventArgs(serverPacket)
-                                );
-                                break;
-                            case ConnectionState.LOGIN:
-                                Core_Engine.InvokeEvent(
-                                    "LOGIN_Packet_Received",
-                                    new PacketReceivedEventArgs(serverPacket)
-                                );
-                                break;
-                            default:
-                                Logging.LogError(
-                                    $"ReceiveConnections State {connectionState} Not Implemented"
-                                );
-                                DisconnectFromServer();
-                                return;
-                        }
-                        firstRun = false;
+                        Logging.LogDebug("TcpSocket null");
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception exc)
             {
-                Logging.LogDebug("Connection Failed");
-                Logging.LogError(e.ToString());
+                Logging.LogError($"ProcessReceive ERROR: {exc}");
                 DisconnectFromServer();
+            }
+        }
+
+        private bool ProcessReceive(SocketAsyncEventArgs e)
+        {
+            if (e.SocketError == SocketError.Success)
+            {
+                try
+                {
+                    //data received properly
+                    byte[] packetBytes = e.Buffer![..e.BytesTransferred];
+                    Logging.LogDebug($"ProcessReceive {packetBytes.Length} Bytes received");
+                    if (packetBytes.Length == 0)
+                    {
+                        Logging.LogInfo("Connection Closed by Remote Host");
+                        DisconnectFromServer();
+                        return false;
+                    }
+                    if (MinecraftPacketHandler.IsEncryptionEnabled)
+                    {
+                        packetBytes = encryption.DecryptData(packetBytes);
+                    }
+
+                    bool firstRun = true;
+                    while (packetBytes.Length > 0)
+                    {
+                        if (!firstRun)
+                        {
+                            Logging.LogDebug("\tMulti packet receive");
+                        }
+                        (MinecraftServerPacket? serverPacket, packetBytes) =
+                            MinecraftPacketHandler.DecodePacket(packetBytes);
+                        if (serverPacket == null)
+                        {
+                            Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
+                            DisconnectFromServer();
+                            return false;
+                        }
+                        ProcessPacketEvent(serverPacket);
+                    }
+                    return true;
+                }
+                catch (Exception exc)
+                {
+                    Logging.LogError($"ProcessReceive Error: {exc}");
+                    return false;
+                }
+            }
+            Logging.LogError($"Socket Error: {e.SocketError}");
+            return false;
+        }
+
+        private void ProcessPacketEvent(MinecraftServerPacket packet)
+        {
+            Logging.LogDebug(
+                $"\tProcessing Packet 0x{packet.protocol_id:X} in State: {connectionState.ToString()}"
+            );
+            switch (connectionState)
+            {
+                case ConnectionState.STATUS:
+                    Core_Engine.InvokeEvent(
+                        "STATUS_Packet_Received",
+                        new PacketReceivedEventArgs(packet)
+                    );
+                    break;
+                case ConnectionState.LOGIN:
+                    Core_Engine.InvokeEvent(
+                        "LOGIN_Packet_Received",
+                        new PacketReceivedEventArgs(packet)
+                    );
+                    break;
+                default:
+                    Logging.LogError($"ReceiveConnections State {connectionState} Not Implemented");
+                    DisconnectFromServer();
+                    return;
             }
         }
 

@@ -15,6 +15,11 @@ namespace Core_Engine.Modules.ServerLogin.Internals
 {
     public class ServerLoginInternals
     {
+        private enum RegisteredEventIdentifiers
+        {
+            SERVERLOGIN_loginSuccessful,
+        }
+
         public async Task HandleLoginDisconnect(MinecraftServerPacket packet)
         {
             Logging.LogInfo(
@@ -120,15 +125,24 @@ namespace Core_Engine.Modules.ServerLogin.Internals
         {
             LoginSuccessPacket loginSuccessPacket = new();
             loginSuccessPacket.decodeFromBytes(packet.data);
-            Logging.LogInfo(
+            /* Logging.LogInfo(
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
-            );
+            ); */
+            Logging.LogInfo("Successfully Joined Server!");
             foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
-                Logging.LogInfo(
+                Logging.LogDebug(
                     $"\tS1:{element.s1}; S2:{element.s2}; optional S3:{(element.optionalS3 ?? "")}"
                 );
             }
+            Core_Engine
+                .GetModule<Networking.Networking>("Networking")!
+                .SendPacket(new EmptyPacket(0x03));
+
+            Core_Engine.InvokeEvent(
+                nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
+                new()
+            );
         }
     }
 }
