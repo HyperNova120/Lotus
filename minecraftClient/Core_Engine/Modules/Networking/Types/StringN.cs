@@ -6,7 +6,7 @@ namespace Core_Engine.Modules.Networking.Types
     {
         public static byte[] GetBytes(string value)
         {
-            byte[] valueBytes = Encoding.UTF8.GetBytes(value); 
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             return [.. VarInt_VarLong.EncodeInt(value.Length), .. valueBytes];
         }
 
@@ -14,7 +14,7 @@ namespace Core_Engine.Modules.Networking.Types
         {
             (int size, int numBytes) = VarInt_VarLong.DecodeVarInt(bytes);
             string strValue =
-                (size > 0) ? Encoding.UTF8.GetString(bytes.Skip(numBytes).ToArray()) : "";
+                (size > 0) ? Encoding.UTF8.GetString(bytes[numBytes..(numBytes + size)]) : "";
             return (strValue, strValue.Length + numBytes);
         }
     }

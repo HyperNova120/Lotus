@@ -1,4 +1,3 @@
-
 namespace Core_Engine.Modules.Networking.Types
 {
     public static class PrefixedArray
@@ -8,15 +7,22 @@ namespace Core_Engine.Modules.Networking.Types
             return [.. VarInt_VarLong.EncodeInt(data.Length), .. data];
         }
 
-        public static (byte[] bytes, int numberBytesRead) DecodeBytes(byte[] data)
+        public static (byte[] bytesOfArray, int numberBytesRead) DecodeBytes(byte[] data)
         {
-            (int value, int dataBytes) = VarInt_VarLong.DecodeVarInt(data);
-            var arrayBytes = new Span<byte>(data, dataBytes, value);
-            byte[] bytes = (dataBytes == 0) ? [] : arrayBytes.ToArray();
+            (int size, int numSizeBytes) = VarInt_VarLong.DecodeVarInt(data);
+            data = data[numSizeBytes..];
+
+            byte[] arrayBytes = (size == 0) ? [] : data[..size];
             Logging.LogDebug(
-                $"PrefixedArray Array_Length:{value} Tota_Byte_Length:{dataBytes + bytes.Length}"
+                $"PrefixedArray Array_Length:{size} Tota_Byte_Length:{numSizeBytes + arrayBytes.Length}"
             );
-            return (bytes, dataBytes + bytes.Length);
+            return (arrayBytes, numSizeBytes + arrayBytes.Length);
+        }
+
+        public static (int arraySize, int numBytesRead) GetSizeOfArray(byte[] data)
+        {
+            (int size, int numSizeBytes) = VarInt_VarLong.DecodeVarInt(data);
+            return (size, numSizeBytes);
         }
     }
 }

@@ -1,7 +1,4 @@
-
-using Core_Engine.Modules.Networking.Packets;
-
-namespace Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake
+namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 {
     public class HandshakeExtraPacket : MinecraftPacket
     {
@@ -9,6 +6,7 @@ namespace Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake
         {
             return [(byte)0x01];
         }
+
         public HandshakeExtraPacket()
         {
             protocol_id = 0xFE;

@@ -14,6 +14,8 @@ namespace Core_Engine.Modules.Networking
         public ConnectionState connectionState { get; set; } = ConnectionState.NONE;
         public Encryption encryption { get; private set; } = new();
 
+        private CancellationTokenSource? cancellationTokenSourse;
+
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
         public void RegisterEvents(Action<string> RegisterEvent)
@@ -35,6 +37,20 @@ namespace Core_Engine.Modules.Networking
             );
         }
 
+        public Networking()
+        {
+            InitNetworking();
+        }
+
+        public void InitNetworking()
+        {
+            TcpSocket = null;
+            connectionState = ConnectionState.NONE;
+            encryption = new();
+            MinecraftPacketHandler.Init();
+            cancellationTokenSourse = new();
+        }
+
         public int SendPacket(MinecraftPacket packet)
         {
             if (TcpSocket == null)
@@ -52,7 +68,7 @@ namespace Core_Engine.Modules.Networking
                     SocketFlags.None
                 );
             }
-
+            Logging.LogDebug($"Sent {bytesSent} bytes");
             return bytesSent;
         }
 
@@ -65,25 +81,59 @@ namespace Core_Engine.Modules.Networking
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             TcpSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             TcpSocket.Connect(endPoint);
+            cancellationTokenSourse = new();
             _ = HandleIncomingPackets();
             return true;
         }
 
+        public void DisconnectFromServer()
+        {
+            if (TcpSocket == null)
+            {
+                return;
+            }
+            Logging.LogDebug("Disconnect from Server");
+            if (cancellationTokenSourse != null)
+            {
+                cancellationTokenSourse!.Cancel();
+            }
+            TcpSocket.EndReceive();
+            TcpSocket.Disconnect(false);
+            TcpSocket.Close();
+            InitNetworking();
+        }
+
         private async Task HandleIncomingPackets()
         {
+            CancellationToken cancellationToken = cancellationTokenSourse!.Token;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            SocketAsyncEventArgs eventArgs = new SocketAsyncEventArgs();
+            byte[] receivedBuffer = new byte[0x3FFFFF];
+            eventArgs.SetBuffer(receivedBuffer, 0, receivedBuffer.Length);
+            eventArgs.Completed += (object sender, SocketAsyncEventArgs e) => { };
             try
             {
-                byte[] receivedBuffer = new byte[0x3FFFFF];
                 while (TcpSocket != null && TcpSocket.Connected)
                 {
                     int numBytesReceived = await TcpSocket.ReceiveAsync(
                         receivedBuffer,
-                        SocketFlags.None
+                        SocketFlags.None,
+                        cancellationToken
                     );
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Logging.LogDebug("Connection Cancellation requested");
+                        cancellationTokenSourse = null;
+                        return;
+                    }
                     Logging.LogDebug("ReceiveConnections; numBytesReceived, " + numBytesReceived);
                     if (numBytesReceived == 0)
                     {
                         //connection probably closed from remote
+                        Logging.LogInfo("Connection Closed by Remote Host");
+                        cancellationTokenSourse = null;
+                        DisconnectFromServer();
                         return;
                     }
                     byte[] packetBytes = receivedBuffer.Take(numBytesReceived).ToArray();
@@ -96,6 +146,8 @@ namespace Core_Engine.Modules.Networking
                         if (serverPacket == null)
                         {
                             Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
+                            cancellationTokenSourse = null;
+                            DisconnectFromServer();
                             return;
                         }
                         switch (connectionState)
@@ -116,7 +168,8 @@ namespace Core_Engine.Modules.Networking
                                 Logging.LogError(
                                     $"ReceiveConnections State {connectionState} Not Implemented"
                                 );
-                                break;
+                                DisconnectFromServer();
+                                return;
                         }
                         firstRun = false;
                     }
@@ -124,7 +177,9 @@ namespace Core_Engine.Modules.Networking
             }
             catch (Exception e)
             {
+                Logging.LogDebug("Connection Failed");
                 Logging.LogError(e.ToString());
+                DisconnectFromServer();
             }
         }
 

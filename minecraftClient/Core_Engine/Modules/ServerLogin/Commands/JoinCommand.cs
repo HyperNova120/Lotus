@@ -28,6 +28,11 @@ namespace Core_Engine.Modules.ServerLogin.Commands
                 return;
             }
             await loginHandler.LoginToServer(commandArgs[0]);
+
+            while (networking.connectionState == Networking.Networking.ConnectionState.LOGIN)
+            {
+                await Task.Delay(5);
+            }
         }
     }
 }

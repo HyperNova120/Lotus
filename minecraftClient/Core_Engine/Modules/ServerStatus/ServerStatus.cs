@@ -2,8 +2,8 @@ using Core_Engine.EngineEventArgs;
 using Core_Engine.Interfaces;
 using Core_Engine.Modules.Networking;
 using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Status;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Status;
 using Core_Engine.Modules.Networking.Types;
 
 namespace Core_Engine.Modules.ServerStatus
@@ -35,6 +35,9 @@ namespace Core_Engine.Modules.ServerStatus
                     Logging.LogError(
                         $"StatusHandler State 0x{packet.protocol_id:X} Not Implemented"
                     );
+                    Core_Engine
+                        .GetModule<Networking.Networking>("Networking")!
+                        .DisconnectFromServer();
                     break;
             }
         }

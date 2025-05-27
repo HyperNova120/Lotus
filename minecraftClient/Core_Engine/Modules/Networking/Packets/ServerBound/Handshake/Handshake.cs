@@ -1,7 +1,6 @@
-using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.Modules.Networking.Types;
 
-namespace Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake
+namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 {
     public class HandshakePacket : MinecraftPacket
     {

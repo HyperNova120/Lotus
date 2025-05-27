@@ -9,9 +9,16 @@ namespace Core_Engine.Modules.Networking.Internals
         public static bool IsEncryptionEnabled = false;
         public static int CompresionThreshold;
 
+        public static void Init()
+        {
+            IsCompressionEnabled = false;
+            IsEncryptionEnabled = false;
+            CompresionThreshold = default;
+        }
+
         public static byte[] CreatePacket(MinecraftPacket data)
         {
-            if (!IsCompressionEnabled)
+            if (!IsCompressionEnabled || CompresionThreshold < 0)
             {
                 byte[] packet_id = VarInt_VarLong.EncodeInt(data.protocol_id);
                 byte[] packet_data = data.GetBytes();

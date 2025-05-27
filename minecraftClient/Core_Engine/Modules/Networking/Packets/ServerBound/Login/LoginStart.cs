@@ -1,7 +1,7 @@
 using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.Modules.Networking.Types;
 
-namespace Core_Engine.Modules.Networking.Pakcets.ServerBound.Login
+namespace Core_Engine.Modules.Networking.Packets.ServerBound.Login
 {
     public class LoginStartPacket : MinecraftPacket
     {

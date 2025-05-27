@@ -4,8 +4,10 @@ using System.Text.Json;
 using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Models;
 using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Login;
+using Core_Engine.Modules.Networking.Packets.ClientBound.Login;
+using Core_Engine.Modules.Networking.Packets.ClientBound.Login.Internals;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
 using Core_Engine.Modules.Networking.Types;
 using static Core_Engine.Modules.Networking.Networking;
 
@@ -18,19 +20,20 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             Logging.LogInfo(
                 $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet.data)}"
             );
+            Core_Engine.GetModule<Networking.Networking>("Networking")!.DisconnectFromServer();
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
         {
             (string serverID, int serverIDBytes) = StringN.DecodeBytes(packet.data);
 
-            byte[] remainingBytes = packet.data.Skip(serverIDBytes).ToArray();
+            byte[] remainingBytes = packet.data[serverIDBytes..];
             (byte[] PublicKey, int PublicKeyBytes) = PrefixedArray.DecodeBytes(remainingBytes);
 
-            remainingBytes = remainingBytes.Skip(PublicKeyBytes).ToArray();
+            remainingBytes = remainingBytes[PublicKeyBytes..];
             (byte[] VerifyToken, int VerifyTokenBytes) = PrefixedArray.DecodeBytes(remainingBytes);
 
-            remainingBytes = remainingBytes.Skip(VerifyTokenBytes).ToArray();
+            remainingBytes = remainingBytes[VerifyTokenBytes..];
             bool ShouldAuth = remainingBytes[0] == 0x01;
 
             try
@@ -111,6 +114,21 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
             MinecraftPacketHandler.CompresionThreshold = CompresionThreshold;
             MinecraftPacketHandler.IsCompressionEnabled = true;
+        }
+
+        internal async Task HandleLoginSuccess(MinecraftServerPacket packet)
+        {
+            LoginSuccessPacket loginSuccessPacket = new();
+            loginSuccessPacket.decodeFromBytes(packet.data);
+            Logging.LogInfo(
+                $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
+            );
+            foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
+            {
+                Logging.LogInfo(
+                    $"\tS1:{element.s1}; S2:{element.s2}; optional S3:{(element.optionalS3 ?? "")}"
+                );
+            }
         }
     }
 }

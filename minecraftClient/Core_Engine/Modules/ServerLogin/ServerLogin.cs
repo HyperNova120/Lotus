@@ -2,8 +2,8 @@ using Core_Engine.EngineEventArgs;
 using Core_Engine.Interfaces;
 using Core_Engine.Modules.MojangLogin.Commands;
 using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Handshake;
-using Core_Engine.Modules.Networking.Pakcets.ServerBound.Login;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
 using Core_Engine.Modules.ServerLogin.Commands;
 using Core_Engine.Modules.ServerLogin.Internals;
 using static Core_Engine.Modules.Networking.Networking;
@@ -46,21 +46,29 @@ namespace Core_Engine.Modules.ServerLogin
             switch (packet.protocol_id)
             {
                 case 0x00:
+                    Logging.LogDebug("Disconnect Packet Received");
                     await internals.HandleLoginDisconnect(packet);
                     break;
                 case 0x01:
+                    Logging.LogDebug("Encryption Request Packet Received");
                     await internals.HandleEncryptionRequest(packet);
                     break;
                 case 0x02:
-                    Logging.LogInfo("Login Success");
+                    Logging.LogDebug("Login Success Packet Received");
+                    await internals.HandleLoginSuccess(packet);
                     break;
                 case 0x03:
+
+                    Logging.LogDebug("Compression Packet Received");
                     internals.HandleSetCompression(packet);
                     break;
                 default:
                     Logging.LogError(
                         $"LoginHandler State 0x{packet.protocol_id:X} Not Implemented"
                     );
+                    Core_Engine
+                        .GetModule<Networking.Networking>("Networking")!
+                        .DisconnectFromServer();
                     break;
             }
         }
@@ -79,26 +87,34 @@ namespace Core_Engine.Modules.ServerLogin
                 Console.WriteLine("You are not signed into a Minecraft account");
                 return;
             }
-
-            if (
-                networking.connectionState == ConnectionState.NONE
-                || networking.connectionState == ConnectionState.STATUS
-            )
+            try
             {
-                networking.connectionState = ConnectionState.LOGIN;
-                networking.ConnectToServer(serverIp, port);
-                networking.SendPacket(
-                    new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
-                );
-                Logging.LogDebug(
-                    $"LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
-                );
-                networking.SendPacket(
-                    new LoginStartPacket(
-                        mojangLogin.userProfile!.name,
-                        new Guid(mojangLogin.userProfile!.id)
-                    )
-                );
+                if (
+                    networking.connectionState == ConnectionState.NONE
+                    || networking.connectionState == ConnectionState.STATUS
+                )
+                {
+                    networking.connectionState = ConnectionState.LOGIN;
+                    networking.ConnectToServer(serverIp, port);
+                    networking.SendPacket(
+                        new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                    );
+                    Logging.LogDebug(
+                        $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
+                    );
+                    networking.SendPacket(
+                        new LoginStartPacket(
+                            mojangLogin.userProfile!.name,
+                            new Guid(mojangLogin.userProfile!.id)
+                        )
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.LogError($"LoginToServer Failed: {e.ToString()}");
+                networking.DisconnectFromServer();
+                networking.connectionState = ConnectionState.NONE;
             }
         }
     }
