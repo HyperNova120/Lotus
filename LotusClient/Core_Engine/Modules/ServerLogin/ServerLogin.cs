@@ -99,7 +99,7 @@ namespace Core_Engine.Modules.ServerLogin
             {
                 if (networking.GetServerConnection(remoteHost) == null)
                 {
-                    networking.ConnectToServer(serverIp, port);
+                    networking.ConnectToServer(remoteHost.ToString(), port);
                     networking.GetServerConnection(remoteHost)!.connectionState =
                         ConnectionState.LOGIN;
                     networking.SendPacket(
