@@ -1,22 +1,32 @@
 using System;
 using System.IO;
-using Ionic.Zlib;
-
+using System.IO.Compression;
 namespace Core_Engine.Modules.Networking.Internals
 {
     public static class ZlibCompressionHandler
     {
         public static byte[] Compress(byte[] data)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            try
             {
-                using (
-                    ZlibStream zlibStream = new ZlibStream(memoryStream, CompressionMode.Compress)
-                )
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    zlibStream.Write(data, 0, data.Length);
+                    using (
+                        ZLibStream zlibStream = new ZLibStream(
+                            memoryStream,
+                            CompressionMode.Compress
+                        )
+                    )
+                    {
+                        zlibStream.Write(data, 0, data.Length);
+                    }
+                    return memoryStream.ToArray();
                 }
-                return memoryStream.ToArray();
+            }
+            catch (Exception e)
+            {
+                Logging.LogError($"ZlibCompressionHandler; Compress ERROR:{e}");
+                return [];
             }
         }
 
@@ -24,15 +34,26 @@ namespace Core_Engine.Modules.Networking.Internals
         {
             using (MemoryStream memoryStream = new MemoryStream(compressedData))
             {
-                using (
-                    ZlibStream zlibStream = new ZlibStream(memoryStream, CompressionMode.Decompress)
-                )
+                try
                 {
-                    using (MemoryStream decompressedStream = new MemoryStream())
+                    using (
+                        ZLibStream zlibStream = new ZLibStream(
+                            memoryStream,
+                            CompressionMode.Decompress
+                        )
+                    )
                     {
-                        zlibStream.CopyTo(decompressedStream);
-                        return decompressedStream.ToArray();
+                        using (MemoryStream decompressedStream = new MemoryStream())
+                        {
+                            zlibStream.CopyTo(decompressedStream);
+                            return decompressedStream.ToArray();
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Logging.LogError($"ZlibCompressionHandler; Decompress ERROR:{e}");
+                    return [];
                 }
             }
         }

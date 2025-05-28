@@ -9,10 +9,20 @@ namespace Core_Engine.Modules.Networking.Internals
 {
     public class Encryption
     {
-        public static byte[] SharedSecret { get; private set; }
+        public byte[] SharedSecret { get; private set; }
 
-        private static IBufferedCipher? EncryptionCipher;
-        private static IBufferedCipher? DecryptionCipher;
+        private IBufferedCipher? EncryptionCipher;
+        private IBufferedCipher? DecryptionCipher;
+
+        public Encryption()
+        {
+            //Logging.LogDebug($"\tEncryption Constructor");
+            SharedSecret = new byte[16];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(SharedSecret);
+            }
+        }
 
         public byte[] EncryptData(byte[] data)
         {
@@ -24,8 +34,9 @@ namespace Core_Engine.Modules.Networking.Internals
             {
                 InitCiphers();
             }
-
-            return EncryptionCipher!.DoFinal(data);
+            byte[] buffer = new byte[data.Length];
+            EncryptionCipher!.ProcessBytes(data, 0, data.Length, buffer, 0);
+            return buffer;
         }
 
         public byte[] DecryptData(byte[] data)
@@ -38,14 +49,13 @@ namespace Core_Engine.Modules.Networking.Internals
             {
                 InitCiphers();
             }
-
-            return DecryptionCipher!.DoFinal(data);
+            byte[] buffer = new byte[data.Length];
+            DecryptionCipher!.ProcessBytes(data, 0, data.Length, buffer, 0);
+            return buffer;
         }
 
         public string GenerateMinecraftAuthenticationHash(string serverID, byte[] serverPublicKey)
         {
-            GenerateSharedSecret();
-
             SHA1 sha1 = SHA1.Create();
 
             sha1.TransformBlock(Encoding.ASCII.GetBytes(serverID), 0, serverID.Length, null, 0);
@@ -56,6 +66,7 @@ namespace Core_Engine.Modules.Networking.Internals
 
         private void InitCiphers()
         {
+            //Logging.LogDebug("\tInit Ciphers");
             EncryptionCipher = CipherUtilities.GetCipher("AES/CFB8/NoPadding");
             EncryptionCipher.Init(
                 true,
@@ -67,15 +78,6 @@ namespace Core_Engine.Modules.Networking.Internals
                 false,
                 new ParametersWithIV(new KeyParameter(SharedSecret), SharedSecret)
             );
-        }
-
-        private void GenerateSharedSecret()
-        {
-            SharedSecret = new byte[16];
-            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(SharedSecret);
-            }
         }
 
         private string MinecraftHexDigest(byte[] bytes)

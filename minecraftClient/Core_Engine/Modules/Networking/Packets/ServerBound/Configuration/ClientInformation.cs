@@ -4,7 +4,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ClientInformationPacket : MinecraftPacket
     {
-        public string locale;
+        public string locale = "";
         public byte viewDistance;
         public int chatMode;
         public bool chatColors;

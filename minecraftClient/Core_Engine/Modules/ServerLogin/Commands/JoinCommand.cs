@@ -27,12 +27,7 @@ namespace Core_Engine.Modules.ServerLogin.Commands
                 Console.WriteLine("you are already connected to a server");
                 return;
             }
-            await loginHandler.LoginToServer(commandArgs[0]);
-
-            while (networking.connectionState == Networking.Networking.ConnectionState.LOGIN)
-            {
-                await Task.Delay(5);
-            }
+            loginHandler.LoginToServer(commandArgs[0]);
         }
     }
 }

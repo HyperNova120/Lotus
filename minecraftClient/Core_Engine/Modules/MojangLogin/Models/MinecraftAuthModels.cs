@@ -21,10 +21,10 @@ namespace Core_Engine.Modules.MojangLogin.MinecraftAuthModels
 
     public class MinecraftXSTSErrorResponse
     {
-        public string Identity { get; set; }
+        public string Identity { get; set; } = "";
         public int XErr { get; set; }
-        public string Message { get; set; }
-        public string Redirect { get; set; }
+        public string Message { get; set; } = "";
+        public string Redirect { get; set; } = "";
     }
 
     public class MinecraftAuthModel
@@ -39,10 +39,10 @@ namespace Core_Engine.Modules.MojangLogin.MinecraftAuthModels
 
     public class MinecraftAuthResponseModel
     {
-        public string username { get; set; }
-        public string[] roles { get; set; }
-        public string access_token { get; set; }
-        public string token_type { get; set; }
+        public string username { get; set; } = "";
+        public string[] roles { get; set; } = [];
+        public string access_token { get; set; } = "";
+        public string token_type { get; set; } = "";
         public int expires_in { get; set; }
     }
 
@@ -50,8 +50,8 @@ namespace Core_Engine.Modules.MojangLogin.MinecraftAuthModels
     {
         public class PropertiesStruct
         {
-            public string SandboxId { get; set; }
-            public string[] UserTokens { get; set; }
+            public string SandboxId { get; set; } = "";
+            public string[] UserTokens { get; set; } = [];
         }
     }
 }

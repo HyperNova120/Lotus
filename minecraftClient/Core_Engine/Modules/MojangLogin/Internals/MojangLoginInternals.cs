@@ -132,7 +132,9 @@ namespace Core_Engine.Modules.MojangLogin.Internals
             HttpResponseMessage response = await HttpHandler.SendRequest(msg);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                Logging.LogInfo("Minecraft Authentication Failed");
+                Logging.LogInfo(
+                    "Minecraft Authentication Failed: " + await response.Content.ReadAsStringAsync()
+                );
                 return null;
             }
             return JsonSerializer.Deserialize<MinecraftAuthResponseModel>(

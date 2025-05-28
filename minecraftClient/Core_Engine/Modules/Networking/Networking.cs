@@ -25,6 +25,7 @@ namespace Core_Engine.Modules.Networking
         {
             RegisterEvent.Invoke("STATUS_Packet_Received");
             RegisterEvent.Invoke("LOGIN_Packet_Received");
+            RegisterEvent.Invoke("CONFIG_Packet_Received");
         }
 
         public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
@@ -47,12 +48,13 @@ namespace Core_Engine.Modules.Networking
 
         public void InitNetworking()
         {
+            //Logging.LogDebug("InitNetworking");
             TcpSocket = null;
             connectionState = ConnectionState.NONE;
             encryption = new();
             MinecraftPacketHandler.Init();
             socketAsyncEventArgs = new();
-            ResetBuffer();
+            ResetBuffer(socketAsyncEventArgs);
             socketAsyncEventArgs.Completed += ReceiveCompleted;
         }
 
@@ -73,7 +75,7 @@ namespace Core_Engine.Modules.Networking
                     SocketFlags.None
                 );
             }
-            Logging.LogDebug($"Sent {bytesSent} bytes");
+            //Logging.LogDebug($"Sent {bytesSent} bytes");
             return bytesSent;
         }
 
@@ -86,7 +88,7 @@ namespace Core_Engine.Modules.Networking
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             TcpSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             TcpSocket.Connect(endPoint);
-            TcpSocket.ReceiveAsync(socketAsyncEventArgs);
+            StartReceiving(socketAsyncEventArgs);
             return true;
         }
 
@@ -96,39 +98,52 @@ namespace Core_Engine.Modules.Networking
             {
                 return;
             }
-            Logging.LogDebug("Disconnect from Server");
+            Logging.LogInfo("Disconnected from Server");
             TcpSocket.Disconnect(false);
             TcpSocket.Close();
             InitNetworking();
         }
 
-        private void ResetBuffer()
+        private void StartReceiving(SocketAsyncEventArgs e)
+        {
+            if (!TcpSocket!.ReceiveAsync(e))
+            {
+                ReceiveCompleted(this, e);
+            }
+        }
+
+        private void ResetBuffer(SocketAsyncEventArgs e)
         {
             byte[] receivedBuffer = new byte[0x3FFFFF];
-            socketAsyncEventArgs.SetBuffer(receivedBuffer, 0, receivedBuffer.Length);
+            e.SetBuffer(receivedBuffer, 0, receivedBuffer.Length);
         }
 
         private void ReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
-            Logging.LogDebug("ReceiveCompleted");
+            //Logging.LogDebug("ReceiveCompleted");
             try
             {
                 if (ProcessReceive(e))
                 {
-                    ResetBuffer();
+                    ResetBuffer(e);
                     if (TcpSocket != null)
                     {
-                        TcpSocket.ReceiveAsync(e);
+                        //Logging.LogDebug("Wait for next packet");
+                        StartReceiving(socketAsyncEventArgs);
                     }
                     else
                     {
-                        Logging.LogDebug("TcpSocket null");
+                        //Logging.LogDebug("TcpSocket null");
                     }
+                }
+                else
+                {
+                    Logging.LogError($"Handle Packet Received ERROR");
                 }
             }
             catch (Exception exc)
             {
-                Logging.LogError($"ProcessReceive ERROR: {exc}");
+                Logging.LogError($"Handle Packet Received ERROR: {exc}");
                 DisconnectFromServer();
             }
         }
@@ -141,7 +156,9 @@ namespace Core_Engine.Modules.Networking
                 {
                     //data received properly
                     byte[] packetBytes = e.Buffer![..e.BytesTransferred];
-                    Logging.LogDebug($"ProcessReceive {packetBytes.Length} Bytes received");
+                    /* Logging.LogDebug(
+                        $"ProcessReceive {packetBytes.Length} Bytes received; State: {connectionState}"
+                    ); */
                     if (packetBytes.Length == 0)
                     {
                         Logging.LogInfo("Connection Closed by Remote Host");
@@ -150,6 +167,7 @@ namespace Core_Engine.Modules.Networking
                     }
                     if (MinecraftPacketHandler.IsEncryptionEnabled)
                     {
+                        //Logging.LogDebug("Decrypting Packet");
                         packetBytes = encryption.DecryptData(packetBytes);
                     }
 
@@ -174,7 +192,7 @@ namespace Core_Engine.Modules.Networking
                 }
                 catch (Exception exc)
                 {
-                    Logging.LogError($"ProcessReceive Error: {exc}");
+                    Logging.LogError($"Process Received Packet Error: {exc}");
                     return false;
                 }
             }
@@ -184,9 +202,9 @@ namespace Core_Engine.Modules.Networking
 
         private void ProcessPacketEvent(MinecraftServerPacket packet)
         {
-            Logging.LogDebug(
+            /* Logging.LogDebug(
                 $"\tProcessing Packet 0x{packet.protocol_id:X} in State: {connectionState.ToString()}"
-            );
+            ); */
             switch (connectionState)
             {
                 case ConnectionState.STATUS:
@@ -198,6 +216,12 @@ namespace Core_Engine.Modules.Networking
                 case ConnectionState.LOGIN:
                     Core_Engine.InvokeEvent(
                         "LOGIN_Packet_Received",
+                        new PacketReceivedEventArgs(packet)
+                    );
+                    break;
+                case ConnectionState.CONFIGURATION:
+                    Core_Engine.InvokeEvent(
+                        "CONFIG_Packet_Received",
                         new PacketReceivedEventArgs(packet)
                     );
                     break;

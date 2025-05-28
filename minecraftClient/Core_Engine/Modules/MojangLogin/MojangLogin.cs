@@ -18,7 +18,6 @@ namespace Core_Engine.Modules.MojangLogin
         public MinecraftProfile? userProfile { get; private set; } = null;
         public MinecraftAuthResponseModel? MinecraftAuth { get; private set; } = null;
 
-
         private readonly MojangLoginInternals Internals = new();
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
@@ -52,10 +51,7 @@ namespace Core_Engine.Modules.MojangLogin
                 return false;
             }
 
-            MinecraftAuth = await Internals.AuthWithMinecraft(
-                XboxLiveAuth,
-                MinecraftXSTSCert
-            );
+            MinecraftAuth = await Internals.AuthWithMinecraft(XboxLiveAuth, MinecraftXSTSCert);
             if (MinecraftAuth == null)
             {
                 return false;

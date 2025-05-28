@@ -1,12 +1,12 @@
 namespace Core_Engine.Modules.Networking.Types
 {
-    public static class UUID
+    public static class NetworkUUID
     {
         public static byte[] GetNetworkBytes(UInt128 uuid)
         {
             Int64 lowBits = (long)(uuid & 0xFFFFFFFFFFFFFFFF);
             Int64 highBites = (long)((uuid >> 64) & 0xFFFFFFFFFFFFFFFF);
-            return [.. BitConverter.GetBytes(highBites), .. BitConverter.GetBytes(highBites)];
+            return [.. BitConverter.GetBytes(highBites), .. BitConverter.GetBytes(lowBits)];
         }
 
         public static (byte[] value, int numBytesRead) DecodeNetworkBytes(byte[] data)

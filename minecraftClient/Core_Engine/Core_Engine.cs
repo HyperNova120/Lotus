@@ -24,7 +24,7 @@ namespace Core_Engine
             Noninteractive,
         }
 
-        private static State CurrentState = State.Noninteractive;
+        //private static State CurrentState = State.Noninteractive;
 
         //=========START===========
         //Initiate Core Engine
@@ -76,7 +76,7 @@ namespace Core_Engine
 
         public static async Task GoInteractiveMode()
         {
-            CurrentState = State.Interactive;
+            //CurrentState = State.Interactive;
             bool shouldRun = true;
             while (shouldRun)
             {
@@ -95,9 +95,17 @@ namespace Core_Engine
                 {
                     Logging.LogError(e.ToString());
                 }
+
+                while (
+                    GetModule<Networking>("Networking")!.connectionState
+                    != Networking.ConnectionState.NONE
+                )
+                {
+                    await Task.Delay(5);
+                }
             }
             Console.WriteLine("Interactive Mode Ended");
-            CurrentState = State.Noninteractive;
+            //CurrentState = State.Noninteractive;
         }
 
         private static bool CheckAndRunInteractivityCommand(string command, ref bool shouldRun)
@@ -139,6 +147,10 @@ namespace Core_Engine
                 throw new IdentifierNotFoundException(
                     $"Event {EventIdentifier} has not been registered"
                 );
+            }
+            if (Events[EventIdentifier] == null)
+            {
+                return;
             }
             Events[EventIdentifier].Invoke(null, args);
         }

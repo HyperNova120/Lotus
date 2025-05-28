@@ -4,8 +4,8 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class CookieResponsepacket : MinecraftPacket
     {
-        public string Key;
-        byte[] Payload;
+        public string Key = "";
+        public byte[] Payload = [];
 
         public CookieResponsepacket()
         {

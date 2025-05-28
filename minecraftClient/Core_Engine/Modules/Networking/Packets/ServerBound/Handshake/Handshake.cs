@@ -20,9 +20,9 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 
         public override byte[] GetBytes()
         {
-            Logging.LogDebug(
+            /* Logging.LogDebug(
                 $"ProtocolVersion Bytes:{BitConverter.ToString(VarInt_VarLong.EncodeInt(25565))}"
-            );
+            ); */
             return
             [
                 .. VarInt_VarLong.EncodeInt(protocolVersion),

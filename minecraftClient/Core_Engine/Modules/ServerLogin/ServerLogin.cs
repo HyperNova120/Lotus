@@ -31,12 +31,7 @@ namespace Core_Engine.Modules.ServerLogin
                 new EventHandler(
                     (sender, args) =>
                     {
-                        Task.Run(async () =>
-                            {
-                                await ProcessPacket(sender, args);
-                            })
-                            .GetAwaiter()
-                            .GetResult();
+                        _ = ProcessPacket(sender, args);
                     }
                 )
             );
@@ -51,20 +46,20 @@ namespace Core_Engine.Modules.ServerLogin
                 switch (packet.protocol_id)
                 {
                     case 0x00:
-                        Logging.LogDebug("Disconnect Packet Received");
-                        await internals.HandleLoginDisconnect(packet);
+                        //Logging.LogDebug("Disconnect Packet Received");
+                        internals.HandleLoginDisconnect(packet);
                         break;
                     case 0x01:
-                        Logging.LogDebug("Encryption Request Packet Received");
+                        //Logging.LogDebug("Encryption Request Packet Received");
                         await internals.HandleEncryptionRequest(packet);
                         break;
                     case 0x02:
-                        Logging.LogDebug("Login Success Packet Received");
-                        await internals.HandleLoginSuccess(packet);
+                        //Logging.LogDebug("Login Success Packet Received");
+                        internals.HandleLoginSuccess(packet);
                         break;
                     case 0x03:
 
-                        Logging.LogDebug("Compression Packet Received");
+                        //Logging.LogDebug("Compression Packet Received");
                         internals.HandleSetCompression(packet);
                         break;
                     default:
@@ -83,7 +78,7 @@ namespace Core_Engine.Modules.ServerLogin
             }
         }
 
-        public async Task LoginToServer(string serverIp, ushort port = 25565)
+        public void LoginToServer(string serverIp, ushort port = 25565)
         {
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
@@ -109,9 +104,9 @@ namespace Core_Engine.Modules.ServerLogin
                     networking.SendPacket(
                         new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
                     );
-                    Logging.LogDebug(
+                    /* Logging.LogDebug(
                         $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
-                    );
+                    ); */
                     networking.SendPacket(
                         new LoginStartPacket(
                             mojangLogin.userProfile!.name,

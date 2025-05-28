@@ -4,8 +4,8 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class PluginMessagePacket : MinecraftPacket
     {
-        public string Channel;
-        public byte[] Data;
+        public string Channel = "";
+        public byte[] Data = [];
 
         public PluginMessagePacket()
         {

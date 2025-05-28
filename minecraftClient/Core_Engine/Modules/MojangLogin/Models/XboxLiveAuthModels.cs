@@ -23,20 +23,20 @@ namespace Core_Engine.Modules.MojangLogin.Models
     {
         public DateTime IssueInstant { get; set; }
         public DateTime NotAfter { get; set; }
-        public string Token { get; set; }
-        public TokenAuthCertInternals.DisplayClaims DisplayClaims { get; set; }
+        public string Token { get; set; } = "";
+        public TokenAuthCertInternals.DisplayClaims DisplayClaims { get; set; } = new();
     }
 
     namespace TokenAuthCertInternals
     {
         public class DisplayClaims
         {
-            public Xui[] xui { get; set; }
+            public Xui[] xui { get; set; } = [];
         }
 
         public class Xui
         {
-            public string uhs { get; set; }
+            public string uhs { get; set; } = "";
         }
     }
 }

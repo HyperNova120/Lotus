@@ -16,7 +16,7 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Login
         /// <returns>number of bytes read</returns>
         public int decodeFromBytes(byte[] data)
         {
-            (byte[] uuidBytes, _) = UUID.DecodeNetworkBytes(data[0..16]);
+            (byte[] uuidBytes, _) = NetworkUUID.DecodeNetworkBytes(data[0..16]);
             uuid = new Guid(uuidBytes);
             data = data[16..];
             (Username, int usernameNumBytes) = StringN.DecodeBytes(data);

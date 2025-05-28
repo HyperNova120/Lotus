@@ -92,7 +92,7 @@ namespace Core_Engine.Modules.Networking.Types
                     break;
                 }
 
-                bytes.Add((byte)((value & SEGMENT_BITS) | CONTINUE_BIT));
+                bytes.Add((byte)((value & (long)SEGMENT_BITS) | (long)CONTINUE_BIT));
                 value >>>= 7;
             }
             return bytes.ToArray();

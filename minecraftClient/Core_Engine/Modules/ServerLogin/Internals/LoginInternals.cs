@@ -20,7 +20,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             SERVERLOGIN_loginSuccessful,
         }
 
-        public async Task HandleLoginDisconnect(MinecraftServerPacket packet)
+        public void HandleLoginDisconnect(MinecraftServerPacket packet)
         {
             Logging.LogInfo(
                 $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet.data)}"
@@ -50,7 +50,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 {
                     await AuthenticateWithMinecraftServer(hash);
                 }
-                Logging.LogDebug("return encryption packet");
+                //Logging.LogDebug("return encryption packet");
 
                 using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
                 {
@@ -58,14 +58,19 @@ namespace Core_Engine.Modules.ServerLogin.Internals
 
                     EncryptionResponsePacket encryptionResponsePacket =
                         new EncryptionResponsePacket(
-                            rsa.Encrypt(Encryption.SharedSecret, false),
+                            rsa.Encrypt(
+                                Core_Engine
+                                    .GetModule<Networking.Networking>("Networking")!
+                                    .encryption.SharedSecret,
+                                false
+                            ),
                             rsa.Encrypt(VerifyToken, false)
                         );
                     Core_Engine
                         .GetModule<Networking.Networking>("Networking")!
                         .SendPacket(encryptionResponsePacket);
                 }
-                Logging.LogDebug("Set Encryption True");
+                //Logging.LogDebug("Set Encryption True");
                 MinecraftPacketHandler.IsEncryptionEnabled = true;
             }
             catch (Exception e)
@@ -116,12 +121,12 @@ namespace Core_Engine.Modules.ServerLogin.Internals
         public void HandleSetCompression(MinecraftServerPacket packet)
         {
             (int CompresionThreshold, _) = VarInt_VarLong.DecodeVarInt(packet.data);
-            Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
+            //Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
             MinecraftPacketHandler.CompresionThreshold = CompresionThreshold;
             MinecraftPacketHandler.IsCompressionEnabled = true;
         }
 
-        internal async Task HandleLoginSuccess(MinecraftServerPacket packet)
+        public void HandleLoginSuccess(MinecraftServerPacket packet)
         {
             LoginSuccessPacket loginSuccessPacket = new();
             loginSuccessPacket.decodeFromBytes(packet.data);
@@ -129,12 +134,12 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
             Logging.LogInfo("Successfully Joined Server!");
-            foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
+            /* foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
                 Logging.LogDebug(
                     $"\tS1:{element.s1}; S2:{element.s2}; optional S3:{(element.optionalS3 ?? "")}"
                 );
-            }
+            } */
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
                 .SendPacket(new EmptyPacket(0x03));
