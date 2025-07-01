@@ -9,7 +9,7 @@ using Core_Engine.Modules.Networking.Packets.ClientBound.Login;
 using Core_Engine.Modules.Networking.Packets.ClientBound.Login.Internals;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
-using Core_Engine.Modules.Networking.Types;
+using Core_Engine.BaseClasses.Types;
 using static Core_Engine.Modules.Networking.Networking;
 
 namespace Core_Engine.Modules.ServerLogin.Internals

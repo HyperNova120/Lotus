@@ -8,6 +8,7 @@ using Core_Engine.Modules.MojangLogin;
 using Core_Engine.Modules.Networking;
 using Core_Engine.Modules.ServerLogin;
 using Core_Engine.Modules.ServerStatus;
+using Graphics_Engine;
 using Silk.NET.Vulkan;
 
 namespace Core_Engine
@@ -18,10 +19,13 @@ namespace Core_Engine
         private static Dictionary<string, IModuleBase> Modules = new();
         private static Dictionary<string, EventHandler> Events = new();
 
-        private enum State
+        public static State CurrentState = State.Noninteractive;
+
+        public enum State
         {
             Interactive,
             Noninteractive,
+            Waiting,
         }
 
         //private static State CurrentState = State.Noninteractive;
@@ -48,6 +52,7 @@ namespace Core_Engine
             RegisterModule("Networking", new Networking());
             RegisterModule("ServerStatus", new ServerStatus());
             RegisterModule("LoginHandler", new LoginHandler());
+            RegisterModule("VulkanGraphics", new VulkanGraphics());
         }
 
         private static void InitCoreModuleEventSubscriptions()
@@ -76,9 +81,9 @@ namespace Core_Engine
 
         public static async Task GoInteractiveMode()
         {
-            //CurrentState = State.Interactive;
+            CurrentState = State.Interactive;
             bool shouldRun = true;
-            while (shouldRun)
+            while (CurrentState == State.Interactive)
             {
                 string userResponse = ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
                 string[] tokens = userResponse.Split(" ");
@@ -96,9 +101,12 @@ namespace Core_Engine
                     Logging.LogError(e.ToString());
                 }
 
-                while (GetModule<Networking>("Networking")!.IsClientConnectedToPrimaryServer)
+                while (
+                    GetModule<Networking>("Networking")!.IsClientConnectedToPrimaryServer
+                    || CurrentState == State.Waiting
+                )
                 {
-                    await Task.Delay(5);
+                    await Task.Delay(250);
                 }
             }
             Console.WriteLine("Interactive Mode Ended");

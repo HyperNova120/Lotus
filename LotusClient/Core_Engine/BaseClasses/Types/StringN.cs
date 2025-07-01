@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Core_Engine.Modules.Networking.Types
+namespace Core_Engine.BaseClasses.Types
 {
     public static class StringN
     {

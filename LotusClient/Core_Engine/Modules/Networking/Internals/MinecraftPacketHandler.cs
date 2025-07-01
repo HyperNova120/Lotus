@@ -1,6 +1,6 @@
 using System.Net;
 using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Types;
+using Core_Engine.BaseClasses.Types;
 
 namespace Core_Engine.Modules.Networking.Internals
 {

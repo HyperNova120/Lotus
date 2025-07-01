@@ -6,7 +6,7 @@ using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Status;
-using Core_Engine.Modules.Networking.Types;
+using Core_Engine.BaseClasses.Types;
 
 namespace Core_Engine.Modules.ServerStatus
 {

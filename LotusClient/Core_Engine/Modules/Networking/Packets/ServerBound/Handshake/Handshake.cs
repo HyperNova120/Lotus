@@ -1,4 +1,4 @@
-using Core_Engine.Modules.Networking.Types;
+using Core_Engine.BaseClasses.Types;
 
 namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 {
@@ -13,7 +13,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 
         public PacketBoundTo BoundTo = PacketBoundTo.Server;
 
-        public int protocolVersion = 770;
+        public int protocolVersion = 771;
         public string serverAddress;
         public ushort serverPort = 25565;
         public int nextState = 1;
