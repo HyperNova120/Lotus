@@ -20,7 +20,7 @@ namespace LotusClient
             Logging.LogDebug("Testing NBT");
             NBT testNBT = new NBT();
             testNBT.ReadFromBytes(File.ReadAllBytes("Testing_Stuff/bigtest"));
-            Console.WriteLine(testNBT.toString2());
+            Console.WriteLine(testNBT.GetNBTAsString());
             return;
             /*  if (!await MojangLogin.login(configuration))
              {

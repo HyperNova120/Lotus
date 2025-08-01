@@ -40,7 +40,7 @@ public class TAG_List : TAG_Base, TAG_Collection
         inputBytes = inputBytes[5..];
         for (int i = 0; i < length; i++)
         {
-            int currentTagID = (AcceptAnyType) ? inputBytes[0] : Contained_Tag_Type;
+            int currentTagID = AcceptAnyType ? inputBytes[0] : Contained_Tag_Type;
             if (!AcceptAnyType && currentTagID != Contained_Tag_Type)
             {
                 throw new IncorrectNBTTypeException(
@@ -105,13 +105,13 @@ public class TAG_List : TAG_Base, TAG_Collection
                 case 9:
                     TAG_List tmp_list = new TAG_List();
                     tmp_list.isInListTag = true;
-                    inputBytes = tmp_list.ProcessBytes(inputBytes, IsNetworkNBT);
+                    inputBytes = tmp_list.ProcessBytes(inputBytes);
                     Contained_Tags.Add(tmp_list);
                     break;
                 case 10:
                     TAG_Compound tmp_compound = new TAG_Compound();
                     tmp_compound.isInListTag = true;
-                    inputBytes = tmp_compound.ProcessBytes(inputBytes, IsNetworkNBT);
+                    inputBytes = tmp_compound.ProcessBytes(inputBytes);
                     Contained_Tags.Add(tmp_compound);
                     break;
                 case 11:

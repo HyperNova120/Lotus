@@ -64,14 +64,15 @@ public class NBT : TAG_Collection
         return base_Tag.RemoveTag(Tag_Name);
     }
 
-    public bool ReadFromBytes(byte[] bytes, bool networkBytes = false)
+    public int ReadFromBytes(byte[] bytes, bool networkBytes = false)
     {
         base_Tag = new();
-        bytes = base_Tag.ProcessBytes(bytes, networkBytes);
-        return true;
+        base_Tag.IsNetworkNBT = networkBytes;
+        int numBytesRead = base_Tag.ProcessBytes(bytes).Length;
+        return numBytesRead;
     }
 
-    public string toString2()
+    public string GetNBTAsString()
     {
         return (base_Tag != null) ? base_Tag.ToString() : "";
     }

@@ -19,13 +19,29 @@ public class TAG_Long_Array : TAG_Base
 
         int sizeOfValue = sizeof(long);
 
-        (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(inputBytes);
+        int numBytesRead = 4;
+        //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
+        int arraySize = BitConverter.ToInt32(
+            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            0
+        );
+
         Values = [arraySize];
+        int startIndex;
         for (int i = 0; i < arraySize; i++)
         {
-            int startIndex = numBytesRead + (sizeOfValue * i);
+            startIndex = numBytesRead + (sizeOfValue * i);
+            /* Values[i] = BitConverter.ToInt64(
+                inputBytes[startIndex..(startIndex + sizeOfValue)].Reverse().ToArray(),
+                0
+            ); */
             Values[i] = BitConverter.ToInt64(
-                inputBytes[numBytesRead..(numBytesRead + sizeOfValue)].Reverse().ToArray(),
+                [
+                    inputBytes[startIndex + 3],
+                    inputBytes[startIndex + 2],
+                    inputBytes[startIndex + 1],
+                    inputBytes[startIndex],
+                ],
                 0
             );
         }

@@ -20,7 +20,12 @@ public class TAG_Byte_Array : TAG_Base
 
         //payload
         int numBytesRead = 4;
-        int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
+        //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
+
+        int arraySize = BitConverter.ToInt32(
+            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            0
+        );
 
         Values = (sbyte[])(Array)inputBytes[numBytesRead..(numBytesRead + arraySize)];
         //return remaining bytes

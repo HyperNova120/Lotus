@@ -15,16 +15,11 @@ public class TAG_Compound : TAG_Base, TAG_Collection
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        return ProcessBytes(inputBytes, false);
-    }
+        //this.IsNetworkNBT = IsNetworkNBT;
 
-    public byte[] ProcessBytes(byte[] inputBytes, bool IsNetworkNBT)
-    {
-        this.IsNetworkNBT = IsNetworkNBT;
-
-        if (isInListTag)
+        if (isInListTag || this.IsNetworkNBT)
         {
-            return DecodePayload(inputBytes, IsNetworkNBT);
+            return DecodePayload(inputBytes);
         }
 
         //type id
@@ -35,17 +30,17 @@ public class TAG_Compound : TAG_Base, TAG_Collection
         int nameLength = inputBytes[0];
         nameLength <<= 8;
         nameLength |= inputBytes[1];
-        inputBytes = inputBytes[2..];
+        int offset = 2;
 
         for (int i = 0; i < nameLength; i++)
         {
-            Name += (char)inputBytes[i];
+            Name += (char)inputBytes[offset + i];
         }
-        inputBytes = inputBytes[nameLength..];
-        return DecodePayload(inputBytes, IsNetworkNBT);
+        inputBytes = inputBytes[(offset + nameLength)..];
+        return DecodePayload(inputBytes);
     }
 
-    private byte[] DecodePayload(byte[] inputBytes, bool IsNetworkNBT)
+    private byte[] DecodePayload(byte[] inputBytes)
     {
         //payload decode
         bool shouldRun = true;
@@ -102,12 +97,12 @@ public class TAG_Compound : TAG_Base, TAG_Collection
                     break;
                 case 9:
                     TAG_List tmp_list = new TAG_List();
-                    inputBytes = tmp_list.ProcessBytes(inputBytes, IsNetworkNBT);
+                    inputBytes = tmp_list.ProcessBytes(inputBytes);
                     Contained_Tags.Add(tmp_list);
                     break;
                 case 10:
                     TAG_Compound tmp_compound = new TAG_Compound();
-                    inputBytes = tmp_compound.ProcessBytes(inputBytes, IsNetworkNBT);
+                    inputBytes = tmp_compound.ProcessBytes(inputBytes);
                     Contained_Tags.Add(tmp_compound);
                     break;
                 case 11:

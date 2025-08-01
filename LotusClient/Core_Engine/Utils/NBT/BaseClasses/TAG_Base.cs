@@ -27,7 +27,7 @@ public abstract class TAG_Base
                 $"Packet ID from bytes does not match required packet id: Expected {Type_ID} Received {packetTypeID}"
             );
         }
-        int nameLength = 0;
+        int nameLength;
         nameLength = inputBytes[1];
         nameLength <<= 8;
         nameLength |= inputBytes[2];

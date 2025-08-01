@@ -16,7 +16,7 @@ public class TAG_Short : TAG_Base
         inputBytes = ProcessIDAndNameBytes(inputBytes);
 
         //payload
-        Value = BitConverter.ToInt16(inputBytes[0..2].Reverse().ToArray(), 0);
+        Value = BitConverter.ToInt16([inputBytes[1], inputBytes[0]], 0);
         //return remaining bytes
 
         return inputBytes[2..];

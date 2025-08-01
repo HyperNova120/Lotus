@@ -17,7 +17,11 @@ public class TAG_Float : TAG_Base
         inputBytes = ProcessIDAndNameBytes(inputBytes);
 
         //payload
-        Value = BitConverter.ToSingle(inputBytes[0..4].Reverse().ToArray(), 0);
+        //Value = BitConverter.ToSingle(inputBytes[0..4].Reverse().ToArray(), 0);
+        Value = BitConverter.ToSingle(
+            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            0
+        );
         //return remaining bytes
 
         return inputBytes[4..];
