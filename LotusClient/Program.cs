@@ -1,4 +1,5 @@
 ﻿using Core_Engine;
+using Core_Engine.Utils.NBT;
 using Microsoft.Extensions.Configuration;
 
 namespace LotusClient
@@ -16,6 +17,11 @@ namespace LotusClient
 
             Environment.SetEnvironmentVariable("AppID", (string)configuration!["AzureApp:AppID"]!);
 
+            Logging.LogDebug("Testing NBT");
+            NBT testNBT = new NBT();
+            testNBT.ReadFromBytes(File.ReadAllBytes("Testing_Stuff/bigtest"));
+            Console.WriteLine(testNBT.toString2());
+            return;
             /*  if (!await MojangLogin.login(configuration))
              {
                  Logging.LogInfo("User not signed in, cannot continue");

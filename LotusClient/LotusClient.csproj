@@ -11,6 +11,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <Target Name="Testing_Stuff" AfterTargets="Build">
+  <ItemGroup>
+    <MyFolderFiles Include="Testing_Stuff\**\*" />
+  </ItemGroup>
+  <Copy SourceFiles="@(MyFolderFiles)" DestinationFolder="$(OutDir)Testing_Stuff\%(RecursiveDir)" />
+</Target>
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
