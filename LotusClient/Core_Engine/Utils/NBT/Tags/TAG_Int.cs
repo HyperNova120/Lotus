@@ -13,18 +13,23 @@ public class TAG_Int : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         //payload
         //Value = BitConverter.ToInt32(inputBytes[0..4].Reverse().ToArray(), 0);
         Value = BitConverter.ToInt32(
-            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            [
+                inputBytes[offset + 3],
+                inputBytes[offset + 2],
+                inputBytes[offset + 1],
+                inputBytes[offset + 0],
+            ],
             0
         );
 
         //return remaining bytes
 
-        return inputBytes[4..];
+        return inputBytes[(offset + 4)..];
     }
 
     public override string ToString(int tabSpace = 0)

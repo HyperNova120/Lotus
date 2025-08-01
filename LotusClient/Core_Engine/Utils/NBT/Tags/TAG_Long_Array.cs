@@ -15,14 +15,19 @@ public class TAG_Long_Array : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         int sizeOfValue = sizeof(long);
 
         int numBytesRead = 4;
         //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
         int arraySize = BitConverter.ToInt32(
-            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            [
+                inputBytes[offset + 3],
+                inputBytes[offset + 2],
+                inputBytes[offset + 1],
+                inputBytes[offset + 0],
+            ],
             0
         );
 
@@ -30,7 +35,7 @@ public class TAG_Long_Array : TAG_Base
         int startIndex;
         for (int i = 0; i < arraySize; i++)
         {
-            startIndex = numBytesRead + (sizeOfValue * i);
+            startIndex = offset + numBytesRead + (sizeOfValue * i);
             /* Values[i] = BitConverter.ToInt64(
                 inputBytes[startIndex..(startIndex + sizeOfValue)].Reverse().ToArray(),
                 0
@@ -46,7 +51,7 @@ public class TAG_Long_Array : TAG_Base
             );
         }
 
-        return inputBytes[(numBytesRead + (sizeOfValue * arraySize))..];
+        return inputBytes[(offset + numBytesRead + (sizeOfValue * arraySize))..];
     }
 
     public override string ToString(int tabSpace = 0)

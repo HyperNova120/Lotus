@@ -1,3 +1,4 @@
+using Core_Engine.Exceptions;
 using Core_Engine.Utils.NBT.BaseClasses;
 using SharpNBT;
 
@@ -44,6 +45,7 @@ public class TAG_Compound : TAG_Base, TAG_Collection
     {
         //payload decode
         bool shouldRun = true;
+        int index = 0;
         while (inputBytes.Length > 0 && shouldRun)
         {
             int payloadType = inputBytes[0];
@@ -116,9 +118,9 @@ public class TAG_Compound : TAG_Base, TAG_Collection
                     Contained_Tags.Add(tmp_long_array);
                     break;
                 default:
-                    Logging.LogError($"something went wrong, incorrect type id: {payloadType}");
-                    break;
+                    throw new IncorrectNBTTypeException($"{index}: something went wrong Compund, incorrect type id: {payloadType}");
             }
+            ++index;
         }
 
         return inputBytes;

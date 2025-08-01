@@ -14,11 +14,11 @@ public abstract class TAG_Base
 
     public abstract string ToString(int tabSpace = 0);
 
-    protected byte[] ProcessIDAndNameBytes(byte[] inputBytes)
+    protected int ProcessIDAndNameBytes(byte[] inputBytes)
     {
         if (isInListTag)
         {
-            return inputBytes;
+            return 0;
         }
         int packetTypeID = inputBytes[0];
         if (packetTypeID != this.Type_ID)
@@ -35,6 +35,6 @@ public abstract class TAG_Base
         {
             this.Name += (char)inputBytes[3 + i];
         }
-        return inputBytes[(3 + nameLength)..];
+        return 3 + nameLength;
     }
 }

@@ -13,13 +13,13 @@ public class TAG_Short : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         //payload
-        Value = BitConverter.ToInt16([inputBytes[1], inputBytes[0]], 0);
+        Value = BitConverter.ToInt16([inputBytes[offset + 1], inputBytes[offset + 0]], 0);
         //return remaining bytes
 
-        return inputBytes[2..];
+        return inputBytes[(offset + 2)..];
     }
 
     public override string ToString(int tabSpace = 0)

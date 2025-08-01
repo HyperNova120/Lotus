@@ -14,19 +14,19 @@ public class TAG_String : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
-        ushort length = inputBytes[0];
+        ushort length = inputBytes[offset + 0];
         length <<= 8;
-        length |= inputBytes[1];
+        length |= inputBytes[offset + 1];
 
         /* for (int i = 0; i < length; i++)
         {
             Value += (char)inputBytes[2 + i];
         } */
-        Value = Encoding.UTF8.GetString(inputBytes[2..(2 + length)]);
+        Value = Encoding.UTF8.GetString(inputBytes[(offset + 2)..(offset + 2 + length)]);
 
-        return inputBytes[(2 + length)..];
+        return inputBytes[(offset + 2 + length)..];
     }
 
     public override string ToString(int tabSpace = 0)

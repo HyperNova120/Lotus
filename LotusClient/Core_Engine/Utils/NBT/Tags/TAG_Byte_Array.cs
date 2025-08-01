@@ -16,21 +16,27 @@ public class TAG_Byte_Array : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         //payload
         int numBytesRead = 4;
         //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
 
         int arraySize = BitConverter.ToInt32(
-            [inputBytes[3], inputBytes[2], inputBytes[1], inputBytes[0]],
+            [
+                inputBytes[offset + 3],
+                inputBytes[offset + 2],
+                inputBytes[offset + 1],
+                inputBytes[offset + 0],
+            ],
             0
         );
 
-        Values = (sbyte[])(Array)inputBytes[numBytesRead..(numBytesRead + arraySize)];
+        Values = (sbyte[])
+            (Array)inputBytes[(offset + numBytesRead)..(offset + numBytesRead + arraySize)];
         //return remaining bytes
 
-        return inputBytes[(numBytesRead + arraySize)..];
+        return inputBytes[(offset + numBytesRead + arraySize)..];
     }
 
     public override string ToString(int tabSpace = 0)

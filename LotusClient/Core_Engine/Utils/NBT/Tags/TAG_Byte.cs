@@ -14,13 +14,13 @@ public class TAG_Byte : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         //payload
-        Value = (sbyte)inputBytes[0];
+        Value = (sbyte)inputBytes[offset + 0];
 
         //return remaining bytes
-        return inputBytes[1..];
+        return inputBytes[(offset + 1)..];
     }
 
     public override string ToString(int tabSpace = 0)

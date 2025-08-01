@@ -13,25 +13,25 @@ public class TAG_Long : TAG_Base
 
     public override byte[] ProcessBytes(byte[] inputBytes)
     {
-        inputBytes = ProcessIDAndNameBytes(inputBytes);
+        int offset = ProcessIDAndNameBytes(inputBytes);
 
         //payload
         Value = BitConverter.ToInt64(
             [
-                inputBytes[7],
-                inputBytes[6],
-                inputBytes[5],
-                inputBytes[4],
-                inputBytes[3],
-                inputBytes[2],
-                inputBytes[1],
-                inputBytes[0],
+                inputBytes[offset + 7],
+                inputBytes[offset + 6],
+                inputBytes[offset + 5],
+                inputBytes[offset + 4],
+                inputBytes[offset + 3],
+                inputBytes[offset + 2],
+                inputBytes[offset + 1],
+                inputBytes[offset + 0],
             ],
             0
         );
         //return remaining bytes
 
-        return inputBytes[8..];
+        return inputBytes[(offset + 8)..];
     }
 
     public override string ToString(int tabSpace = 0)
