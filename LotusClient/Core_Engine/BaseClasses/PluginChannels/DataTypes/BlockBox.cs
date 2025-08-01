@@ -2,7 +2,7 @@ namespace Core_Engine.BaseClasses.PluginChannels.DataTypes;
 
 struct BlockBox
 {
-    int Min_X,
+    public int Min_X,
         Min_Y,
         Min_Z,
         Max_X,

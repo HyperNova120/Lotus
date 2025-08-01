@@ -7,7 +7,8 @@ public interface TAG_Collection
     public T? TryGetTag<T>(string Tag_Name)
         where T : TAG_Base;
 
-    public void WriteTag<T>(T Tag) where T : TAG_Base;
+    public void WriteTag<T>(T Tag)
+        where T : TAG_Base;
 
     public bool RemoveTag(string Tag_Name);
 
