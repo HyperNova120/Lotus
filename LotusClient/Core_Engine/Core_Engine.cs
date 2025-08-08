@@ -22,9 +22,11 @@ namespace Core_Engine
 
         public static State CurrentState { private set; get; } = State.Noninteractive;
 
-        static ManualResetEventSlim _taskDone = new(true); // Initially signaled
+        static ManualResetEventSlim InteractiveHold = new(true); // Initially signaled
 
-        private static bool TaskDoneBlocking = false;
+        private static HashSet<State> BlockingStates = new();
+
+        private static bool IsInteractiveHoldBlocking = false;
 
         public enum State
         {
@@ -40,33 +42,39 @@ namespace Core_Engine
         public static bool signalInteractiveHold(State RequestedState)
         {
             Logging.LogDebug($"signalInteractiveHold From:{RequestedState}");
-            if (_taskDone.IsSet == TaskDoneBlocking)
+            if (BlockingStates.Contains(RequestedState))
             {
-                Logging.LogDebug($"\tFAIL: !_taskDone.IsSet:{!_taskDone.IsSet}");
+                Logging.LogDebug($"\tFAIL");
                 return false;
             }
-            _taskDone.Reset();
-            CurrentState = RequestedState;
-            Logging.LogDebug($"\tPASS");
+            if (InteractiveHold.IsSet != IsInteractiveHoldBlocking)
+            {
+                //if not blocking block
+                InteractiveHold.Reset();
+            }
+            BlockingStates.Add(RequestedState);
+            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
             return true;
         }
 
         public static bool signalInteractiveFree(State CallingState)
         {
             Logging.LogDebug($"signalInteractiveFree From:{CallingState}");
-            if (
-                _taskDone.IsSet != TaskDoneBlocking
-                || (_taskDone.IsSet == TaskDoneBlocking && CallingState != CurrentState)
-            )
+            if (!BlockingStates.Contains(CallingState))
             {
-                Logging.LogDebug(
-                    $"\tFAIL: !_taskDone.IsSet:{!_taskDone.IsSet} (_taskDone.IsSet && CallingState != CurrentState):{(_taskDone.IsSet && CallingState != CurrentState)}"
-                );
+                //not blocking or not blocking from calling state
+                Logging.LogDebug($"\tFAIL");
                 return false;
             }
-            _taskDone.Set();
-            CurrentState = State.Interactive;
-            Logging.LogDebug($"\tPASS");
+
+            BlockingStates.Remove(CallingState);
+
+            if (BlockingStates.Count == 0)
+            {
+                InteractiveHold.Set();
+                CurrentState = State.Interactive;
+            }
+            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
             return true;
         }
 
@@ -125,7 +133,7 @@ namespace Core_Engine
         {
             CurrentState = State.Interactive;
             bool shouldRun = true;
-            _taskDone.Set();
+            InteractiveHold.Set();
             while (CurrentState == State.Interactive)
             {
                 string userResponse = ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
@@ -142,7 +150,7 @@ namespace Core_Engine
                         }
                     }
                     await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
-                    _taskDone.Wait();
+                    InteractiveHold.Wait();
                 }
                 catch (Exception e)
                 {
