@@ -9,6 +9,7 @@ using Core_Engine.Modules.Networking;
 using Core_Engine.Modules.ServerLogin;
 using Core_Engine.Modules.ServerStatus;
 using Graphics_Engine;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Silk.NET.Vulkan;
 
 namespace Core_Engine
@@ -19,7 +20,11 @@ namespace Core_Engine
         private static Dictionary<string, IModuleBase> Modules = new();
         private static Dictionary<string, EventHandler> Events = new();
 
-        public static State CurrentState = State.Noninteractive;
+        public static State CurrentState { private set; get; } = State.Noninteractive;
+
+        static ManualResetEventSlim _taskDone = new(true); // Initially signaled
+
+        private static bool TaskDoneBlocking = false;
 
         public enum State
         {
@@ -27,6 +32,42 @@ namespace Core_Engine
             Noninteractive,
             Waiting,
             Graphics,
+            AccountLogin,
+            JoiningServer,
+            Play,
+        }
+
+        public static bool signalInteractiveHold(State RequestedState)
+        {
+            Logging.LogDebug($"signalInteractiveHold From:{RequestedState}");
+            if (_taskDone.IsSet == TaskDoneBlocking)
+            {
+                Logging.LogDebug($"\tFAIL: !_taskDone.IsSet:{!_taskDone.IsSet}");
+                return false;
+            }
+            _taskDone.Reset();
+            CurrentState = RequestedState;
+            Logging.LogDebug($"\tPASS");
+            return true;
+        }
+
+        public static bool signalInteractiveFree(State CallingState)
+        {
+            Logging.LogDebug($"signalInteractiveFree From:{CallingState}");
+            if (
+                _taskDone.IsSet != TaskDoneBlocking
+                || (_taskDone.IsSet == TaskDoneBlocking && CallingState != CurrentState)
+            )
+            {
+                Logging.LogDebug(
+                    $"\tFAIL: !_taskDone.IsSet:{!_taskDone.IsSet} (_taskDone.IsSet && CallingState != CurrentState):{(_taskDone.IsSet && CallingState != CurrentState)}"
+                );
+                return false;
+            }
+            _taskDone.Set();
+            CurrentState = State.Interactive;
+            Logging.LogDebug($"\tPASS");
+            return true;
         }
 
         //private static State CurrentState = State.Noninteractive;
@@ -84,6 +125,7 @@ namespace Core_Engine
         {
             CurrentState = State.Interactive;
             bool shouldRun = true;
+            _taskDone.Set();
             while (CurrentState == State.Interactive)
             {
                 string userResponse = ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
@@ -92,29 +134,22 @@ namespace Core_Engine
 
                 try
                 {
-                    if (!CheckAndRunInteractivityCommand(command, ref shouldRun))
+                    if (CheckAndRunInteractivityCommand(command, ref shouldRun))
                     {
-                        await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
+                        if (!shouldRun)
+                        {
+                            break;
+                        }
                     }
+                    await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
+                    _taskDone.Wait();
                 }
                 catch (Exception e)
                 {
                     Logging.LogError(e.ToString());
                 }
-
-                while (
-                    GetModule<Networking>("Networking")!.IsClientConnectedToPrimaryServer
-                    || CurrentState == State.Waiting
-                )
-                {
-                    // Logging.LogDebug(
-                    // $"IsClientConnectedToPrimaryServer:{GetModule<Networking>("Networking")!.IsClientConnectedToPrimaryServer} CurrentState:{CurrentState}"
-                    //);
-                    await Task.Delay(250);
-                }
             }
             Console.WriteLine("Interactive Mode Ended");
-            //CurrentState = State.Noninteractive;
         }
 
         private static bool CheckAndRunInteractivityCommand(string command, ref bool shouldRun)

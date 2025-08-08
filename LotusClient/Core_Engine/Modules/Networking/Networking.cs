@@ -114,10 +114,10 @@ namespace Core_Engine.Modules.Networking
                 connection!.TcpSocket = null;
             }
             Connections.Remove(remoteHost);
-            if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+            /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
             {
                 Core_Engine.CurrentState = Core_Engine.State.Interactive;
-            }
+            } */
             return;
         }
 

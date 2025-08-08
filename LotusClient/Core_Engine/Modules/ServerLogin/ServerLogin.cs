@@ -70,16 +70,18 @@ namespace Core_Engine.Modules.ServerLogin
                         Core_Engine
                             .GetModule<Networking.Networking>("Networking")!
                             .DisconnectFromServer(eventArgs.remoteHost);
+                        Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
             }
             catch (Exception e)
             {
                 Logging.LogError($"LoginHandler; ProcessPacket ERROR: {e}");
-                if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+                /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
                 {
                     Core_Engine.CurrentState = Core_Engine.State.Interactive;
-                }
+                } */
+                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
 
@@ -97,10 +99,11 @@ namespace Core_Engine.Modules.ServerLogin
             if (mojangLogin.userProfile == null)
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
-                if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+                /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
                 {
                     Core_Engine.CurrentState = Core_Engine.State.Interactive;
-                }
+                } */
+                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
                 return;
             }
             try
@@ -130,6 +133,7 @@ namespace Core_Engine.Modules.ServerLogin
             {
                 Logging.LogError($"LoginToServer Failed: {e.ToString()}");
                 networking.DisconnectFromServer(remoteHost);
+                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
     }

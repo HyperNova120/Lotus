@@ -34,12 +34,14 @@ namespace Core_Engine.Modules.MojangLogin
             AuthenticationResult? AuthResult = await Internals.GetUserAuth();
             if (AuthResult == null)
             {
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
             TokenAuthCert? XboxLiveAuth = await Internals.AuthWithXboxLive(AuthResult.AccessToken);
             if (XboxLiveAuth == null)
             {
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
@@ -48,18 +50,21 @@ namespace Core_Engine.Modules.MojangLogin
             );
             if (MinecraftXSTSCert == null)
             {
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
             MinecraftAuth = await Internals.AuthWithMinecraft(XboxLiveAuth, MinecraftXSTSCert);
             if (MinecraftAuth == null)
             {
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
             if (!await Internals.CheckGameOwned(MinecraftAuth))
             {
                 Logging.LogInfo("Your account does not own Minecraft");
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
@@ -67,9 +72,11 @@ namespace Core_Engine.Modules.MojangLogin
             if (userProfile == null)
             {
                 Logging.LogError("Unable to get Minecraft profile");
+                Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
                 return false;
             }
 
+            Core_Engine.signalInteractiveFree(Core_Engine.State.AccountLogin);
             return true;
         }
     }

@@ -29,7 +29,8 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
                 .DisconnectFromServer(packet.remoteHost);
-            Core_Engine.CurrentState = Core_Engine.State.Interactive;
+            //Core_Engine.CurrentState = Core_Engine.State.Interactive;
+                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)

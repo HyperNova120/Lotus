@@ -15,7 +15,8 @@ namespace Graphics_Engine.Commands
             VulkanGraphics VG = Core_Engine.Core_Engine.GetModule<VulkanGraphics>(
                 "VulkanGraphics"
             )!;
-            Core_Engine.Core_Engine.CurrentState = Core_Engine.Core_Engine.State.Waiting;
+            //Core_Engine.Core_Engine.CurrentState = Core_Engine.Core_Engine.State.Waiting;
+            Core_Engine.Core_Engine.signalInteractiveHold(Core_Engine.Core_Engine.State.Graphics);
             VG._GraphicsThread = new(new ThreadStart(VG.StartGraphics));
             VG._GraphicsThread.Start();
         }

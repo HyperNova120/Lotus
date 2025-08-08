@@ -21,6 +21,8 @@ namespace Core_Engine.Modules.MojangLogin.Commands
                 );
                 return;
             }
+
+            Core_Engine.signalInteractiveHold(Core_Engine.State.AccountLogin);
             await mojangLogin.LoginAsync();
             if (mojangLogin.userProfile == null)
             {
