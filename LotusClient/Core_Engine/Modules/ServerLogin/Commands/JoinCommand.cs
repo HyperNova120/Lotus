@@ -27,8 +27,8 @@ namespace Core_Engine.Modules.ServerLogin.Commands
                 Console.WriteLine("you are already connected to a server");
                 return;
             }
+            Core_Engine.CurrentState = Core_Engine.State.Waiting;
             Logging.LogInfo("Attempting to connect to server");
-            networking.IsClientConnectedToPrimaryServer = true;
             loginHandler.LoginToServer(commandArgs[0]);
         }
     }

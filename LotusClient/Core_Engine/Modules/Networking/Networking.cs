@@ -99,12 +99,6 @@ namespace Core_Engine.Modules.Networking
                 return;
             }
             Logging.LogInfo("Disconnected from Server:" + remoteHost);
-            if (connection!.TcpSocket != null)
-            {
-                connection!.TcpSocket!.Disconnect(false);
-                connection!.TcpSocket!.Close();
-                connection!.TcpSocket = null;
-            }
             if (
                 IsClientConnectedToPrimaryServer
                 && connection.remoteHost == PrimaryClientServerConnection
@@ -113,7 +107,17 @@ namespace Core_Engine.Modules.Networking
                 IsClientConnectedToPrimaryServer = false;
                 PrimaryClientServerConnection = null;
             }
+            if (connection!.TcpSocket != null)
+            {
+                connection!.TcpSocket!.Disconnect(false);
+                connection!.TcpSocket!.Close();
+                connection!.TcpSocket = null;
+            }
             Connections.Remove(remoteHost);
+            if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+            {
+                Core_Engine.CurrentState = Core_Engine.State.Interactive;
+            }
             return;
         }
 

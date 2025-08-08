@@ -76,6 +76,10 @@ namespace Core_Engine.Modules.ServerLogin
             catch (Exception e)
             {
                 Logging.LogError($"LoginHandler; ProcessPacket ERROR: {e}");
+                if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+                {
+                    Core_Engine.CurrentState = Core_Engine.State.Interactive;
+                }
             }
         }
 
@@ -93,6 +97,10 @@ namespace Core_Engine.Modules.ServerLogin
             if (mojangLogin.userProfile == null)
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
+                if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+                {
+                    Core_Engine.CurrentState = Core_Engine.State.Interactive;
+                }
                 return;
             }
             try

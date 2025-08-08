@@ -26,6 +26,7 @@ namespace Core_Engine
             Interactive,
             Noninteractive,
             Waiting,
+            Graphics,
         }
 
         //private static State CurrentState = State.Noninteractive;
@@ -106,6 +107,9 @@ namespace Core_Engine
                     || CurrentState == State.Waiting
                 )
                 {
+                    // Logging.LogDebug(
+                    // $"IsClientConnectedToPrimaryServer:{GetModule<Networking>("Networking")!.IsClientConnectedToPrimaryServer} CurrentState:{CurrentState}"
+                    //);
                     await Task.Delay(250);
                 }
             }

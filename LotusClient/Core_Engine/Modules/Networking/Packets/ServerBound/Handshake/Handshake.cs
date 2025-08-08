@@ -13,7 +13,6 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 
         public PacketBoundTo BoundTo = PacketBoundTo.Server;
 
-        public int protocolVersion = 771;
         public string serverAddress;
         public ushort serverPort = 25565;
         public int nextState = 1;
@@ -25,7 +24,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
             ); */
             return
             [
-                .. VarInt_VarLong.EncodeInt(protocolVersion),
+                .. VarInt_VarLong.EncodeInt(Networking.protocolVersion),
                 .. StringN.GetBytes(serverAddress),
                 .. BitConverter.GetBytes(serverPort),
                 .. VarInt_VarLong.EncodeInt(nextState),

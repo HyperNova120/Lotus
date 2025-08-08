@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Core_Engine.BaseClasses.Types;
 using Core_Engine.EngineEventArgs;
 using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Models;
@@ -9,7 +10,6 @@ using Core_Engine.Modules.Networking.Packets.ClientBound.Login;
 using Core_Engine.Modules.Networking.Packets.ClientBound.Login.Internals;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
-using Core_Engine.BaseClasses.Types;
 using static Core_Engine.Modules.Networking.Networking;
 
 namespace Core_Engine.Modules.ServerLogin.Internals
@@ -29,6 +29,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
                 .DisconnectFromServer(packet.remoteHost);
+            Core_Engine.CurrentState = Core_Engine.State.Interactive;
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
@@ -145,6 +146,9 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
             Logging.LogInfo("Successfully Joined Server!");
+            Core_Engine
+                .GetModule<Networking.Networking>("Networking")!
+                .IsClientConnectedToPrimaryServer = true;
             /* foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
                 Logging.LogDebug(
