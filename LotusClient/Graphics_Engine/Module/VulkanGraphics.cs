@@ -38,7 +38,7 @@ namespace Graphics_Engine
                 InitVulkan();
                 MainLoop();
             }
-            CleanUo();
+            CleanUp();
         }
 
         private void MainLoop()
@@ -46,7 +46,7 @@ namespace Graphics_Engine
             _Window!.Run();
         }
 
-        private void CleanUo()
+        private void CleanUp()
         {
             _Vulkan?.DestroyInstance(_Instance, null);
             _Vulkan?.Dispose();

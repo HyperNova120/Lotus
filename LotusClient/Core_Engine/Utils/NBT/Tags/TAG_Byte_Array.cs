@@ -1,8 +1,8 @@
 using Core_Engine.BaseClasses.Types;
 using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_Byte_Array : TAG_Base
 {
@@ -12,6 +12,16 @@ public class TAG_Byte_Array : TAG_Base
     {
         Values = [];
         Type_ID = 7;
+    }
+
+    public override byte[] GetBytes()
+    {
+        return
+        [
+            .. GetIDAndNamesBytes(),
+            .. BitConverter.GetBytes(Values.Length).Reverse(),
+            .. (byte[])(Array)Values,
+        ];
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)

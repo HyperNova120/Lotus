@@ -1,7 +1,7 @@
 using System.Text;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_String : TAG_Base
 {
@@ -10,6 +10,18 @@ public class TAG_String : TAG_Base
     public TAG_String()
     {
         Type_ID = 8;
+    }
+
+    public override byte[] GetBytes()
+    {
+        byte[] valueBytes = Encoding.UTF8.GetBytes(Value.Replace("\n", "").Replace("\r", ""));
+        return
+        [
+            .. GetIDAndNamesBytes(),
+            (byte)((valueBytes.Length & 0xFF00) >> 8),
+            (byte)(valueBytes.Length & 0xFF),
+            .. valueBytes,
+        ];
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)
@@ -22,9 +34,9 @@ public class TAG_String : TAG_Base
 
         /* for (int i = 0; i < length; i++)
         {
-            Value += (char)inputBytes[2 + i];
+            Value += (char)inputBytes[offset + 2 + i];
         } */
-        Value = Encoding.UTF8.GetString(inputBytes[(offset + 2)..(offset + 2 + length)]);
+        Value = Encoding.Default.GetString(inputBytes[(offset + 2)..(offset + 2 + length)]);
 
         return inputBytes[(offset + 2 + length)..];
     }

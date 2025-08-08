@@ -1,7 +1,7 @@
 using Core_Engine.BaseClasses.Types;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_Long_Array : TAG_Base
 {
@@ -11,6 +11,26 @@ public class TAG_Long_Array : TAG_Base
     {
         Values = [];
         Type_ID = 12;
+    }
+
+    public override byte[] GetBytes()
+    {
+        byte[] ValuesBytes = new byte[sizeof(long) * Values.Length];
+        for (int i = 0; i < Values.Length; i++)
+        {
+            int baseIndex = i * sizeof(long);
+            byte[] tmp = [.. BitConverter.GetBytes(Values[i]).Reverse()];
+            for (int j = 0; j < sizeof(long); j++)
+            {
+                ValuesBytes[baseIndex + j] = tmp[j];
+            }
+        }
+        return
+        [
+            .. GetIDAndNamesBytes(),
+            .. BitConverter.GetBytes(Values.Length).Reverse(),
+            .. ValuesBytes,
+        ];
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)

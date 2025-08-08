@@ -1,6 +1,6 @@
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_Long : TAG_Base
 {
@@ -9,6 +9,11 @@ public class TAG_Long : TAG_Base
     public TAG_Long()
     {
         Type_ID = 4;
+    }
+
+    public override byte[] GetBytes()
+    {
+        return [.. GetIDAndNamesBytes(), .. BitConverter.GetBytes(Value).Reverse()];
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)

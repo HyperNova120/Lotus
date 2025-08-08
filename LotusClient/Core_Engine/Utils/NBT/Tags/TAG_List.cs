@@ -1,7 +1,7 @@
 using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_List : TAG_Base, TAG_Collection
 {
@@ -11,12 +11,19 @@ public class TAG_List : TAG_Base, TAG_Collection
 
     int length;
 
-    List<TAG_Base> Contained_Tags = new();
+    public List<TAG_Base> Contained_Tags = new();
 
     public TAG_List()
     {
         length = 0;
         Type_ID = 9;
+    }
+
+    public TAG_List(string Name)
+    {
+        length = 0;
+        Type_ID = 9;
+        this.Name = Name;
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)
@@ -54,90 +61,90 @@ public class TAG_List : TAG_Base, TAG_Collection
             }
             switch (currentTagID)
             {
-                case 0:
+                case (int)TAG_Base.TagTypeID.TAG_END:
                     TAG_End tmp_end = new TAG_End();
                     tmp_end.isInListTag = true;
                     inputBytes = tmp_end.ProcessBytes(inputBytes);
                     offset = 0;
                     break;
-                case 1:
+                case (int)TAG_Base.TagTypeID.TAG_BYTE:
                     TAG_Byte tmp_byte = new TAG_Byte();
                     tmp_byte.isInListTag = true;
                     inputBytes = tmp_byte.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_byte);
                     break;
-                case 2:
+                case (int)TAG_Base.TagTypeID.TAG_SHORT:
                     TAG_Short tmp_short = new TAG_Short();
                     tmp_short.isInListTag = true;
                     inputBytes = tmp_short.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_short);
                     break;
-                case 3:
+                case (int)TAG_Base.TagTypeID.TAG_INT:
                     TAG_Int tmp_int = new TAG_Int();
                     tmp_int.isInListTag = true;
                     inputBytes = tmp_int.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_int);
                     break;
-                case 4:
+                case (int)TAG_Base.TagTypeID.TAG_LONG:
                     TAG_Long tmp_long = new TAG_Long();
                     tmp_long.isInListTag = true;
                     inputBytes = tmp_long.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_long);
                     break;
-                case 5:
+                case (int)TAG_Base.TagTypeID.TAG_FLOAT:
                     TAG_Float tmp_float = new TAG_Float();
                     tmp_float.isInListTag = true;
                     inputBytes = tmp_float.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_float);
                     break;
-                case 6:
+                case (int)TAG_Base.TagTypeID.TAG_DOUBLE:
                     TAG_Double tmp_double = new TAG_Double();
                     tmp_double.isInListTag = true;
                     inputBytes = tmp_double.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_double);
                     break;
-                case 7:
+                case (int)TAG_Base.TagTypeID.TAG_BYTE_ARRAY:
                     TAG_Byte_Array tmp_byte_array = new TAG_Byte_Array();
                     tmp_byte_array.isInListTag = true;
                     inputBytes = tmp_byte_array.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_byte_array);
                     break;
-                case 8:
+                case (int)TAG_Base.TagTypeID.TAG_STRING:
                     TAG_String tmp_string = new TAG_String();
                     tmp_string.isInListTag = true;
                     inputBytes = tmp_string.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_string);
                     break;
-                case 9:
+                case (int)TAG_Base.TagTypeID.TAG_LIST:
                     TAG_List tmp_list = new TAG_List();
                     tmp_list.isInListTag = true;
                     inputBytes = tmp_list.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_list);
                     break;
-                case 10:
+                case (int)TAG_Base.TagTypeID.TAG_COMPOUND:
                     TAG_Compound tmp_compound = new TAG_Compound();
                     tmp_compound.isInListTag = true;
                     inputBytes = tmp_compound.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_compound);
                     break;
-                case 11:
+                case (int)TAG_Base.TagTypeID.TAG_INT_ARRAY:
                     TAG_Int_Array tmp_int_array = new TAG_Int_Array();
                     tmp_int_array.isInListTag = true;
                     inputBytes = tmp_int_array.ProcessBytes(inputBytes);
                     offset = 0;
                     Contained_Tags.Add(tmp_int_array);
                     break;
-                case 12:
+                case (int)TAG_Base.TagTypeID.TAG_LONG_ARRAY:
                     TAG_Long_Array tmp_long_array = new TAG_Long_Array();
                     tmp_long_array.isInListTag = true;
                     inputBytes = tmp_long_array.ProcessBytes(inputBytes);
@@ -151,47 +158,6 @@ public class TAG_List : TAG_Base, TAG_Collection
             }
         }
         return inputBytes;
-    }
-
-    public bool RemoveTag(string Tag_Name)
-    {
-        for (int i = 0; i < Contained_Tags.Count; i++)
-        {
-            if (Contained_Tags[i].Name == Tag_Name)
-            {
-                Contained_Tags.RemoveAt(i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public T? TryGetTag<T>(string Tag_Name)
-        where T : TAG_Base
-    {
-        foreach (TAG_Base tag in Contained_Tags)
-        {
-            if (tag.Name == Tag_Name && tag is T)
-            {
-                return (T)tag;
-            }
-        }
-        return null;
-    }
-
-    public void WriteTag<T>(T Tag)
-        where T : TAG_Base
-    {
-        for (int i = 0; i < Contained_Tags.Count; i++)
-        {
-            if (Contained_Tags[i].Name == Tag.Name)
-            {
-                //replace
-                Contained_Tags[i] = Tag;
-                return;
-            }
-        }
-        Contained_Tags.Add(Tag);
     }
 
     public override string ToString(int tabSpace = 0)
@@ -208,5 +174,59 @@ public class TAG_List : TAG_Base, TAG_Collection
         }
 
         return returner + "\n" + new string('\t', tabSpace) + "}";
+    }
+
+    public override byte[] GetBytes()
+    {
+        List<byte> returner =
+        [
+            .. GetIDAndNamesBytes(),
+            (byte)Contained_Tag_Type,
+            .. BitConverter.GetBytes(Contained_Tags.Count).Reverse(),
+        ];
+
+        foreach (TAG_Base tagBase in Contained_Tags)
+        {
+            returner.AddRange(tagBase.GetBytes());
+        }
+        return returner.ToArray();
+    }
+
+    public TAG_Base? TryGetTag(string Tag_Name)
+    {
+        for (int i = 0; i < Contained_Tags.Count; i++)
+        {
+            if (Contained_Tags[i].Name == Tag_Name)
+            {
+                return Contained_Tags[i];
+            }
+        }
+        return null;
+    }
+
+    public void WriteTag<T>(T Tag)
+        where T : TAG_Base
+    {
+        for (int i = 0; i < Contained_Tags.Count; i++)
+        {
+            if (Contained_Tags[i].Name == Tag.Name)
+            {
+                return;
+            }
+        }
+        Contained_Tags.Add(Tag);
+    }
+
+    public bool RemoveTag(string Tag_Name)
+    {
+        for (int i = 0; i < Contained_Tags.Count; i++)
+        {
+            if (Contained_Tags[i].Name == Tag_Name)
+            {
+                Contained_Tags.RemoveAt(i);
+                return true;
+            }
+        }
+        return false;
     }
 }

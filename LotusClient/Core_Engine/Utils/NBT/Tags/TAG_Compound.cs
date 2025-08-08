@@ -1,12 +1,12 @@
 using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 using SharpNBT;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_Compound : TAG_Base, TAG_Collection
 {
-    private List<TAG_Base> Contained_Tags = new();
+    public Dictionary<string, TAG_Base> Contained_Tags = new();
     public bool IsNetworkNBT = false;
 
     public TAG_Compound()
@@ -52,73 +52,75 @@ public class TAG_Compound : TAG_Base, TAG_Collection
 
             switch (payloadType)
             {
-                case 0:
+                case (int)TAG_Base.TagTypeID.TAG_END:
                     TAG_End tmp_end = new TAG_End();
                     inputBytes = tmp_end.ProcessBytes(inputBytes);
                     shouldRun = false;
                     break;
-                case 1:
+                case (int)TAG_Base.TagTypeID.TAG_BYTE:
                     TAG_Byte tmp_byte = new TAG_Byte();
                     inputBytes = tmp_byte.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_byte);
+                    Contained_Tags[tmp_byte.Name] = tmp_byte;
                     break;
-                case 2:
+                case (int)TAG_Base.TagTypeID.TAG_SHORT:
                     TAG_Short tmp_short = new TAG_Short();
                     inputBytes = tmp_short.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_short);
+                    Contained_Tags[tmp_short.Name] = tmp_short;
                     break;
-                case 3:
+                case (int)TAG_Base.TagTypeID.TAG_INT:
                     TAG_Int tmp_int = new TAG_Int();
                     inputBytes = tmp_int.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_int);
+                    Contained_Tags[tmp_int.Name] = tmp_int;
                     break;
-                case 4:
+                case (int)TAG_Base.TagTypeID.TAG_LONG:
                     TAG_Long tmp_long = new TAG_Long();
                     inputBytes = tmp_long.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_long);
+                    Contained_Tags[tmp_long.Name] = tmp_long;
                     break;
-                case 5:
+                case (int)TAG_Base.TagTypeID.TAG_FLOAT:
                     TAG_Float tmp_float = new TAG_Float();
                     inputBytes = tmp_float.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_float);
+                    Contained_Tags[tmp_float.Name] = tmp_float;
                     break;
-                case 6:
+                case (int)TAG_Base.TagTypeID.TAG_DOUBLE:
                     TAG_Double tmp_double = new TAG_Double();
                     inputBytes = tmp_double.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_double);
+                    Contained_Tags[tmp_double.Name] = tmp_double;
                     break;
-                case 7:
+                case (int)TAG_Base.TagTypeID.TAG_BYTE_ARRAY:
                     TAG_Byte_Array tmp_byte_array = new TAG_Byte_Array();
                     inputBytes = tmp_byte_array.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_byte_array);
+                    Contained_Tags[tmp_byte_array.Name] = tmp_byte_array;
                     break;
-                case 8:
+                case (int)TAG_Base.TagTypeID.TAG_STRING:
                     TAG_String tmp_string = new TAG_String();
                     inputBytes = tmp_string.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_string);
+                    Contained_Tags[tmp_string.Name] = tmp_string;
                     break;
-                case 9:
+                case (int)TAG_Base.TagTypeID.TAG_LIST:
                     TAG_List tmp_list = new TAG_List();
                     inputBytes = tmp_list.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_list);
+                    Contained_Tags[tmp_list.Name] = tmp_list;
                     break;
-                case 10:
+                case (int)TAG_Base.TagTypeID.TAG_COMPOUND:
                     TAG_Compound tmp_compound = new TAG_Compound();
                     inputBytes = tmp_compound.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_compound);
+                    Contained_Tags[tmp_compound.Name] = tmp_compound;
                     break;
-                case 11:
+                case (int)TAG_Base.TagTypeID.TAG_INT_ARRAY:
                     TAG_Int_Array tmp_int_array = new TAG_Int_Array();
                     inputBytes = tmp_int_array.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_int_array);
+                    Contained_Tags[tmp_int_array.Name] = tmp_int_array;
                     break;
-                case 12:
+                case (int)TAG_Base.TagTypeID.TAG_LONG_ARRAY:
                     TAG_Long_Array tmp_long_array = new TAG_Long_Array();
                     inputBytes = tmp_long_array.ProcessBytes(inputBytes);
-                    Contained_Tags.Add(tmp_long_array);
+                    Contained_Tags[tmp_long_array.Name] = tmp_long_array;
                     break;
                 default:
-                    throw new IncorrectNBTTypeException($"{index}: something went wrong Compund, incorrect type id: {payloadType}");
+                    throw new IncorrectNBTTypeException(
+                        $"{index}: something went wrong Compund, incorrect type id: {payloadType}"
+                    );
             }
             ++index;
         }
@@ -126,59 +128,65 @@ public class TAG_Compound : TAG_Base, TAG_Collection
         return inputBytes;
     }
 
-    public bool RemoveTag(string Tag_Name)
+    public override string ToString(int tabSpace = 0)
     {
-        for (int i = 0; i < Contained_Tags.Count; i++)
+        string returner =
+            new string('\t', tabSpace)
+            + $"TAG_Compound({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}): {Contained_Tags.Count} entries";
+
+        returner += "\n" + new string('\t', tabSpace) + "{";
+
+        foreach (TAG_Base cur in Contained_Tags.Values)
         {
-            if (Contained_Tags[i].Name == Tag_Name)
-            {
-                Contained_Tags.RemoveAt(i);
-                return true;
-            }
+            returner += "\n" + cur.ToString(tabSpace + 1);
         }
-        return false;
+
+        return returner + "\n" + new string('\t', tabSpace) + "}";
     }
 
-    public T? TryGetTag<T>(string Tag_Name)
-        where T : TAG_Base
+    public override byte[] GetBytes()
     {
-        foreach (TAG_Base Tag in Contained_Tags)
+        List<byte> returner = [.. GetIDAndNamesBytes()];
+        foreach (TAG_Base tagBase in Contained_Tags.Values)
         {
-            if (Tag.Name == Tag_Name && Tag is T)
-            {
-                return (T)Tag;
-            }
+            returner.AddRange(tagBase.GetBytes());
         }
+        returner.Add(0);
+        return returner.ToArray();
+    }
+
+    public TAG_Base? TryGetTag(string Tag_Name)
+    {
+        if (Contained_Tags.ContainsKey(Tag_Name))
+        {
+            return Contained_Tags[Tag_Name];
+        }
+
+        foreach (var tag in Contained_Tags)
+        {
+            if (tag.Value.Type_ID != (int)NBT.NBT_Tags.TAG_Compound)
+            {
+                continue;
+            }
+            TAG_Base? tmp = ((TAG_Compound)tag.Value).TryGetTag(Tag_Name);
+            if (tmp == null)
+            {
+                continue;
+            }
+            return tmp;
+        }
+
         return null;
     }
 
     public void WriteTag<T>(T Tag)
         where T : TAG_Base
     {
-        for (int i = 0; i < Contained_Tags.Count; i++)
-        {
-            if (Contained_Tags[i].Name == Tag.Name)
-            {
-                Contained_Tags[i] = Tag;
-                return;
-            }
-        }
-        Contained_Tags.Add(Tag);
+        Contained_Tags[Tag.Name] = Tag;
     }
 
-    public override string ToString(int tabSpace = 0)
+    public bool RemoveTag(string Tag_Name)
     {
-        string returner =
-            new string('\t', tabSpace)
-            + $"TAG_Compount({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}): {Contained_Tags.Count} entries";
-
-        returner += "\n" + new string('\t', tabSpace) + "{";
-
-        foreach (TAG_Base cur in Contained_Tags)
-        {
-            returner += "\n" + cur.ToString(tabSpace + 1);
-        }
-
-        return returner + "\n" + new string('\t', tabSpace) + "}";
+        return Contained_Tags.Remove(Tag_Name);
     }
 }

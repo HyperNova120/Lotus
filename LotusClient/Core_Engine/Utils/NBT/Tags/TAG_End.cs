@@ -1,13 +1,18 @@
 using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBT.BaseClasses;
+using Core_Engine.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBT.Tags;
+namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_End : TAG_Base
 {
     public TAG_End()
     {
         Type_ID = 0;
+    }
+
+    public override byte[] GetBytes()
+    {
+        throw new NotImplementedException();
     }
 
     public override byte[] ProcessBytes(byte[] inputBytes)

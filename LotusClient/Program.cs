@@ -1,5 +1,6 @@
 ﻿using Core_Engine;
-using Core_Engine.Utils.NBT;
+using Core_Engine.Utils;
+using Core_Engine.Utils.NBTInternals.Tags;
 using Microsoft.Extensions.Configuration;
 
 namespace LotusClient
@@ -17,52 +18,53 @@ namespace LotusClient
 
             Environment.SetEnvironmentVariable("AppID", (string)configuration!["AzureApp:AppID"]!);
 
-            Logging.LogDebug("Testing NBT");
-            NBT testNBT = new NBT();
-            testNBT.ReadFromBytes(File.ReadAllBytes("Testing_Stuff/bigtest"));
-            Console.WriteLine(testNBT.GetNBTAsString());
-            return;
-            /*  if (!await MojangLogin.login(configuration))
-             {
-                 Logging.LogInfo("User not signed in, cannot continue");
-                 return;
-             } */
+            /* NBT testEdit = new NBT("Level")
+                .WriteTag(
+                    new NBT("nested compound test")
+                        .WriteTag(
+                            new NBT("Egg").WriteTag("name", "Eggbert").WriteTag("value", 0.5f)
+                        )
+                        .WriteTag(
+                            new NBT("Ham").WriteTag("name", "Hampus").WriteTag("value", 0.75f)
+                        )
+                )
+                .WriteTag("intTest", 2147483647)
+                .WriteTag("byteTest", (byte)127)
+                .WriteTag("stringTest", "HELLO WORLD THIS IS A TEST STRING!")
+                .WriteListTag("listTest (long)", (long[])[11, 12, 13, 14, 15])
+                .WriteTag("doubleTest", 0.49312871321823148d)
+                .WriteTag("floatTest", 0.49823147058486938f)
+                .WriteTag("longTest", (long)9223372036854775807)
+                .WriteListTag(
+                    "listTest (compound)",
+                    [
+                        new NBT()
+                            .WriteTag("created-on", 1264099775885L)
+                            .WriteTag("name", "Compound Tag #0"),
+                        new NBT()
+                            .WriteTag("created-on", 1264099775885L)
+                            .WriteTag("name", "Compound Tag #1"),
+                    ]
+                )
+                .WriteTag(
+                    "byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))",
+                    (byte[])[0x00, 0x01, 0x02, 0x03]
+                )
+                .WriteTag("shortTest", (short)32767);
+
+            Console.WriteLine(testEdit.GetNBTAsString());
+
+            Console.WriteLine(
+                "TryGetTag Test: "
+                    + ((testEdit.TryGetTag<TAG_Compound>("Egg") == null) ? "FAILED" : "PASS")
+            );
+
+            testEdit.TryGetTag<TAG_String>("stringTest")!.Value += " Modified";
+            testEdit.TryGetTag<TAG_Long>("longTest")!.Value = 12;
+            Console.WriteLine(testEdit.GetNBTAsString()); */
 
             Core_Engine.Core_Engine.InitCore();
             await Core_Engine.Core_Engine.GoInteractiveMode();
-
-            /*  string serverIp = ConsoleUtils.AskUserLineResponseQuestion("Enter Server IP")!;
-             if (!ConnectionHandler.ConnectToServer(serverIp))
-             {
-                 Logging.LogInfo("Unable to connect to server");
-                 return;
-             }
-  */
-            /* StatusHandler.SendStatusRequest(serverIp);
-            await Task.Delay(5000);
-            StatusHandler.SendPingRequest();
-            await Task.Delay(5000); */
-            /*  Logging.LogInfo("Attempting Server Login Start");
-             await LoginHandler.LoginToServer(serverIp); */
-
-            /* Logging.LogDebug(
-                "Sent: " + ConnectionHandler.SendPacket(new HandshakePacket(serverIp, 1)).ToString()
-            );
-            Logging.LogDebug(
-                "Sent: " + ConnectionHandler.SendPacket(new StatusRequestPacket()).ToString()
-            ); */
-
-            /* Logging.LogDebug(
-                "Sent: " + ConnectionHandler.SendPacket(new StatusPingPacket()).ToString()
-            ); */
-
-            /* LoginStartPacket loginStartPacket = new LoginStartPacket(
-                Login.UserMinecraftProfile!.name,
-                new Guid(Login.UserMinecraftProfile!.id)
-            );
-            Logging.LogDebug(ConnectionHandler.SendPacket(loginStartPacket).ToString()); */
-
-            //await Task.Delay(-1);
         }
     }
 }

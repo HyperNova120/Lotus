@@ -16,6 +16,7 @@ namespace Core_Engine.Modules.Networking
         private Dictionary<IPAddress, ServerConnection> Connections = new();
         public bool IsClientConnectedToPrimaryServer { get; set; } = false;
         private IPAddress? PrimaryClientServerConnection;
+        public static readonly int protocolVersion = 771;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
