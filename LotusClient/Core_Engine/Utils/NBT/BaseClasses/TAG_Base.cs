@@ -24,7 +24,7 @@ public abstract class TAG_Base
     };
 
     public int Type_ID = 0;
-    public string Name = "";
+    public string? Name = "";
 
     public bool isInListTag = false;
 
@@ -66,7 +66,7 @@ public abstract class TAG_Base
         }
 
         byte idByte = (byte)Type_ID;
-        if (Name.Length == 0)
+        if (this.Name == null)
         {
             return [idByte];
         }

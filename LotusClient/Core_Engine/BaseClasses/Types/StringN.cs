@@ -15,7 +15,7 @@ namespace Core_Engine.BaseClasses.Types
             (int size, int numBytes) = VarInt_VarLong.DecodeVarInt(bytes);
             string strValue =
                 (size > 0) ? Encoding.UTF8.GetString(bytes[numBytes..(numBytes + size)]) : "";
-            return (strValue, strValue.Length + numBytes);
+            return (strValue, size + numBytes);
         }
     }
 }

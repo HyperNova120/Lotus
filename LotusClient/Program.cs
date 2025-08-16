@@ -10,7 +10,6 @@ namespace LotusClient
         static async Task Main(string[] args)
         {
             Console.BackgroundColor = ConsoleColor.Black;
-            Logging.mut = new Mutex();
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -62,6 +61,32 @@ namespace LotusClient
             testEdit.TryGetTag<TAG_String>("stringTest")!.Value += " Modified";
             testEdit.TryGetTag<TAG_Long>("longTest")!.Value = 12;
             Console.WriteLine(testEdit.GetNBTAsString()); */
+
+            /* NBT Test1 = new NBT("Test1")
+                .WriteTag("TestInt", 1234)
+                .WriteTag("TestString", "hello world");
+
+            NBT Test2 = new NBT("Test2").WriteTag("TestFloat", 12.34).WriteTag("TestDouble", 5728d);
+
+            byte[] test1Bytes = Test1.GetBytes();
+            byte[] test2Bytes = Test2.GetBytes();
+            byte[] testCombine = [.. test1Bytes, .. test2Bytes];
+            NBT TestCombine1 = new NBT();
+            NBT TestCombine2 = new NBT();
+            int offset = TestCombine1.ReadFromBytes(testCombine);
+            Console.WriteLine(TestCombine1.GetNBTAsString());
+
+            TestCombine2.ReadFromBytes(testCombine[offset..]);
+            Console.WriteLine(TestCombine2.GetNBTAsString()); */
+
+            /* NBT Test1 = new NBT(true).WriteTag("TestInt", 1234).WriteTag("TestString", "hello world");
+
+
+            Console.WriteLine(Test1.GetNBTAsString());
+            Test1.ReadFromBytes(Test1.GetBytes(), true);
+            Console.WriteLine(Test1.GetNBTAsString());
+            Test1.ReadFromBytes(Test1.GetBytes(), true);
+            Console.WriteLine(Test1.GetNBTAsString()); */
 
             Core_Engine.Core_Engine.InitCore();
             await Core_Engine.Core_Engine.GoInteractiveMode();

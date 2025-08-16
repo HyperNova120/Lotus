@@ -70,7 +70,7 @@ namespace Core_Engine.Modules.ServerLogin
                         Core_Engine
                             .GetModule<Networking.Networking>("Networking")!
                             .DisconnectFromServer(eventArgs.remoteHost);
-                        Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
+                        Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
             }
@@ -81,7 +81,7 @@ namespace Core_Engine.Modules.ServerLogin
                 {
                     Core_Engine.CurrentState = Core_Engine.State.Interactive;
                 } */
-                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
+                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
 
@@ -103,7 +103,7 @@ namespace Core_Engine.Modules.ServerLogin
                 {
                     Core_Engine.CurrentState = Core_Engine.State.Interactive;
                 } */
-                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
+                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                 return;
             }
             try
@@ -133,7 +133,7 @@ namespace Core_Engine.Modules.ServerLogin
             {
                 Logging.LogError($"LoginToServer Failed: {e.ToString()}");
                 networking.DisconnectFromServer(remoteHost);
-                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
+                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
     }

@@ -4,8 +4,10 @@ using Core_Engine.Commands;
 using Core_Engine.Commands.UserCommands;
 using Core_Engine.Exceptions;
 using Core_Engine.Interfaces;
+using Core_Engine.Modules.GameStateHandler;
 using Core_Engine.Modules.MojangLogin;
 using Core_Engine.Modules.Networking;
+using Core_Engine.Modules.ServerConfig;
 using Core_Engine.Modules.ServerLogin;
 using Core_Engine.Modules.ServerStatus;
 using Graphics_Engine;
@@ -18,6 +20,7 @@ namespace Core_Engine
     {
         private static Dictionary<string, ICommandBase> Commands = new();
         private static Dictionary<string, IModuleBase> Modules = new();
+        private static Dictionary<string, IGraphicsModule> GraphicsModules = new();
         private static Dictionary<string, EventHandler> Events = new();
 
         public static State CurrentState { private set; get; } = State.Noninteractive;
@@ -36,10 +39,11 @@ namespace Core_Engine
             Graphics,
             AccountLogin,
             JoiningServer,
+            Configuration,
             Play,
         }
 
-        public static bool signalInteractiveHold(State RequestedState)
+        public static bool SignalInteractiveHold(State RequestedState)
         {
             Logging.LogDebug($"signalInteractiveHold From:{RequestedState}");
             if (BlockingStates.Contains(RequestedState))
@@ -57,25 +61,50 @@ namespace Core_Engine
             return true;
         }
 
-        public static bool signalInteractiveFree(State CallingState)
+        public static bool signalInteractiveTransferHold(State CallingState, State RequestedState)
+        {
+            Logging.LogDebug(
+                $"signalInteractiveTransferHold From:{CallingState} To:{RequestedState}"
+            );
+            if (!BlockingStates.Contains(CallingState))
+            {
+                Logging.LogDebug($"\tFAIL; CallingState does not posses a hold");
+                return false;
+            }
+            BlockingStates.Add(RequestedState);
+            BlockingStates.Remove(CallingState);
+            return true;
+        }
+
+        public static bool SignalInteractiveFree(State CallingState)
         {
             Logging.LogDebug($"signalInteractiveFree From:{CallingState}");
             if (!BlockingStates.Contains(CallingState))
             {
-                //not blocking or not blocking from calling state
+                //not blocking from calling state
                 Logging.LogDebug($"\tFAIL");
                 return false;
             }
 
             BlockingStates.Remove(CallingState);
+            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
 
             if (BlockingStates.Count == 0)
             {
-                InteractiveHold.Set();
                 CurrentState = State.Interactive;
+                InteractiveHold.Set();
             }
-            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
             return true;
+        }
+
+        public static void SignalInteractiveResetServerHolds()
+        {
+            if (BlockingStates.Contains(State.JoiningServer))
+                SignalInteractiveFree(State.JoiningServer);
+            if (BlockingStates.Contains(State.Configuration))
+                SignalInteractiveFree(State.Configuration);
+            if (BlockingStates.Contains(State.Play))
+                SignalInteractiveFree(State.Play);
         }
 
         //private static State CurrentState = State.Noninteractive;
@@ -98,11 +127,13 @@ namespace Core_Engine
 
         private static void InitCoreModules()
         {
+            RegisterModule("GameStateHandler", new GameStateHandler());
             RegisterModule("MojangLogin", new MojangLogin());
             RegisterModule("Networking", new Networking());
             RegisterModule("ServerStatus", new ServerStatus());
             RegisterModule("LoginHandler", new LoginHandler());
             RegisterModule("VulkanGraphics", new VulkanGraphics());
+            RegisterModule("ServerConfiguration", new ServerConfiguration());
         }
 
         private static void InitCoreModuleEventSubscriptions()
@@ -149,8 +180,11 @@ namespace Core_Engine
                             break;
                         }
                     }
-                    await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
-                    InteractiveHold.Wait();
+                    else
+                    {
+                        await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
+                        InteractiveHold.Wait();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -182,7 +216,7 @@ namespace Core_Engine
             return true;
         }
 
-        private static async Task HandleCommand(string command, string[] args)
+        public static async Task HandleCommand(string command, string[] args)
         {
             if (!Commands.ContainsKey(command))
             {
@@ -202,6 +236,7 @@ namespace Core_Engine
             }
             if (Events[EventIdentifier] == null)
             {
+                throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
                 return;
             }
             Events[EventIdentifier].Invoke(null, args);
@@ -243,6 +278,10 @@ namespace Core_Engine
             ModuleToRegister.RegisterEvents(RegisterEvent);
             ModuleToRegister.RegisterCommands(RegisterCommand);
             Modules.Add(ModuleIdentifier, ModuleToRegister);
+            if (ModuleToRegister is IGraphicsModule graphicsModule)
+            {
+                GraphicsModules.Add(ModuleIdentifier, graphicsModule);
+            }
         }
 
         public static bool UnregisterModule(string ModuleIdentifier)
@@ -252,6 +291,10 @@ namespace Core_Engine
                 return false;
             }
             Modules.Remove(ModuleIdentifier);
+            if (GraphicsModules.ContainsKey(ModuleIdentifier))
+            {
+                GraphicsModules.Remove(ModuleIdentifier);
+            }
             return true;
         }
 

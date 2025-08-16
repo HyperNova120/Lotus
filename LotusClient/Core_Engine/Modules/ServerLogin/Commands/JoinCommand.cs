@@ -28,9 +28,16 @@ namespace Core_Engine.Modules.ServerLogin.Commands
                 return;
             }
             //Core_Engine.CurrentState = Core_Engine.State.Waiting;
-            Core_Engine.signalInteractiveHold(Core_Engine.State.JoiningServer);
+            Core_Engine.SignalInteractiveHold(Core_Engine.State.JoiningServer);
             Logging.LogInfo("Attempting to connect to server");
-            loginHandler.LoginToServer(commandArgs[0]);
+            if (commandArgs.Length == 1)
+            {
+                loginHandler.LoginToServer(commandArgs[0]);
+            }
+            else
+            {
+                loginHandler.LoginToServer(commandArgs[0], ushort.Parse(commandArgs[1]));
+            }
         }
     }
 }

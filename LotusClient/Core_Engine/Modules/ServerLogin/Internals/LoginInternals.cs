@@ -30,7 +30,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 .GetModule<Networking.Networking>("Networking")!
                 .DisconnectFromServer(packet.remoteHost);
             //Core_Engine.CurrentState = Core_Engine.State.Interactive;
-                Core_Engine.signalInteractiveFree(Core_Engine.State.JoiningServer);
+            Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
@@ -142,7 +142,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
         public void HandleLoginSuccess(MinecraftServerPacket packet)
         {
             LoginSuccessPacket loginSuccessPacket = new();
-            loginSuccessPacket.decodeFromBytes(packet.data);
+            loginSuccessPacket.DecodeFromBytes(packet.data);
             /* Logging.LogInfo(
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
@@ -156,14 +156,22 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                     $"\tS1:{element.s1}; S2:{element.s2}; optional S3:{(element.optionalS3 ?? "")}"
                 );
             } */
-            Core_Engine
-                .GetModule<Networking.Networking>("Networking")!
-                .SendPacket(packet.remoteHost, new EmptyPacket(0x03));
+            Networking.Networking NetworkModuleCache = Core_Engine.GetModule<Networking.Networking>(
+                "Networking"
+            )!;
+            /* NetworkModuleCache.GetServerConnection(packet.remoteHost)!.connectionState =
+                ConnectionState.CONFIGURATION; */
+
+            Core_Engine.signalInteractiveTransferHold(
+                Core_Engine.State.JoiningServer,
+                Core_Engine.State.Configuration
+            );
 
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
                 new ConnectionEventArgs(packet.remoteHost)
             );
+            NetworkModuleCache.SendPacket(packet.remoteHost, new EmptyPacket(0x03));
         }
     }
 }

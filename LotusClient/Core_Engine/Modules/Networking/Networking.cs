@@ -16,9 +16,11 @@ namespace Core_Engine.Modules.Networking
         private Dictionary<IPAddress, ServerConnection> Connections = new();
         public bool IsClientConnectedToPrimaryServer { get; set; } = false;
         private IPAddress? PrimaryClientServerConnection;
-        public static readonly int protocolVersion = 771;
+        public static readonly ProtocolVersion protocolVersion = ProtocolVersion.V1_21_8;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
+
+        private byte[] packetBytes = [];
 
         public void RegisterEvents(Action<string> RegisterEvent)
         {
@@ -114,6 +116,7 @@ namespace Core_Engine.Modules.Networking
                 connection!.TcpSocket = null;
             }
             Connections.Remove(remoteHost);
+
             /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
             {
                 Core_Engine.CurrentState = Core_Engine.State.Interactive;
@@ -154,7 +157,7 @@ namespace Core_Engine.Modules.Networking
 
         private void ReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
-            //Logging.LogDebug("ReceiveCompleted");
+            Logging.LogDebug("ReceiveCompleted");
             ServerConnectionSocketAsyncEventArgs eventArgs =
                 (ServerConnectionSocketAsyncEventArgs)e;
             ServerConnection connection = GetServerConnection(eventArgs.remoteHost)!;
@@ -176,12 +179,14 @@ namespace Core_Engine.Modules.Networking
                 else
                 {
                     Logging.LogError($"Handle Packet Received ERROR");
+                    Core_Engine.SignalInteractiveResetServerHolds();
                 }
             }
             catch (Exception exc)
             {
                 Logging.LogError($"Handle Packet Received ERROR: {exc}");
                 DisconnectFromServer(connection.remoteHost);
+                Core_Engine.SignalInteractiveResetServerHolds();
             }
         }
 
@@ -195,11 +200,11 @@ namespace Core_Engine.Modules.Networking
                 {
                     ServerConnection connection = GetServerConnection(eventArgs.remoteHost)!;
                     //data received properly
-                    byte[] packetBytes = e.Buffer![..e.BytesTransferred];
+                    byte[] tmpBuffer = e.Buffer![..e.BytesTransferred];
                     /* Logging.LogDebug(
                         $"ProcessReceive {packetBytes.Length} Bytes received; State: {connectionState}"
                     ); */
-                    if (packetBytes.Length == 0)
+                    if (tmpBuffer.Length == 0)
                     {
                         Logging.LogInfo("Connection Closed by Remote Host");
                         DisconnectFromServer(eventArgs.remoteHost);
@@ -208,8 +213,10 @@ namespace Core_Engine.Modules.Networking
                     if (connection.minecraftPacketHandler.IsEncryptionEnabled)
                     {
                         //Logging.LogDebug("Decrypting Packet");
-                        packetBytes = connection.encryption.DecryptData(packetBytes);
+                        tmpBuffer = connection.encryption.DecryptData(tmpBuffer);
                     }
+
+                    packetBytes = [.. packetBytes, .. tmpBuffer];
 
                     bool firstRun = true;
                     while (packetBytes.Length > 0)
@@ -225,9 +232,13 @@ namespace Core_Engine.Modules.Networking
                             );
                         if (serverPacket == null)
                         {
-                            Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
+                            Logging.LogDebug(
+                                $"ReceiveConnections; bad packet, Remaining Size:{packetBytes.Length}"
+                            );
+                            break;
+                            /* Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
                             DisconnectFromServer(eventArgs.remoteHost);
-                            return false;
+                            return false; */
                         }
                         ProcessPacketEvent(connection, serverPacket);
                     }
@@ -245,9 +256,9 @@ namespace Core_Engine.Modules.Networking
 
         private void ProcessPacketEvent(ServerConnection connection, MinecraftServerPacket packet)
         {
-            /* Logging.LogDebug(
-                $"\tProcessing Packet 0x{packet.protocol_id:X} in State: {connectionState.ToString()}"
-            ); */
+            Logging.LogDebug(
+                $"\tProcessing Packet 0x{packet.protocol_id:X} in State: {connection.connectionState.ToString()}"
+            );
             switch (connection.connectionState)
             {
                 case ConnectionState.STATUS:

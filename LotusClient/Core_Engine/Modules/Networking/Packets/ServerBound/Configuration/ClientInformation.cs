@@ -14,17 +14,6 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
         public bool allowServerListings;
         public int particleStatus;
 
-        public enum displayedSkinPartsFlags
-        {
-            CapeEnabled = 0x01,
-            JacketEnabled = 0x02,
-            LeftSleeveEnabled = 0x04,
-            RigthSleeveEnabled = 0x08,
-            LeftPantsLegEnabled = 0x10,
-            RightPantsLegEnabled = 0x20,
-            HatEnabled = 0x40,
-        }
-
         public ClientInformationPacket()
         {
             this.protocol_id = 0x00;

@@ -1,34 +1,41 @@
+using System.Diagnostics;
+using System.Threading.Tasks;
+
 namespace Core_Engine
 {
     public static class Logging
     {
-        public static Mutex mut = new();
+        private static readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         public static void LogInfo(string msg)
         {
-            mut.WaitOne();
+            _lock.Wait();
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(msg);
+            Console.WriteLine("[INFO] " + msg);
             Console.ForegroundColor = ConsoleColor.White;
-            mut.ReleaseMutex();
+            _lock.Release();
         }
 
         public static void LogDebug(string msg)
         {
-            mut.WaitOne();
+            _lock.Wait();
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(msg);
+            Console.WriteLine("\n[DEBUG] " + msg);
             Console.ForegroundColor = ConsoleColor.White;
-            mut.ReleaseMutex();
+            _lock.Release();
         }
 
-        public static void LogError(string msg)
+        public static void LogError(string msg, bool showStackTrace = false)
         {
-            mut.WaitOne();
+            _lock.Wait();
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(msg);
+            Console.WriteLine("[ERROR] " + msg);
+            if (showStackTrace)
+            {
+                Console.WriteLine(new StackTrace(true));
+            }
             Console.ForegroundColor = ConsoleColor.White;
-            mut.ReleaseMutex();
+            _lock.Release();
         }
     }
 }

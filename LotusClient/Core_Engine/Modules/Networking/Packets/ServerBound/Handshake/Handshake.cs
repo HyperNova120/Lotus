@@ -24,7 +24,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
             ); */
             return
             [
-                .. VarInt_VarLong.EncodeInt(Networking.protocolVersion),
+                .. VarInt_VarLong.EncodeInt((int)Networking.protocolVersion),
                 .. StringN.GetBytes(serverAddress),
                 .. BitConverter.GetBytes(serverPort),
                 .. VarInt_VarLong.EncodeInt(nextState),

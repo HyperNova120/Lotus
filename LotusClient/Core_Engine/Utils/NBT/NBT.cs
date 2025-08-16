@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Core_Engine.Utils.NBTInternals.BaseClasses;
 using Core_Engine.Utils.NBTInternals.Tags;
-using SharpNBT;
 
 namespace Core_Engine.Utils;
 
@@ -26,9 +25,9 @@ public class NBT
 
     private TAG_Compound? base_Tag = null;
 
-    public NBT()
+    public NBT(bool IsNetworkNBT = false)
     {
-        base_Tag = new() { Name = "" };
+        base_Tag = new() { Name = "", IsNetworkNBT = IsNetworkNBT };
     }
 
     public NBT(string Compound_Name)
@@ -50,12 +49,19 @@ public class NBT
         base_Tag = new();
         base_Tag.IsNetworkNBT = networkBytes;
         int numBytesRead = base_Tag.ProcessBytes(bytes).Length;
-        return numBytesRead;
+
+        /* if (networkBytes)
+        {
+            base_Tag = (TAG_Compound)base_Tag.Contained_Tags.First().Value;
+            base_Tag.IsNetworkNBT = networkBytes;
+        } */
+
+        return numBytesRead - 1;
     }
 
-    public string GetNBTAsString()
+    public string GetNBTAsString(int tab_space = 0)
     {
-        return (base_Tag != null) ? base_Tag.ToString() : "";
+        return (base_Tag != null) ? base_Tag.ToString(tab_space) : "";
     }
 
     public byte[] GetBytes()
@@ -82,7 +88,7 @@ public class NBT
             {
                 return tag.Value as T;
             }
-            else if (tag.Value.Type_ID == (int)TagType.Compound)
+            else if (tag.Value.Type_ID == (int)NBT_Tags.TAG_Compound)
             {
                 var compound = (TAG_Compound)tag.Value;
                 var nestedTag = compound.TryGetTag(Tag_Name);

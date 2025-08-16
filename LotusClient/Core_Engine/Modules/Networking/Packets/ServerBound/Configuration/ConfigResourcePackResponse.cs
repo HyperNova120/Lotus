@@ -19,14 +19,14 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 
         public enum ConfigResourcePackResponseResult
         {
-            Successfully_Downloaded,
-            Declined,
-            Failed_To_Download,
-            Accepted,
-            Downloaded,
-            Invalid_URL,
-            Failed_To_Reload,
-            Discarded,
+            SUCCESSFULLY_DOWNLOADED,
+            DECLINED,
+            FAILED_TO_DOWNLOAD,
+            ACCEPTED,
+            DOWNLOADED,
+            INVALID_URL,
+            FAILED_TO_RELOAD,
+            DISCARDED,
         }
     }
 }

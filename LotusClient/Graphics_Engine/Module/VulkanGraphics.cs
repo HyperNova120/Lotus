@@ -11,7 +11,7 @@ using Silk.NET.Windowing;
 
 namespace Graphics_Engine
 {
-    public unsafe class VulkanGraphics : IModuleBase
+    public unsafe class VulkanGraphics : IGraphicsModule
     {
         private int WIDTH = 1920;
         private int HEIGHT = 1080;

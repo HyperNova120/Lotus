@@ -1,6 +1,5 @@
 using Core_Engine.Exceptions;
 using Core_Engine.Utils.NBTInternals.BaseClasses;
-using SharpNBT;
 
 namespace Core_Engine.Utils.NBTInternals.Tags;
 
@@ -20,7 +19,7 @@ public class TAG_Compound : TAG_Base, TAG_Collection
 
         if (isInListTag || this.IsNetworkNBT)
         {
-            return DecodePayload(inputBytes);
+            return DecodePayload(IsNetworkNBT ? inputBytes[1..] : inputBytes);
         }
 
         //type id

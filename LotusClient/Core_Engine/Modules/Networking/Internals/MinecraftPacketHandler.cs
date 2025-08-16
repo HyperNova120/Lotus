@@ -1,6 +1,6 @@
 using System.Net;
-using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.BaseClasses.Types;
+using Core_Engine.Modules.Networking.Packets;
 
 namespace Core_Engine.Modules.Networking.Internals
 {
@@ -92,15 +92,15 @@ namespace Core_Engine.Modules.Networking.Internals
                 //Logging.LogDebug("Decoding Compressed Packet");
 
                 (int packetLength, int packetLengthnumBytes) = VarInt_VarLong.DecodeVarInt(bytes);
-                bytes = bytes[packetLengthnumBytes..];
 
-                if (packetLength > bytes.Length)
+                if (packetLength > (bytes.Length - packetLengthnumBytes))
                 {
                     Logging.LogError(
-                        $"MinecraftPacketHandler; DecodePacket ERROR: Size Mismatch, PacketLength:{packetLength}, RemainingBytes:{bytes.Length}"
+                        $"MinecraftPacketHandler CompressionEnabled 1; DecodePacket ERROR: Size Mismatch, PacketLength:{packetLength}, RemainingBytes:{bytes.Length}"
                     );
-                    return (null, []);
+                    return (null, bytes);
                 }
+                bytes = bytes[packetLengthnumBytes..];
                 (int dataLength, int dataLengthNumBytes) = VarInt_VarLong.DecodeVarInt(bytes);
                 bytes = bytes[dataLengthNumBytes..];
                 int remainingBytesInPacket = packetLength - dataLengthNumBytes;
@@ -115,7 +115,7 @@ namespace Core_Engine.Modules.Networking.Internals
                     if (packetBytes.Length != dataLength)
                     {
                         Logging.LogError(
-                            $"MinecraftPacketHandler; DecodePacket ERROR: Size Mismatch, DataLength:{dataLength}, Decompressed Packet Length:{packetBytes.Length}"
+                            $"MinecraftPacketHandler CompressionEnabled 2; DecodePacket ERROR: Size Mismatch, DataLength:{dataLength}, Decompressed Packet Length:{packetBytes.Length}"
                         );
                         return (null, []);
                     }
