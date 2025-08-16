@@ -1,10 +1,11 @@
+using Core_Engine.BaseClasses;
 using Core_Engine.BaseClasses.Types;
 
 namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class PluginMessagePacket : MinecraftPacket
     {
-        public string Channel = "";
+        public Identifier? Channel = null;
         public byte[] Data = [];
 
         public PluginMessagePacket()
@@ -14,7 +15,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 
         public override byte[] GetBytes()
         {
-            return [.. StringN.GetBytes(Channel), .. Data];
+            return [.. StringN.GetBytes(Channel.IdentifierString ?? ""), .. Data];
         }
     }
 }
