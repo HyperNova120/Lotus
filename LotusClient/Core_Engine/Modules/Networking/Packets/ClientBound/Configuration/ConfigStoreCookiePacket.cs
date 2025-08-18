@@ -6,7 +6,7 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Configuration;
 
 public class StoreCookiePacket
 {
-    public ServerCookie? serverCookie;
+    public ServerCookie? _ServerCookie;
 
     /// <summary>
     /// populates packet based on data
@@ -15,14 +15,14 @@ public class StoreCookiePacket
     /// <returns>number of bytes read</returns>
     public int DecodeFromBytes(byte[] data)
     {
-        serverCookie = new();
-        serverCookie.Key = new Identifier();
-        int numBytesRead = serverCookie.Key.GetFromBytes(data);
+        _ServerCookie = new();
+        _ServerCookie._Key = new Identifier();
+        int numBytesRead = _ServerCookie._Key.GetFromBytes(data);
         (byte[] bytesOfArray, int numberBytesRead) = PrefixedArray.DecodeBytes(
             data[numBytesRead..]
         );
 
-        serverCookie.Payload = bytesOfArray;
+        _ServerCookie._Payload = bytesOfArray;
 
         return numBytesRead + numberBytesRead;
     }

@@ -19,25 +19,26 @@ namespace Core_Engine.Modules.ServerLogin.Internals
         private enum RegisteredEventIdentifiers
         {
             SERVERLOGIN_loginSuccessful,
+            CONFIG_Start_Config_Process,
         }
 
         public void HandleLoginDisconnect(MinecraftServerPacket packet)
         {
             Logging.LogInfo(
-                $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet.data)}"
+                $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet._Data)}"
             );
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
-                .DisconnectFromServer(packet.remoteHost);
+                .DisconnectFromServer(packet._RemoteHost);
             //Core_Engine.CurrentState = Core_Engine.State.Interactive;
             Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
         {
-            (string serverID, int serverIDBytes) = StringN.DecodeBytes(packet.data);
+            (string serverID, int serverIDBytes) = StringN.DecodeBytes(packet._Data);
 
-            byte[] remainingBytes = packet.data[serverIDBytes..];
+            byte[] remainingBytes = packet._Data[serverIDBytes..];
             (byte[] PublicKey, int PublicKeyBytes) = PrefixedArray.DecodeBytes(remainingBytes);
 
             remainingBytes = remainingBytes[PublicKeyBytes..];
@@ -50,8 +51,8 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             {
                 string hash = Core_Engine
                     .GetModule<Networking.Networking>("Networking")!
-                    .GetServerConnection(packet.remoteHost)!
-                    .encryption.GenerateMinecraftAuthenticationHash(serverID, PublicKey);
+                    .GetServerConnection(packet._RemoteHost)!
+                    ._Encryption.GenerateMinecraftAuthenticationHash(serverID, PublicKey);
                 if (ShouldAuth)
                 {
                     await AuthenticateWithMinecraftServer(hash);
@@ -67,21 +68,21 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                             rsa.Encrypt(
                                 Core_Engine
                                     .GetModule<Networking.Networking>("Networking")!
-                                    .GetServerConnection(packet.remoteHost)!
-                                    .encryption.SharedSecret,
+                                    .GetServerConnection(packet._RemoteHost)!
+                                    ._Encryption._SharedSecret,
                                 false
                             ),
                             rsa.Encrypt(VerifyToken, false)
                         );
                     Core_Engine
                         .GetModule<Networking.Networking>("Networking")!
-                        .SendPacket(packet.remoteHost, encryptionResponsePacket);
+                        .SendPacket(packet._RemoteHost, encryptionResponsePacket);
                 }
                 //Logging.LogDebug("Set Encryption True");
                 Core_Engine
                     .GetModule<Networking.Networking>("Networking")!
-                    .GetServerConnection(packet.remoteHost)!
-                    .minecraftPacketHandler.IsEncryptionEnabled = true;
+                    .GetServerConnection(packet._RemoteHost)!
+                    ._MinecraftPacketHandler._IsEncryptionEnabled = true;
             }
             catch (Exception e)
             {
@@ -95,8 +96,8 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             MojangLogin.MojangLogin mojangLogin = Core_Engine.GetModule<MojangLogin.MojangLogin>(
                 "MojangLogin"
             )!;
-            authModel.accessToken = mojangLogin.MinecraftAuth!.access_token;
-            authModel.selectedProfile = mojangLogin.userProfile!.id.Replace("-", "");
+            authModel.accessToken = mojangLogin._MinecraftAuth!.access_token;
+            authModel.selectedProfile = mojangLogin._UserProfile!.id.Replace("-", "");
             authModel.serverId = serverHash;
 
             HttpRequestMessage msg = HttpHandler.CreateHttpRequestMessage(
@@ -130,26 +131,26 @@ namespace Core_Engine.Modules.ServerLogin.Internals
 
         public void HandleSetCompression(MinecraftServerPacket packet)
         {
-            (int CompresionThreshold, _) = VarInt_VarLong.DecodeVarInt(packet.data);
+            (int CompresionThreshold, _) = VarInt_VarLong.DecodeVarInt(packet._Data);
             //Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
             ServerConnection connection = Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
-                .GetServerConnection(packet.remoteHost)!;
-            connection.minecraftPacketHandler.CompresionThreshold = CompresionThreshold;
-            connection.minecraftPacketHandler.IsCompressionEnabled = true;
+                .GetServerConnection(packet._RemoteHost)!;
+            connection._MinecraftPacketHandler._CompresionThreshold = CompresionThreshold;
+            connection._MinecraftPacketHandler._IsCompressionEnabled = true;
         }
 
         public void HandleLoginSuccess(MinecraftServerPacket packet)
         {
             LoginSuccessPacket loginSuccessPacket = new();
-            loginSuccessPacket.DecodeFromBytes(packet.data);
+            loginSuccessPacket.DecodeFromBytes(packet._Data);
             /* Logging.LogInfo(
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
             Logging.LogInfo("Successfully Joined Server!");
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
-                .IsClientConnectedToPrimaryServer = true;
+                ._IsClientConnectedToPrimaryServer = true;
             /* foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
                 Logging.LogDebug(
@@ -167,11 +168,15 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 Core_Engine.State.Configuration
             );
 
+            NetworkModuleCache.SendPacket(packet._RemoteHost, new EmptyPacket(0x03));
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
-                new ConnectionEventArgs(packet.remoteHost)
+                new ConnectionEventArgs(packet._RemoteHost)
             );
-            NetworkModuleCache.SendPacket(packet.remoteHost, new EmptyPacket(0x03));
+            Core_Engine.InvokeEvent(
+                nameof(RegisteredEventIdentifiers.CONFIG_Start_Config_Process),
+                new ConnectionEventArgs(packet._RemoteHost)
+            );
         }
     }
 }

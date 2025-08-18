@@ -7,23 +7,26 @@ namespace Core_Engine.Modules.Networking.Internals
 {
     public class ServerConnection
     {
-        public Socket? TcpSocket;
-        public ConnectionState connectionState;
-        public Encryption encryption;
-        public MinecraftPacketHandler minecraftPacketHandler;
+        public Socket? _TcpSocket;
+        public ConnectionState _ConnectionState;
+        public Encryption _Encryption;
+        public MinecraftPacketHandler _MinecraftPacketHandler;
 
-        public ServerConnectionSocketAsyncEventArgs serverConnectionSocketAsyncEventArgs;
+        public ServerConnectionSocketAsyncEventArgs _ServerConnectionSocketAsyncEventArgs;
 
-        public IPAddress remoteHost { get; private set; }
+        public IPAddress _RemoteHost { get; private set; }
+
+        public byte[] _IncompletePacketBytesBuffer = [];
+        public List<byte> _DataToSendBuffer = new();
 
         public ServerConnection(string serverAddress)
         {
-            remoteHost = Dns.GetHostAddresses(serverAddress)[0];
-            TcpSocket = null;
-            connectionState = ConnectionState.NONE;
-            encryption = new();
-            minecraftPacketHandler = new();
-            serverConnectionSocketAsyncEventArgs = new(remoteHost);
+            _RemoteHost = Dns.GetHostAddresses(serverAddress)[0];
+            _TcpSocket = null;
+            _ConnectionState = ConnectionState.NONE;
+            _Encryption = new();
+            _MinecraftPacketHandler = new();
+            _ServerConnectionSocketAsyncEventArgs = new(_RemoteHost);
         }
     }
 }

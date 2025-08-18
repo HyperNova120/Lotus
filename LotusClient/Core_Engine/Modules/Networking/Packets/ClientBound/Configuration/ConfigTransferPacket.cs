@@ -4,8 +4,8 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Configuration;
 
 public class ConfigTransferPacket
 {
-    public string host = "";
-    public int port;
+    public string _Host = "";
+    public int _Port;
 
     /// <summary>
     /// populates packet based on data
@@ -14,8 +14,8 @@ public class ConfigTransferPacket
     /// <returns>number of bytes
     public int DecodeFromBytes(byte[] data)
     {
-        (host, int numBytes) = StringN.DecodeBytes(data);
-        (port, int portNumBytes) = VarInt_VarLong.DecodeVarInt(data[numBytes..]);
+        (_Host, int numBytes) = StringN.DecodeBytes(data);
+        (_Port, int portNumBytes) = VarInt_VarLong.DecodeVarInt(data[numBytes..]);
 
         return portNumBytes + portNumBytes;
     }

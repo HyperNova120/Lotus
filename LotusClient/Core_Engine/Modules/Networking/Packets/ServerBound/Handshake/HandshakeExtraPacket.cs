@@ -9,7 +9,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
 
         public HandshakeExtraPacket()
         {
-            protocol_id = 0xFE;
+            _Protocol_ID = 0xFE;
         }
     }
 }

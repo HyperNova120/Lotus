@@ -4,6 +4,6 @@ namespace Core_Engine.Modules.GameStateHandler.BaseClasses;
 
 public class ServerTag
 {
-    public Identifier? TagName;
-    public List<int> Entries = new();
+    public Identifier? _TagName;
+    public List<int> _Entries = new();
 }

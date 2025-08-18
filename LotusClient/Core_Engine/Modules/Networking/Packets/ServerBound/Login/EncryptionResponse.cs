@@ -5,23 +5,23 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Login
 {
     public class EncryptionResponsePacket : MinecraftPacket
     {
-        public byte[] SharedSecret { get; set; }
-        public byte[] VerifyToken { get; set; }
+        public byte[] _SharedSecret { get; set; }
+        public byte[] _VerifyToken { get; set; }
 
         public override byte[] GetBytes()
         {
             return
             [
-                .. PrefixedArray.GetBytes(SharedSecret),
-                .. PrefixedArray.GetBytes(VerifyToken),
+                .. PrefixedArray.GetBytes(_SharedSecret),
+                .. PrefixedArray.GetBytes(_VerifyToken),
             ];
         }
 
         public EncryptionResponsePacket(byte[] sharedSecret, byte[] verifyToken)
         {
-            protocol_id = 0x01;
-            SharedSecret = sharedSecret;
-            VerifyToken = verifyToken;
+            _Protocol_ID = 0x01;
+            _SharedSecret = sharedSecret;
+            _VerifyToken = verifyToken;
         }
     }
 }

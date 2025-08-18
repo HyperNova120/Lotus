@@ -4,80 +4,77 @@ using Core_Engine.BaseClasses.Types;
 using Core_Engine.Interfaces;
 using Core_Engine.Modules.GameStateHandler;
 using Core_Engine.Modules.GameStateHandler.BaseClasses;
+using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.Modules.Networking.Packets.ClientBound.Configuration;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Configuration;
 using Core_Engine.Utils;
 
 namespace Core_Engine.Modules.ServerConfig.Internals;
 
 public class ConfigurationInternals
 {
-    private readonly IGameStateHandler gameStateHandler;
-    private readonly Networking.Networking NetworkingManager;
+    private readonly IGameStateHandler _GameStateHandler;
+    private readonly Networking.Networking _NetworkingManager;
 
     public ConfigurationInternals()
     {
-        gameStateHandler = Core_Engine.GetModule<IGameStateHandler>("GameStateHandler")!;
-        NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
+        _GameStateHandler = Core_Engine.GetModule<IGameStateHandler>("GameStateHandler")!;
+        _NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
     }
 
     public void StoreCookie(MinecraftServerPacket minecraftPacket)
     {
-        StoreCookiePacket storeCookiePacket = new();
-        storeCookiePacket.DecodeFromBytes(minecraftPacket.data);
-        gameStateHandler.AddServerCookie(storeCookiePacket.serverCookie!);
+        try
+        {
+            Logging.LogDebug("StoreCookie");
+            StoreCookiePacket storeCookiePacket = new();
+            storeCookiePacket.DecodeFromBytes(minecraftPacket._Data);
+            _GameStateHandler.AddServerCookie(storeCookiePacket._ServerCookie!);
+        }
+        catch (Exception e)
+        {
+            Logging.LogError(e.ToString());
+        }
     }
 
     internal void ClientboundKnownPacks(MinecraftServerPacket packet)
     {
-        throw new NotImplementedException();
-    }
+        ConfigClientboundKnownPacks configClientboundKnownPacks = new();
+        configClientboundKnownPacks.DecideFromBytes(packet._Data);
 
-    internal void FinishConfiguration(MinecraftServerPacket packet)
-    {
-        try
-        {
-            Logging.LogDebug("FinishConfiguration; Showing REGISTRIES");
-            foreach (
-                var item in ((GameStateHandler.GameStateHandler)gameStateHandler).serverRegistryData
-            )
-            {
-                Logging.LogDebug(item.Key.GetString());
-                foreach (var item2 in item.Value.Entries)
-                {
-                    string value = (item2.Data != null) ? item2.Data.GetNBTAsString(3) : "NULL";
-                    Logging.LogDebug($"\tID:{item2.ID.GetString()} VALUE:\n{value}");
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Logging.LogError(e.ToString(), false);
-        }
+        //tmp for testing
+        //NetworkingManager.SendPacket(packet.remoteHost, );
+        throw new NotImplementedException();
     }
 
     internal void RegistryData(MinecraftServerPacket packet)
     {
         Identifier RegistryID = new();
-        int offset = RegistryID.GetFromBytes(packet.data);
+        int offset = RegistryID.GetFromBytes(packet._Data);
 
         Logging.LogDebug($"\t\tRegistryID: {RegistryID.GetString()}");
 
-        (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(packet.data[offset..]);
+        (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(packet._Data[offset..]);
         offset += numBytesRead;
 
-        RegistryData registryData = new() { ID = RegistryID };
+        RegistryData registryData = new() { _RegistryNameSpace = RegistryID };
         for (int i = 0; i < arraySize; i++)
         {
+            if (offset == packet._Data.Length)
+            {
+                break;
+            }
             RegistryEntry registryEntry = new();
 
             Identifier ID = new();
-            offset += ID.GetFromBytes(packet.data[offset..]);
+            Logging.LogDebug($"\t\t\toffset:{offset} packet.data Length:{packet._Data.Length}");
+            offset += ID.GetFromBytes(packet._Data[offset..]);
             registryEntry.ID = ID;
-            Logging.LogDebug("\t\tEntry: " + ID.GetString());
+            //Logging.LogDebug("\t\tEntry: " + ID.GetString());
 
             (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
-                packet.data[offset..]
+                packet._Data[offset..]
             );
             offset += numberBytesRead;
 
@@ -86,44 +83,107 @@ public class ConfigurationInternals
                 NBT Data = new(true);
                 try
                 {
-                    Logging.LogDebug($"NBT Present");
-                    offset += Data.ReadFromBytes(packet.data[offset..], true);
+                    //Logging.LogDebug($"NBT Present");
+                    offset += Data.ReadFromBytes(packet._Data[offset..], true);
                     registryEntry.Data = Data;
-                    Logging.LogDebug("\tNBT DATA:\n" + Data.GetNBTAsString(2));
+                    //Logging.LogDebug("\tNBT DATA:\n" + Data.GetNBTAsString(2));
                 }
                 catch (Exception e)
                 {
                     Logging.LogError(e.ToString(), false);
-                    Logging.LogError($"DATA: {Data.GetNBTAsString()}", false);
+                    //Logging.LogError($"DATA: {Data.GetNBTAsString()}", false);
                 }
             }
             else
             {
-                Logging.LogDebug(
+                /* Logging.LogDebug(
                     $"NBT NOT PRESENT, offset:{offset} dataLength:{packet.data.Length}"
-                );
+                ); */
             }
 
-            Logging.LogDebug($"offset:{offset} dataLength:{packet.data.Length}");
+            //Logging.LogDebug($"offset:{offset} dataLength:{packet.data.Length}");
 
-            registryData.Entries.Add(registryEntry);
+            registryData._Entries.Add(registryEntry);
         }
-        gameStateHandler.AddServerRegistryData(registryData);
+        _GameStateHandler.AddServerRegistryData(registryData);
     }
 
     internal void Transfer(MinecraftServerPacket minecraftPacket)
     {
-        gameStateHandler.ProcessTransfer();
-        ConfigTransferPacket configTransferPacket = new();
-        configTransferPacket.DecodeFromBytes(minecraftPacket.data);
-        Core_Engine.signalInteractiveTransferHold(
-            Core_Engine.State.Configuration,
-            Core_Engine.State.JoiningServer
-        );
-        NetworkingManager.DisconnectFromServer(minecraftPacket.remoteHost);
-        _ = Core_Engine.HandleCommand(
-            "join",
-            [configTransferPacket.host, configTransferPacket.port.ToString()]
+        try
+        {
+            Logging.LogDebug("Transfer");
+            _GameStateHandler.ProcessTransfer();
+            ConfigTransferPacket configTransferPacket = new();
+            configTransferPacket.DecodeFromBytes(minecraftPacket._Data);
+            Core_Engine.signalInteractiveTransferHold(
+                Core_Engine.State.Configuration,
+                Core_Engine.State.JoiningServer
+            );
+            _NetworkingManager.DisconnectFromServer(minecraftPacket._RemoteHost);
+            _ = Core_Engine.HandleCommand(
+                "join",
+                [configTransferPacket._Host, configTransferPacket._Port.ToString()]
+            );
+        }
+        catch (Exception e)
+        {
+            Logging.LogError(e.ToString());
+        }
+    }
+
+    public void SendServerboundPluginMessage(IPAddress remoteHost)
+    {
+        Logging.LogDebug("Sending Plugin Message");
+        PluginMessagePacket pluginMessagePacket = new()
+        {
+            _Channel = new("minecraft:brand"),
+            _Data = StringN.GetBytes("lotus"),
+        };
+        _NetworkingManager.SendPacket(remoteHost, pluginMessagePacket);
+    }
+
+    public void SendServerboundClientInformation(IPAddress remoteHost)
+    {
+        Logging.LogDebug("Sending Client Information");
+        ClientInformationPacket pluginMessagePacket = new()
+        {
+            _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
+            _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
+            _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
+            _DisplayedSkinParts = IGameStateHandler._Settings._SkinCustomization._DisplayedSkinParts,
+            _EnableTextFiltering = false, //hardcoded for now, add setting later
+            _Locale = "en_US", //hardcoded, chage if more locales added later
+            _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,
+            _ParticleStatus = (int)IGameStateHandler._Settings._VideoSettings._ParticleStatus,
+            _ViewDistance = IGameStateHandler._Settings._VideoSettings._RenderDistance,
+        };
+        _NetworkingManager.SendPacket(remoteHost, pluginMessagePacket);
+    }
+
+    public void SendConfigBrandAndClientInfo(IPAddress remoteHost)
+    {
+        Logging.LogDebug("Sending Plugin Message And Client Information");
+        PluginMessagePacket pluginBrandMessagePacket = new()
+        {
+            _Channel = new("minecraft:brand"),
+            _Data = StringN.GetBytes("lotus"),
+        };
+        ClientInformationPacket pluginInfoMessagePacket = new()
+        {
+            _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
+            _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
+            _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
+            _DisplayedSkinParts = IGameStateHandler._Settings._SkinCustomization._DisplayedSkinParts,
+            _EnableTextFiltering = false, //hardcoded for now, add setting later
+            _Locale = "en_US", //hardcoded, chage if more locales added later
+            _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,
+            _ParticleStatus = (int)IGameStateHandler._Settings._VideoSettings._ParticleStatus,
+            _ViewDistance = IGameStateHandler._Settings._VideoSettings._RenderDistance,
+        };
+        _NetworkingManager.SendPacket(
+            remoteHost,
+            [pluginBrandMessagePacket, pluginInfoMessagePacket]
         );
     }
 }

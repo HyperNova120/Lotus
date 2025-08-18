@@ -45,38 +45,38 @@ namespace Core_Engine.Interfaces
                 MINIMAL = 2,
             }
 
-            public byte biomeBlend = 5;
+            public byte _BiomeBlend = 5;
 
-            public GraphicsSettings graphics = GraphicsSettings.FABULOUS;
+            public GraphicsSettings _Graphics = GraphicsSettings.FABULOUS;
 
-            public byte renderDistance = 24;
+            public byte _RenderDistance = 24;
 
-            public byte simulationDistance = 12;
+            public byte _SimulationDistance = 12;
 
-            public bool smoothLighting = true;
+            public bool _SmoothLighting = true;
 
-            public bool VSync = true;
+            public bool _VSync = true;
 
-            public byte GUIScale = 3;
+            public byte _GUIScale = 3;
 
-            public CloudSettings clouds = CloudSettings.FANCY;
+            public CloudSettings _Clouds = CloudSettings.FANCY;
 
-            public byte brightness = 100;
+            public byte _Brightness = 100;
 
-            public ParticleStatus particleStatus = ParticleStatus.ALL;
+            public ParticleStatus _ParticleStatus = ParticleStatus.ALL;
 
-            public byte mipmapLevels = 4;
+            public byte _MipmapLevels = 4;
 
-            public bool entityShadows = true;
+            public bool _EntityShadows = true;
 
-            public bool viewBobbing = false;
+            public bool _ViewBobbing = false;
 
             public VideoSettings() { }
         }
 
         public struct SkinCustomization
         {
-            private byte displayedSkinParts =
+            public byte _DisplayedSkinParts { private set; get; } =
                 (byte)DisplayedSkinPartsFlags.CAPE_ENABLED
                 | (byte)DisplayedSkinPartsFlags.JACKET_ENABLED
                 | (byte)DisplayedSkinPartsFlags.LEFT_PANTS_LEG_ENABLED
@@ -87,22 +87,22 @@ namespace Core_Engine.Interfaces
 
             public bool IsSkinPartDisplayed(DisplayedSkinPartsFlags flag)
             {
-                return (displayedSkinParts & (byte)flag) > 0;
+                return (_DisplayedSkinParts & (byte)flag) > 0;
             }
 
             public void SetSkinPartDisplayed(DisplayedSkinPartsFlags flag, bool display)
             {
                 if (display)
                 {
-                    displayedSkinParts |= (byte)flag;
+                    _DisplayedSkinParts |= (byte)flag;
                 }
                 else
                 {
-                    displayedSkinParts &= (byte)(~flag);
+                    _DisplayedSkinParts &= (byte)(~flag);
                 }
             }
 
-            public MainHand mainHand = MainHand.RIGHT;
+            public MainHand _MainHand = MainHand.RIGHT;
 
             public SkinCustomization() { }
         }
@@ -116,49 +116,49 @@ namespace Core_Engine.Interfaces
                 HIDDEN = 2,
             }
 
-            public ChatMode chatShown = ChatMode.ENABLED;
+            public ChatMode _ChatShown = ChatMode.ENABLED;
 
-            public bool colors = true;
+            public bool _Colors = true;
 
-            public bool webLinks = true;
+            public bool _WebLinks = true;
 
-            public bool promptOnLinks = true;
+            public bool _PromptOnLinks = true;
 
-            public byte chatTextOpacity = 100;
+            public byte _ChatTextOpacity = 100;
 
-            public byte textBackgroundOpacity = 50;
+            public byte _TextBackgroundOpacity = 50;
 
-            public byte chatTextSize = 100;
+            public byte _ChatTextSize = 100;
 
-            public byte lineSpacing = 0;
+            public byte _LineSpacing = 0;
 
-            public float chatDelay = 0;
+            public float _ChatDelay = 0;
 
-            public int width = 320;
+            public int _Width = 320;
 
-            public int focusedHeight = 180;
+            public int _FocusedHeight = 180;
 
-            public int unfocusedHeight = 90;
+            public int _UnfocusedHeight = 90;
 
             public ChatSettings() { }
         }
 
         public struct ClientSettings
         {
-            public byte FOV = 70;
+            public byte _FOV = 70;
 
-            public SkinCustomization skinCustomization;
+            public SkinCustomization _SkinCustomization;
 
-            public VideoSettings videoSettings;
+            public VideoSettings _VideoSettings;
 
-            public ChatSettings chatSettings;
+            public ChatSettings _ChatSettings;
 
-            public bool allowServerListings = true;
+            public bool _AllowServerListings = true;
 
             public ClientSettings() { }
         }
 
-        public static ClientSettings settings;
+        public static ClientSettings _Settings { get; protected set; }
 
         //==========================================
         //===========CONFIGURATION METHODS==========

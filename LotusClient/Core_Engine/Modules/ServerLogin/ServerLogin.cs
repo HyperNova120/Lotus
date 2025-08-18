@@ -23,6 +23,7 @@ namespace Core_Engine.Modules.ServerLogin
         public void RegisterEvents(Action<string> RegisterEvent)
         {
             RegisterEvent.Invoke("SERVERLOGIN_loginSuccessful");
+            RegisterEvent.Invoke("CONFIG_Start_Config_Process");
         }
 
         public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
@@ -43,8 +44,8 @@ namespace Core_Engine.Modules.ServerLogin
             try
             {
                 PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-                MinecraftServerPacket packet = eventArgs.packet;
-                switch (packet.protocol_id)
+                MinecraftServerPacket packet = eventArgs._Packet;
+                switch (packet._Protocol_ID)
                 {
                     case 0x00:
                         //Logging.LogDebug("Disconnect Packet Received");
@@ -65,11 +66,11 @@ namespace Core_Engine.Modules.ServerLogin
                         break;
                     default:
                         Logging.LogError(
-                            $"LoginHandler State 0x{packet.protocol_id:X} Not Implemented"
+                            $"LoginHandler State 0x{packet._Protocol_ID:X} Not Implemented"
                         );
                         Core_Engine
                             .GetModule<Networking.Networking>("Networking")!
-                            .DisconnectFromServer(eventArgs.remoteHost);
+                            .DisconnectFromServer(eventArgs._RemoteHost);
                         Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
@@ -96,7 +97,7 @@ namespace Core_Engine.Modules.ServerLogin
 
             IPAddress remoteHost = Dns.GetHostAddresses(serverIp)[0];
 
-            if (mojangLogin.userProfile == null)
+            if (mojangLogin._UserProfile == null)
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
                 /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
@@ -111,7 +112,7 @@ namespace Core_Engine.Modules.ServerLogin
                 if (networking.GetServerConnection(remoteHost) == null)
                 {
                     networking.ConnectToServer(remoteHost.ToString(), port);
-                    networking.GetServerConnection(remoteHost)!.connectionState =
+                    networking.GetServerConnection(remoteHost)!._ConnectionState =
                         ConnectionState.LOGIN;
                     networking.SendPacket(
                         remoteHost,
@@ -123,8 +124,8 @@ namespace Core_Engine.Modules.ServerLogin
                     networking.SendPacket(
                         remoteHost,
                         new LoginStartPacket(
-                            mojangLogin.userProfile!.name,
-                            new Guid(mojangLogin.userProfile!.id)
+                            mojangLogin._UserProfile!.name,
+                            new Guid(mojangLogin._UserProfile!.id)
                         )
                     );
                 }

@@ -5,11 +5,11 @@ namespace Core_Engine.EngineEventArgs
 {
     public class ConnectionEventArgs : EventArgs
     {
-        public IPAddress remoteHost { get; private set; }
+        public IPAddress _RemoteHost { get; private set; }
 
         public ConnectionEventArgs(IPAddress remoteHost)
         {
-            this.remoteHost = remoteHost;
+            this._RemoteHost = remoteHost;
         }
     }
 }

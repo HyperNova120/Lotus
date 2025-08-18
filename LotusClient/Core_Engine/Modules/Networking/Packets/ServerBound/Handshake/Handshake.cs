@@ -11,11 +11,11 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
             Transfer = 3,
         }
 
-        public PacketBoundTo BoundTo = PacketBoundTo.Server;
+        public PacketBoundTo _BoundTo = PacketBoundTo.Server;
 
-        public string serverAddress;
-        public ushort serverPort = 25565;
-        public int nextState = 1;
+        public string _ServerAddress;
+        public ushort _ServerPort = 25565;
+        public int _NextState = 1;
 
         public override byte[] GetBytes()
         {
@@ -24,18 +24,20 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
             ); */
             return
             [
-                .. VarInt_VarLong.EncodeInt((int)Networking.protocolVersion),
-                .. StringN.GetBytes(serverAddress),
-                .. BitConverter.GetBytes(serverPort),
-                .. VarInt_VarLong.EncodeInt(nextState),
+                .. VarInt_VarLong.EncodeInt(
+                    (int)Core_Engine.GetModule<Networking>("Networking")!._ProtocolVersion
+                ),
+                .. StringN.GetBytes(_ServerAddress),
+                .. BitConverter.GetBytes(_ServerPort),
+                .. VarInt_VarLong.EncodeInt(_NextState),
             ];
         }
 
         public HandshakePacket(string serverAddress, Intent nextState, ushort serverPort = 25565)
         {
-            this.serverAddress = serverAddress;
-            this.serverPort = serverPort;
-            this.nextState = (int)nextState;
+            this._ServerAddress = serverAddress;
+            this._ServerPort = serverPort;
+            this._NextState = (int)nextState;
         }
     }
 }

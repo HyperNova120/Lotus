@@ -6,38 +6,38 @@ namespace Core_Engine.Modules.Networking.Internals
 {
     public class MinecraftPacketHandler
     {
-        public bool IsCompressionEnabled = false;
-        public bool IsEncryptionEnabled = false;
-        public int CompresionThreshold;
+        public bool _IsCompressionEnabled = false;
+        public bool _IsEncryptionEnabled = false;
+        public int _CompresionThreshold;
 
         public void Init()
         {
-            IsCompressionEnabled = false;
-            IsEncryptionEnabled = false;
-            CompresionThreshold = default;
+            _IsCompressionEnabled = false;
+            _IsEncryptionEnabled = false;
+            _CompresionThreshold = default;
         }
 
         public byte[] CreatePacket(ServerConnection connection, MinecraftPacket data)
         {
-            if (!IsCompressionEnabled || CompresionThreshold < 0)
+            if (!_IsCompressionEnabled || _CompresionThreshold < 0)
             {
-                byte[] packet_id = VarInt_VarLong.EncodeInt(data.protocol_id);
+                byte[] packet_id = VarInt_VarLong.EncodeInt(data._Protocol_ID);
                 byte[] packet_data = data.GetBytes();
                 byte[] packet_length = VarInt_VarLong.EncodeInt(
                     packet_id.Length + packet_data.Length
                 );
                 byte[] packetBytes = [.. packet_length, .. packet_id, .. packet_data];
-                if (IsEncryptionEnabled)
+                if (_IsEncryptionEnabled)
                 {
-                    packetBytes = connection.encryption.EncryptData(packetBytes);
+                    packetBytes = connection._Encryption.EncryptData(packetBytes);
                 }
                 return packetBytes;
             }
             else
             {
-                byte[] packet_id = VarInt_VarLong.EncodeInt(data.protocol_id);
+                byte[] packet_id = VarInt_VarLong.EncodeInt(data._Protocol_ID);
                 byte[] packet_data = data.GetBytes();
-                if (packet_id.Length + packet_data.Length < CompresionThreshold)
+                if (packet_id.Length + packet_data.Length < _CompresionThreshold)
                 {
                     //prepare uncompressed
                     byte[] data_length = VarInt_VarLong.EncodeInt(0);
@@ -52,9 +52,9 @@ namespace Core_Engine.Modules.Networking.Internals
                         .. packet_data,
                     ];
 
-                    if (IsEncryptionEnabled)
+                    if (_IsEncryptionEnabled)
                     {
-                        packetBytes = connection.encryption.EncryptData(packetBytes);
+                        packetBytes = connection._Encryption.EncryptData(packetBytes);
                     }
                     return packetBytes;
                 }
@@ -72,9 +72,9 @@ namespace Core_Engine.Modules.Networking.Internals
                     );
                     byte[] packetBytes = [.. packet_length, .. data_length, .. compressed_Section];
 
-                    if (IsEncryptionEnabled)
+                    if (_IsEncryptionEnabled)
                     {
-                        packetBytes = connection.encryption.EncryptData(packetBytes);
+                        packetBytes = connection._Encryption.EncryptData(packetBytes);
                     }
                     return packetBytes;
                 }
@@ -86,7 +86,7 @@ namespace Core_Engine.Modules.Networking.Internals
             byte[] bytes
         )
         {
-            if (IsCompressionEnabled)
+            if (_IsCompressionEnabled)
             {
                 //has packet length
                 //Logging.LogDebug("Decoding Compressed Packet");

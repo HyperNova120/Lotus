@@ -7,22 +7,22 @@ namespace Core_Engine.Modules.Networking.Packets
 {
     public abstract class MinecraftPacket
     {
-        public int protocol_id = 0x00;
+        public int _Protocol_ID { get; protected set; } = 0x00;
 
         public abstract byte[] GetBytes();
     }
 
     public class MinecraftServerPacket
     {
-        public int protocol_id = 0x00;
-        public byte[] data;
-        public IPAddress remoteHost;
+        public int _Protocol_ID = 0x00;
+        public byte[] _Data;
+        public IPAddress _RemoteHost;
 
         public MinecraftServerPacket(IPAddress remoteHost, int protocol_id, byte[] data)
         {
-            this.data = data;
-            this.protocol_id = protocol_id;
-            this.remoteHost = remoteHost;
+            this._Data = data;
+            this._Protocol_ID = protocol_id;
+            this._RemoteHost = remoteHost;
         }
     }
 

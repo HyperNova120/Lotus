@@ -12,7 +12,7 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Status
 
         public StatusPingRequestPacket()
         {
-            protocol_id = 0x01;
+            _Protocol_ID = 0x01;
         }
     }
 }

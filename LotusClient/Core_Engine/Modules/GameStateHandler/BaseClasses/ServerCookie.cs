@@ -4,15 +4,15 @@ namespace Core_Engine.Modules.GameStateHandler.BaseClasses
 {
     public class ServerCookie
     {
-        public Identifier? Key;
-        public byte[]? Payload;
+        public Identifier? _Key;
+        public byte[]? _Payload;
 
         public ServerCookie() { }
 
         public ServerCookie(Identifier Identifier, byte[] payload)
         {
-            this.Key = Identifier;
-            this.Payload = payload;
+            this._Key = Identifier;
+            this._Payload = payload;
         }
     }
 }

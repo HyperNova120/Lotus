@@ -14,23 +14,23 @@ namespace Core_Engine.Modules.MojangLogin.Commands
         public async Task ProcessCommand(string[] commandArgs)
         {
             var mojangLogin = Core_Engine.GetModule<MojangLogin>("MojangLogin")!;
-            if (mojangLogin.userProfile != null)
+            if (mojangLogin._UserProfile != null)
             {
                 Console.WriteLine(
-                    "User Already Signed into Account " + mojangLogin.userProfile.name
+                    "User Already Signed into Account " + mojangLogin._UserProfile.name
                 );
                 return;
             }
 
             Core_Engine.SignalInteractiveHold(Core_Engine.State.AccountLogin);
             await mojangLogin.LoginAsync();
-            if (mojangLogin.userProfile == null)
+            if (mojangLogin._UserProfile == null)
             {
                 Logging.LogError("Failed to sign in");
             }
             else
             {
-                Logging.LogInfo("Signed in as " + mojangLogin.userProfile!.name);
+                Logging.LogInfo("Signed in as " + mojangLogin._UserProfile!.name);
             }
         }
     }

@@ -22,7 +22,7 @@ namespace Core_Engine.Modules.ServerLogin.Commands
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
             )!;
-            if (networking.IsClientConnectedToPrimaryServer)
+            if (networking._IsClientConnectedToPrimaryServer)
             {
                 Console.WriteLine("you are already connected to a server");
                 return;

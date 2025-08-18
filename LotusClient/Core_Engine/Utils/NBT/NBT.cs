@@ -23,32 +23,32 @@ public class NBT
         TAG_Long_Array,
     }
 
-    private TAG_Compound? base_Tag = null;
+    private TAG_Compound? _Base_Tag = null;
 
     public NBT(bool IsNetworkNBT = false)
     {
-        base_Tag = new() { Name = "", IsNetworkNBT = IsNetworkNBT };
+        _Base_Tag = new() { Name = "", IsNetworkNBT = IsNetworkNBT };
     }
 
     public NBT(string Compound_Name)
     {
-        base_Tag = new() { Name = Compound_Name };
+        _Base_Tag = new() { Name = Compound_Name };
     }
 
     public bool RemoveTag(string Tag_Name)
     {
-        if (base_Tag == null)
+        if (_Base_Tag == null)
         {
             return false;
         }
-        return base_Tag.RemoveTag(Tag_Name);
+        return _Base_Tag.RemoveTag(Tag_Name);
     }
 
     public int ReadFromBytes(byte[] bytes, bool networkBytes = false)
     {
-        base_Tag = new();
-        base_Tag.IsNetworkNBT = networkBytes;
-        int numBytesRead = base_Tag.ProcessBytes(bytes).Length;
+        _Base_Tag = new();
+        _Base_Tag.IsNetworkNBT = networkBytes;
+        int numBytesRead = _Base_Tag.ProcessBytes(bytes).Length;
 
         /* if (networkBytes)
         {
@@ -61,28 +61,28 @@ public class NBT
 
     public string GetNBTAsString(int tab_space = 0)
     {
-        return (base_Tag != null) ? base_Tag.ToString(tab_space) : "";
+        return (_Base_Tag != null) ? _Base_Tag.ToString(tab_space) : "";
     }
 
     public byte[] GetBytes()
     {
-        return (base_Tag != null) ? base_Tag.GetBytes() : [];
+        return (_Base_Tag != null) ? _Base_Tag.GetBytes() : [];
     }
 
     public T? TryGetTag<T>(string Tag_Name)
         where T : TAG_Base
     {
-        if (base_Tag == null)
+        if (_Base_Tag == null)
         {
             return null;
         }
 
-        if (base_Tag.Name == Tag_Name)
+        if (_Base_Tag.Name == Tag_Name)
         {
-            return base_Tag as T;
+            return _Base_Tag as T;
         }
 
-        foreach (var tag in base_Tag!.Contained_Tags)
+        foreach (var tag in _Base_Tag!.Contained_Tags)
         {
             if (tag.Key == Tag_Name)
             {
@@ -103,7 +103,7 @@ public class NBT
 
     public NBT WriteTag(string name, byte data)
     {
-        base_Tag!.WriteTag<TAG_Byte>(new() { Name = name, Value = (sbyte)data });
+        _Base_Tag!.WriteTag<TAG_Byte>(new() { Name = name, Value = (sbyte)data });
         return this;
     }
 
@@ -114,13 +114,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Byte() { Value = (sbyte)b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, short data)
     {
-        base_Tag!.WriteTag<TAG_Short>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_Short>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -131,13 +131,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Short() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, int data)
     {
-        base_Tag!.WriteTag<TAG_Int>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_Int>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -148,13 +148,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Int() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, long data)
     {
-        base_Tag!.WriteTag<TAG_Long>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_Long>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -165,13 +165,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Long() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, float data)
     {
-        base_Tag!.WriteTag<TAG_Float>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_Float>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -182,13 +182,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Float() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, double data)
     {
-        base_Tag!.WriteTag<TAG_Double>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_Double>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -199,13 +199,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Double() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, byte[] data)
     {
-        base_Tag!.WriteTag<TAG_Byte_Array>(new() { Name = name, Values = (sbyte[])(Array)data });
+        _Base_Tag!.WriteTag<TAG_Byte_Array>(new() { Name = name, Values = (sbyte[])(Array)data });
         return this;
     }
 
@@ -218,13 +218,13 @@ public class NBT
                 new TAG_Byte_Array() { Values = (sbyte[])(Array)b, isInListTag = true }
             );
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, string data)
     {
-        base_Tag!.WriteTag<TAG_String>(new() { Name = name, Value = data });
+        _Base_Tag!.WriteTag<TAG_String>(new() { Name = name, Value = data });
         return this;
     }
 
@@ -235,13 +235,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_String() { Value = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, int[] data)
     {
-        base_Tag!.WriteTag<TAG_Int_Array>(new() { Name = name, Values = data });
+        _Base_Tag!.WriteTag<TAG_Int_Array>(new() { Name = name, Values = data });
         return this;
     }
 
@@ -252,13 +252,13 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Int_Array() { Values = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, long[] data)
     {
-        base_Tag!.WriteTag<TAG_Long_Array>(new() { Name = name, Values = data });
+        _Base_Tag!.WriteTag<TAG_Long_Array>(new() { Name = name, Values = data });
         return this;
     }
 
@@ -269,20 +269,20 @@ public class NBT
         {
             tmp.Contained_Tags.Add(new TAG_Long_Array() { Values = b, isInListTag = true });
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 
     public NBT WriteTag(string name, NBT data)
     {
-        data.base_Tag!.Name = name;
-        base_Tag!.WriteTag(data.base_Tag!);
+        data._Base_Tag!.Name = name;
+        _Base_Tag!.WriteTag(data._Base_Tag!);
         return this;
     }
 
     public NBT WriteTag(NBT data)
     {
-        base_Tag!.WriteTag(data.base_Tag!);
+        _Base_Tag!.WriteTag(data._Base_Tag!);
         return this;
     }
 
@@ -291,9 +291,9 @@ public class NBT
         TAG_List tmp = new(name);
         foreach (NBT b in data)
         {
-            tmp.Contained_Tags.Add(b.base_Tag!);
+            tmp.Contained_Tags.Add(b._Base_Tag!);
         }
-        base_Tag!.WriteTag<TAG_List>(tmp);
+        _Base_Tag!.WriteTag<TAG_List>(tmp);
         return this;
     }
 }

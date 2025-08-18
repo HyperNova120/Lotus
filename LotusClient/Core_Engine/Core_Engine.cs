@@ -18,18 +18,18 @@ namespace Core_Engine
 {
     public static class Core_Engine
     {
-        private static Dictionary<string, ICommandBase> Commands = new();
-        private static Dictionary<string, IModuleBase> Modules = new();
-        private static Dictionary<string, IGraphicsModule> GraphicsModules = new();
-        private static Dictionary<string, EventHandler> Events = new();
+        private static Dictionary<string, ICommandBase> _Commands = new();
+        private static Dictionary<string, IModuleBase> _Modules = new();
+        private static Dictionary<string, IGraphicsModule> _GraphicsModules = new();
+        private static Dictionary<string, EventHandler> _Events = new();
 
-        public static State CurrentState { private set; get; } = State.Noninteractive;
+        public static State _CurrentState { private set; get; } = State.Noninteractive;
 
-        static ManualResetEventSlim InteractiveHold = new(true); // Initially signaled
+        static ManualResetEventSlim _InteractiveHold = new(true); // Initially signaled
 
-        private static HashSet<State> BlockingStates = new();
+        private static HashSet<State> _BlockingStates = new();
 
-        private static bool IsInteractiveHoldBlocking = false;
+        private static bool _IsInteractiveHoldBlocking = false;
 
         public enum State
         {
@@ -46,18 +46,18 @@ namespace Core_Engine
         public static bool SignalInteractiveHold(State RequestedState)
         {
             Logging.LogDebug($"signalInteractiveHold From:{RequestedState}");
-            if (BlockingStates.Contains(RequestedState))
+            if (_BlockingStates.Contains(RequestedState))
             {
                 Logging.LogDebug($"\tFAIL");
                 return false;
             }
-            if (InteractiveHold.IsSet != IsInteractiveHoldBlocking)
+            if (_InteractiveHold.IsSet != _IsInteractiveHoldBlocking)
             {
                 //if not blocking block
-                InteractiveHold.Reset();
+                _InteractiveHold.Reset();
             }
-            BlockingStates.Add(RequestedState);
-            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
+            _BlockingStates.Add(RequestedState);
+            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{_BlockingStates.Count}");
             return true;
         }
 
@@ -66,44 +66,44 @@ namespace Core_Engine
             Logging.LogDebug(
                 $"signalInteractiveTransferHold From:{CallingState} To:{RequestedState}"
             );
-            if (!BlockingStates.Contains(CallingState))
+            if (!_BlockingStates.Contains(CallingState))
             {
                 Logging.LogDebug($"\tFAIL; CallingState does not posses a hold");
                 return false;
             }
-            BlockingStates.Add(RequestedState);
-            BlockingStates.Remove(CallingState);
+            _BlockingStates.Add(RequestedState);
+            _BlockingStates.Remove(CallingState);
             return true;
         }
 
         public static bool SignalInteractiveFree(State CallingState)
         {
             Logging.LogDebug($"signalInteractiveFree From:{CallingState}");
-            if (!BlockingStates.Contains(CallingState))
+            if (!_BlockingStates.Contains(CallingState))
             {
                 //not blocking from calling state
                 Logging.LogDebug($"\tFAIL");
                 return false;
             }
 
-            BlockingStates.Remove(CallingState);
-            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{BlockingStates.Count}");
+            _BlockingStates.Remove(CallingState);
+            Logging.LogDebug($"\tPASS; Current Number of Blocking States:{_BlockingStates.Count}");
 
-            if (BlockingStates.Count == 0)
+            if (_BlockingStates.Count == 0)
             {
-                CurrentState = State.Interactive;
-                InteractiveHold.Set();
+                _CurrentState = State.Interactive;
+                _InteractiveHold.Set();
             }
             return true;
         }
 
         public static void SignalInteractiveResetServerHolds()
         {
-            if (BlockingStates.Contains(State.JoiningServer))
+            if (_BlockingStates.Contains(State.JoiningServer))
                 SignalInteractiveFree(State.JoiningServer);
-            if (BlockingStates.Contains(State.Configuration))
+            if (_BlockingStates.Contains(State.Configuration))
                 SignalInteractiveFree(State.Configuration);
-            if (BlockingStates.Contains(State.Play))
+            if (_BlockingStates.Contains(State.Play))
                 SignalInteractiveFree(State.Play);
         }
 
@@ -138,7 +138,7 @@ namespace Core_Engine
 
         private static void InitCoreModuleEventSubscriptions()
         {
-            foreach (IModuleBase module in Modules.Values)
+            foreach (IModuleBase module in _Modules.Values)
             {
                 module.SubscribeToEvents(SubscribeToEvent);
             }
@@ -150,22 +150,22 @@ namespace Core_Engine
 
         public static T? GetModule<T>(string ModuleIdentifier)
         {
-            if (!Modules.ContainsKey(ModuleIdentifier))
+            if (!_Modules.ContainsKey(ModuleIdentifier))
             {
                 throw new Exceptions.IdentifierNotFoundException(
                     $"Module {ModuleIdentifier} Does Not Exist"
                 );
             }
-            Modules.TryGetValue(ModuleIdentifier, out IModuleBase? moduleBase);
+            _Modules.TryGetValue(ModuleIdentifier, out IModuleBase? moduleBase);
             return (T?)moduleBase;
         }
 
         public static async Task GoInteractiveMode()
         {
-            CurrentState = State.Interactive;
+            _CurrentState = State.Interactive;
             bool shouldRun = true;
-            InteractiveHold.Set();
-            while (CurrentState == State.Interactive)
+            _InteractiveHold.Set();
+            while (_CurrentState == State.Interactive)
             {
                 string userResponse = ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
                 string[] tokens = userResponse.Split(" ");
@@ -183,7 +183,7 @@ namespace Core_Engine
                     else
                     {
                         await HandleCommand(command, (tokens.Length > 1) ? [.. tokens[1..]] : []);
-                        InteractiveHold.Wait();
+                        _InteractiveHold.Wait();
                     }
                 }
                 catch (Exception e)
@@ -203,10 +203,10 @@ namespace Core_Engine
                     break;
                 case "help":
                     Console.WriteLine("Available Commands Are");
-                    foreach (string CommandIdentifier in Commands.Keys)
+                    foreach (string CommandIdentifier in _Commands.Keys)
                     {
                         Console.WriteLine(
-                            $"\t{CommandIdentifier} -{Commands[CommandIdentifier].GetCommandDescription()}"
+                            $"\t{CommandIdentifier} -{_Commands[CommandIdentifier].GetCommandDescription()}"
                         );
                     }
                     break;
@@ -218,28 +218,28 @@ namespace Core_Engine
 
         public static async Task HandleCommand(string command, string[] args)
         {
-            if (!Commands.ContainsKey(command))
+            if (!_Commands.ContainsKey(command))
             {
                 Console.WriteLine("Unknown Command, use 'help' to see a list of commands");
                 return;
             }
-            await Commands[command].ProcessCommand(args);
+            await _Commands[command].ProcessCommand(args);
         }
 
         public static void InvokeEvent(string EventIdentifier, EventArgs args)
         {
-            if (!Events.ContainsKey(EventIdentifier))
+            if (!_Events.ContainsKey(EventIdentifier))
             {
                 throw new IdentifierNotFoundException(
                     $"Event {EventIdentifier} has not been registered"
                 );
             }
-            if (Events[EventIdentifier] == null)
+            if (_Events[EventIdentifier] == null)
             {
                 throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
                 return;
             }
-            Events[EventIdentifier].Invoke(null, args);
+            _Events[EventIdentifier].Invoke(null, args);
         }
 
         //=========START===========
@@ -248,28 +248,28 @@ namespace Core_Engine
 
         public static void RegisterCommand(string CommandIdentifier, ICommandBase CommandToRegister)
         {
-            if (Commands.ContainsKey(CommandIdentifier))
+            if (_Commands.ContainsKey(CommandIdentifier))
             {
                 throw new Exceptions.IdentifierMustBeUniqueException(
                     $"Command Identifier {CommandIdentifier} Already Exists"
                 );
             }
-            Commands.Add(CommandIdentifier, CommandToRegister);
+            _Commands.Add(CommandIdentifier, CommandToRegister);
         }
 
         public static bool UnregisterCommand(string CommandIdentifier)
         {
-            if (!Commands.ContainsKey(CommandIdentifier))
+            if (!_Commands.ContainsKey(CommandIdentifier))
             {
                 return false;
             }
-            Commands.Remove(CommandIdentifier);
+            _Commands.Remove(CommandIdentifier);
             return true;
         }
 
         public static void RegisterModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
         {
-            if (Modules.ContainsKey(ModuleIdentifier))
+            if (_Modules.ContainsKey(ModuleIdentifier))
             {
                 throw new Exceptions.IdentifierMustBeUniqueException(
                     $"Module Identifier {ModuleIdentifier} Already Exists"
@@ -277,63 +277,63 @@ namespace Core_Engine
             }
             ModuleToRegister.RegisterEvents(RegisterEvent);
             ModuleToRegister.RegisterCommands(RegisterCommand);
-            Modules.Add(ModuleIdentifier, ModuleToRegister);
+            _Modules.Add(ModuleIdentifier, ModuleToRegister);
             if (ModuleToRegister is IGraphicsModule graphicsModule)
             {
-                GraphicsModules.Add(ModuleIdentifier, graphicsModule);
+                _GraphicsModules.Add(ModuleIdentifier, graphicsModule);
             }
         }
 
         public static bool UnregisterModule(string ModuleIdentifier)
         {
-            if (!Modules.ContainsKey(ModuleIdentifier))
+            if (!_Modules.ContainsKey(ModuleIdentifier))
             {
                 return false;
             }
-            Modules.Remove(ModuleIdentifier);
-            if (GraphicsModules.ContainsKey(ModuleIdentifier))
+            _Modules.Remove(ModuleIdentifier);
+            if (_GraphicsModules.ContainsKey(ModuleIdentifier))
             {
-                GraphicsModules.Remove(ModuleIdentifier);
+                _GraphicsModules.Remove(ModuleIdentifier);
             }
             return true;
         }
 
         public static void RegisterEvent(string EventIdentifier)
         {
-            if (Events.ContainsKey(EventIdentifier))
+            if (_Events.ContainsKey(EventIdentifier))
             {
                 throw new Exceptions.IdentifierMustBeUniqueException(
                     $"Event Identifier {EventIdentifier} Already Exists"
                 );
             }
-            Events.Add(EventIdentifier, null);
+            _Events.Add(EventIdentifier, null);
         }
 
         public static void SubscribeToEvent(string EventIdentifier, EventHandler callback)
         {
-            if (!Events.ContainsKey(EventIdentifier))
+            if (!_Events.ContainsKey(EventIdentifier))
             {
                 throw new Exceptions.IdentifierNotFoundException(
                     $"Event {EventIdentifier} Does Not Exist"
                 );
             }
-            if (Events[EventIdentifier] == null)
+            if (_Events[EventIdentifier] == null)
             {
-                Events[EventIdentifier] = callback;
+                _Events[EventIdentifier] = callback;
                 return;
             }
-            Events[EventIdentifier] += callback;
+            _Events[EventIdentifier] += callback;
         }
 
         public static void UnsubscribeToEvent(string EventIdentifier, EventHandler callback)
         {
-            if (!Events.ContainsKey(EventIdentifier))
+            if (!_Events.ContainsKey(EventIdentifier))
             {
                 throw new Exceptions.IdentifierNotFoundException(
                     $"Event {EventIdentifier} Does Not Exist"
                 );
             }
-            Events[EventIdentifier] -= callback;
+            _Events[EventIdentifier] -= callback;
         }
 
         //==========END===========

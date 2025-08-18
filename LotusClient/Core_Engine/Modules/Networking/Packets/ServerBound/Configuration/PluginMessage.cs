@@ -5,17 +5,17 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class PluginMessagePacket : MinecraftPacket
     {
-        public Identifier? Channel = null;
-        public byte[] Data = [];
+        public Identifier? _Channel = null;
+        public byte[] _Data = [];
 
         public PluginMessagePacket()
         {
-            this.protocol_id = 0x02;
+            this._Protocol_ID = 0x02;
         }
 
         public override byte[] GetBytes()
         {
-            return [.. StringN.GetBytes(Channel.IdentifierString ?? ""), .. Data];
+            return [.. StringN.GetBytes(_Channel?.IdentifierString!), .. _Data];
         }
     }
 }

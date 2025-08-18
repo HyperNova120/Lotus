@@ -5,12 +5,14 @@ namespace Core_Engine.Modules.GameStateHandler.BaseClasses
 {
     public class RegistryData
     {
-        public Identifier? ID;
-        public List<RegistryEntry> Entries;
+        public Identifier? _RegistryNameSpace;
+        public List<RegistryEntry> _Entries;
+
+        public string? _Version = null;
 
         public RegistryData()
         {
-            Entries = new();
+            _Entries = new();
         }
     }
 

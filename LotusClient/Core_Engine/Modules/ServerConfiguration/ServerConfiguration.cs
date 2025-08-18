@@ -7,7 +7,7 @@ namespace Core_Engine.Modules.ServerConfig
 {
     public class ServerConfiguration : IModuleBase
     {
-        private readonly ConfigurationInternals configurationInternals = new();
+        private readonly ConfigurationInternals _ConfigurationInternals = new();
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
@@ -24,36 +24,65 @@ namespace Core_Engine.Modules.ServerConfig
                     }
                 )
             );
+            SubscribeToEvent.Invoke(
+                "CONFIG_Start_Config_Process",
+                new EventHandler(
+                    (sender, args) =>
+                    {
+                        ConnectionEventArgs connectionEventArgs = (ConnectionEventArgs)args;
+                        /* configurationInternals.SendServerboundPluginMessage(
+                            connectionEventArgs.remoteHost
+                        );
+                        configurationInternals.SendServerboundClientInformation(
+                            connectionEventArgs.remoteHost
+                        ); */
+                        _ConfigurationInternals.SendConfigBrandAndClientInfo(
+                            connectionEventArgs._RemoteHost
+                        );
+                    }
+                )
+            );
         }
 
         public async Task ProcessPacket(object? sender, EventArgs args)
         {
-            PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-            MinecraftServerPacket packet = eventArgs.packet;
-            switch (packet.protocol_id)
+            try
             {
-                case 0x03:
-                    configurationInternals.FinishConfiguration(packet);
-                break;
-                case 0x0A:
-                    configurationInternals.StoreCookie(packet);
-                    break;
-                case 0x0B:
-                    configurationInternals.Transfer(packet);
-                    break;
-                case 0x07:
-                    configurationInternals.RegistryData(packet);
-                    break;
-                default:
-                    Logging.LogError(
-                        $"ServerConfiguration State 0x{packet.protocol_id:X} Not Implemented"
-                    );
-                    /* Core_Engine
-                        .GetModule<Networking.Networking>("Networking")!
-                        .DisconnectFromServer(packetArgs.remoteHost);
-                    Core_Engine.SignalInteractiveResetServerHolds(); */
+                PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
+                MinecraftServerPacket packet = eventArgs._Packet;
+                switch (packet._Protocol_ID)
+                {
+                    case 0x07:
+                        _ConfigurationInternals.RegistryData(packet);
+                        break;
+                    case 0x0A:
+                        _ConfigurationInternals.StoreCookie(packet);
+                        break;
+                    case 0x0B:
+                        _ConfigurationInternals.Transfer(packet);
+                        break;
+                    case 0x0E:
+                        _ConfigurationInternals.ClientboundKnownPacks(packet);
+                        break;
+                    default:
+                        Logging.LogError(
+                            $"ServerConfiguration State 0x{packet._Protocol_ID:X} Not Implemented"
+                        );
+                        /* Core_Engine
+                            .GetModule<Networking.Networking>("Networking")!
+                            .DisconnectFromServer(packetArgs.remoteHost);
+                        Core_Engine.SignalInteractiveResetServerHolds(); */
 
-                    break;
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.LogError($"ServerConfiguration; ProcessPacket ERROR: {e}");
+                /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
+                {
+                    Core_Engine.CurrentState = Core_Engine.State.Interactive;
+                } */
             }
         }
     }

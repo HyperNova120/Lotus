@@ -13,9 +13,9 @@ namespace Core_Engine.Commands.UserCommands
         public Task ProcessCommand(string[] commandArgs)
         {
             MojangLogin mojangLoginModule = Core_Engine.GetModule<MojangLogin>("MojangLogin")!;
-            if (mojangLoginModule.userProfile != null)
+            if (mojangLoginModule._UserProfile != null)
             {
-                Console.WriteLine(mojangLoginModule.userProfile.name);
+                Console.WriteLine(mojangLoginModule._UserProfile.name);
                 return Task.CompletedTask;
             }
             Console.WriteLine("You are not signed in");

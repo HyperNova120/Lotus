@@ -38,7 +38,7 @@ public class Identifier
 
     public void ReadFromIdentifierString(string IdentifierString)
     {
-        IdentifierString = IdentifierString.Replace("\r", "").Replace("\n", "");
+        this.IdentifierString = IdentifierString.Replace("\r", "").Replace("\n", "");
         string[] parts = IdentifierString.Split(":");
         if (
             parts.Length != 2
@@ -47,15 +47,16 @@ public class Identifier
         )
         {
             _Valid = false;
-            Logging.LogDebug(
+            /* Logging.LogDebug(
                 $"ReadFromIdentifierString FAIL;  IdentifierString:{IdentifierString}"
-            );
+            ); */
         }
-        this.IdentifierString = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(IdentifierString));
+        //this.IdentifierString = Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(IdentifierString));
     }
 
     public string GetString()
     {
+        Logging.LogDebug($"GetString: {IdentifierString ?? ""}");
         return IdentifierString ?? "";
     }
 }

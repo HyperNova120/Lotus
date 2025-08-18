@@ -4,16 +4,16 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ConfigPongPacket : MinecraftPacket
     {
-        public int ID;
+        public int _ID;
 
         public ConfigPongPacket()
         {
-            protocol_id = 0x05;
+            _Protocol_ID = 0x05;
         }
 
         public override byte[] GetBytes()
         {
-            return NetworkInt.GetBytes(ID);
+            return NetworkInt.GetBytes(_ID);
         }
     }
 }

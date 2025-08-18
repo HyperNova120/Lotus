@@ -5,10 +5,10 @@ namespace Core_Engine.Modules.GameStateHandler.BaseClasses
 {
     public class ResourcePack
     {
-        public MinecraftUUID? UUID;
-        public string? URL;
-        public string? Hash;
-        public bool Forced;
-        public string? TextComponent;
+        public MinecraftUUID? _UUID;
+        public string? _URL;
+        public string? _Hash;
+        public bool _Forced;
+        public string? _TextComponent;
     }
 }

@@ -6,15 +6,17 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ServerboundKnownPacksPacket : MinecraftPacket
     {
-        public List<RegistryData> KnownPacks = new();
+        public List<RegistryData> _KnownPacks = new();
 
         public ServerboundKnownPacksPacket()
         {
-            protocol_id = 0x07;
+            _Protocol_ID = 0x07;
         }
 
         public override byte[] GetBytes()
         {
+            List<byte> tmp = new();
+
             throw new NotImplementedException();
         }
     }

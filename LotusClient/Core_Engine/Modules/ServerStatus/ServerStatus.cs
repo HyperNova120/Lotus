@@ -24,8 +24,8 @@ namespace Core_Engine.Modules.ServerStatus
         public void ProcessPacket(object? sender, EventArgs args)
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-            var packet = eventArgs.packet;
-            switch (packet.protocol_id)
+            var packet = eventArgs._Packet;
+            switch (packet._Protocol_ID)
             {
                 case 0x00:
                     HandleStatusResponse(packet);
@@ -35,11 +35,11 @@ namespace Core_Engine.Modules.ServerStatus
                     break;
                 default:
                     Logging.LogError(
-                        $"StatusHandler State 0x{packet.protocol_id:X} Not Implemented"
+                        $"StatusHandler State 0x{packet._Protocol_ID:X} Not Implemented"
                     );
                     Core_Engine
                         .GetModule<Networking.Networking>("Networking")!
-                        .DisconnectFromServer(eventArgs.remoteHost);
+                        .DisconnectFromServer(eventArgs._RemoteHost);
                     break;
             }
         }
@@ -48,7 +48,7 @@ namespace Core_Engine.Modules.ServerStatus
         {
             try
             {
-                long value = BitConverter.ToInt64(packet.data);
+                long value = BitConverter.ToInt64(packet._Data);
                 Logging.LogDebug(
                     $"Response: {value} Ping:{(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - value}m"
                 );
@@ -61,7 +61,7 @@ namespace Core_Engine.Modules.ServerStatus
 
         private void HandleStatusResponse(MinecraftServerPacket packet)
         {
-            (string value, int size) = StringN.DecodeBytes(packet.data);
+            (string value, int size) = StringN.DecodeBytes(packet._Data);
             Logging.LogDebug($"Response Size: {size}\n{value}");
         }
 
@@ -70,12 +70,12 @@ namespace Core_Engine.Modules.ServerStatus
             ServerConnection connection = Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
                 .GetServerConnection(remoteHost)!;
-            var connectionState = connection.connectionState;
+            var connectionState = connection._ConnectionState;
             if (connectionState == Networking.Networking.ConnectionState.STATUS)
             {
                 Core_Engine
                     .GetModule<Networking.Networking>("Networking")!
-                    .SendPacket(connection.remoteHost, new StatusPingRequestPacket());
+                    .SendPacket(connection._RemoteHost, new StatusPingRequestPacket());
             }
         }
     }

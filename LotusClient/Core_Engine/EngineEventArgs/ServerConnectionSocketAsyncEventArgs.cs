@@ -8,12 +8,12 @@ namespace Core_Engine.EngineEventArgs
         /// <summary>
         /// server connection linked to this event
         /// </summary>
-        public IPAddress remoteHost { get; private set; }
+        public IPAddress _RemoteHost { get; private set; }
 
         public ServerConnectionSocketAsyncEventArgs(IPAddress remoteHost)
             : base()
         {
-            this.remoteHost = remoteHost;
+            this._RemoteHost = remoteHost;
         }
     }
 }

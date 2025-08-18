@@ -5,9 +5,9 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Login
 {
     public class LoginSuccessPacket
     {
-        public Guid uuid;
-        public string? Username;
-        public List<LoginSuccessPacketElement> elements = new();
+        public Guid _uuid;
+        public string? _Username;
+        public List<LoginSuccessPacketElement> _Elements = new();
 
         /// <summary>
         /// populates packet based on data
@@ -17,9 +17,9 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Login
         public int DecodeFromBytes(byte[] data)
         {
             (byte[] uuidBytes, _) = NetworkUUID.DecodeNetworkBytes(data[0..16]);
-            uuid = new Guid(uuidBytes);
+            _uuid = new Guid(uuidBytes);
             data = data[16..];
-            (Username, int usernameNumBytes) = StringN.DecodeBytes(data);
+            (_Username, int usernameNumBytes) = StringN.DecodeBytes(data);
             data = data[usernameNumBytes..];
             (int arraySize, int arraySizeNumBytesRead) = PrefixedArray.GetSizeOfArray(data);
             data = data[arraySizeNumBytesRead..];
@@ -30,7 +30,7 @@ namespace Core_Engine.Modules.Networking.Packets.ClientBound.Login
                 int tmpSize = tmp.decodeFromBytes(data);
                 arraySizeIncrementor += tmpSize;
                 data = data[tmpSize..];
-                elements.Add(tmp);
+                _Elements.Add(tmp);
             }
 
             return 16 + usernameNumBytes + arraySizeNumBytesRead + arraySizeIncrementor;

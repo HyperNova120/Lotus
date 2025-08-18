@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Core_Engine.BaseClasses;
 using Core_Engine.Interfaces;
 using Core_Engine.Modules.GameStateHandler.BaseClasses;
@@ -21,30 +22,29 @@ namespace Core_Engine.Modules.GameStateHandler
         //IGameStateHandler
         //===========
 
-        Dictionary<Identifier, ServerCookie> serverCookies = new();
-        public Dictionary<Identifier, RegistryData> serverRegistryData = new();
-        Dictionary<MinecraftUUID, ResourcePack> serverResourcePack = new();
-        HashSet<Identifier> serverFeatureFlags = new();
+        Dictionary<Identifier, ServerCookie> _ServerCookies = new();
+        public Dictionary<Identifier, RegistryData> _ServerRegistryData = new();
+        Dictionary<MinecraftUUID, ResourcePack> _ServerResourcePack = new();
+        HashSet<Identifier> _ServerFeatureFlags = new();
 
         public void AddServerCookie(ServerCookie cookie)
         {
-            serverCookies[cookie.Key!] = cookie;
+            _ServerCookies[cookie._Key!] = cookie;
         }
 
         public void AddServerFeatureFlag(Identifier FeatureFlag)
         {
-            serverFeatureFlags.Add(FeatureFlag);
+            _ServerFeatureFlags.Add(FeatureFlag);
         }
 
         public void AddServerRegistryData(RegistryData registryData)
         {
-            
-            serverRegistryData[registryData.ID!] = registryData;
+            _ServerRegistryData[registryData._RegistryNameSpace!] = registryData;
         }
 
         public void AddServerResourcePack(ResourcePack resourcePack)
         {
-            serverResourcePack[resourcePack.UUID!] = resourcePack;
+            _ServerResourcePack[resourcePack._UUID!] = resourcePack;
         }
 
         public void AddServerTag(Identifier Registry, Identifier TagName)
@@ -54,22 +54,22 @@ namespace Core_Engine.Modules.GameStateHandler
 
         public ServerCookie? GetServerCookie(Identifier key)
         {
-            return serverCookies.ContainsKey(key) ? serverCookies[key] : null;
+            return _ServerCookies.ContainsKey(key) ? _ServerCookies[key] : null;
         }
 
         public Identifier? GetServerFeatureFlag(Identifier FeatureFlag)
         {
-            return serverFeatureFlags.Contains(FeatureFlag) ? FeatureFlag : null;
+            return _ServerFeatureFlags.Contains(FeatureFlag) ? FeatureFlag : null;
         }
 
         public RegistryData? GetServerRegistryData(Identifier ID)
         {
-            return serverRegistryData.ContainsKey(ID) ? serverRegistryData[ID] : null;
+            return _ServerRegistryData.ContainsKey(ID) ? _ServerRegistryData[ID] : null;
         }
 
         public ResourcePack? GetServerResourcePack(MinecraftUUID ID)
         {
-            return serverResourcePack.ContainsKey(ID) ? serverResourcePack[ID] : null;
+            return _ServerResourcePack.ContainsKey(ID) ? _ServerResourcePack[ID] : null;
         }
 
         public ServerTag? GetServerTag(Identifier Registry, Identifier TagName)
@@ -79,15 +79,15 @@ namespace Core_Engine.Modules.GameStateHandler
 
         public void ProcessTransfer()
         {
-            serverRegistryData.Clear();
-            serverFeatureFlags.Clear();
-            serverResourcePack.Clear();
+            _ServerRegistryData.Clear();
+            _ServerFeatureFlags.Clear();
+            _ServerResourcePack.Clear();
         }
 
         public void ProcessGameStateReset()
         {
             ProcessTransfer();
-            serverCookies.Clear();
+            _ServerCookies.Clear();
         }
     }
 }

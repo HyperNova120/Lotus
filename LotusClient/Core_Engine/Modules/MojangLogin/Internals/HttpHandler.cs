@@ -6,47 +6,47 @@ namespace Core_Engine.Modules.Networking.Internals
 {
     public static class HttpHandler
     {
-        static HttpListener? listener;
-        static HttpClient? httpClient = null;
+        static HttpListener? _Listener;
+        static HttpClient? _HttpClient = null;
 
         public static void openServer(string url)
         {
-            if (listener != null)
+            if (_Listener != null)
             {
                 return;
             }
-            listener = new HttpListener();
-            listener.Prefixes.Add(url + "/");
-            listener.Start();
+            _Listener = new HttpListener();
+            _Listener.Prefixes.Add(url + "/");
+            _Listener.Start();
         }
 
         public static void closeServer()
         {
-            if (listener == null)
+            if (_Listener == null)
             {
                 return;
             }
-            listener.Stop();
-            listener.Close();
-            listener = null;
+            _Listener.Stop();
+            _Listener.Close();
+            _Listener = null;
         }
 
         public static NameValueCollection? GetQueries()
         {
-            if (listener == null)
+            if (_Listener == null)
             {
                 return null;
             }
-            return HttpUtility.ParseQueryString(listener.GetContext().Request.Url!.Query);
+            return HttpUtility.ParseQueryString(_Listener.GetContext().Request.Url!.Query);
         }
 
         public static async Task<HttpResponseMessage> SendRequest(HttpRequestMessage msg)
         {
-            if (httpClient == null)
+            if (_HttpClient == null)
             {
-                httpClient = new HttpClient();
+                _HttpClient = new HttpClient();
             }
-            var response = await httpClient.SendAsync(msg);
+            var response = await _HttpClient.SendAsync(msg);
             return response;
         }
 

@@ -4,34 +4,34 @@ namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ClientInformationPacket : MinecraftPacket
     {
-        public string locale = "";
-        public byte viewDistance;
-        public int chatMode;
-        public bool chatColors;
-        public byte displayedSkinParts;
-        public int mainHand;
-        public bool enableTextFiltering;
-        public bool allowServerListings;
-        public int particleStatus;
+        public string _Locale = "";
+        public byte _ViewDistance;
+        public int _ChatMode;
+        public bool _ChatColors;
+        public byte _DisplayedSkinParts;
+        public int _MainHand;
+        public bool _EnableTextFiltering;
+        public bool _AllowServerListings;
+        public int _ParticleStatus;
 
         public ClientInformationPacket()
         {
-            this.protocol_id = 0x00;
+            this._Protocol_ID = 0x00;
         }
 
         public override byte[] GetBytes()
         {
             return
             [
-                .. StringN.GetBytes(locale),
-                viewDistance,
-                .. VarInt_VarLong.EncodeInt(chatMode),
-                (byte)((chatColors) ? 0x01 : 0x00),
-                displayedSkinParts,
-                .. VarInt_VarLong.EncodeInt(mainHand),
-                (byte)((enableTextFiltering) ? 0x01 : 0x00),
-                (byte)((allowServerListings) ? 0x01 : 0x00),
-                .. VarInt_VarLong.EncodeInt(particleStatus),
+                .. StringN.GetBytes(_Locale),
+                _ViewDistance,
+                .. VarInt_VarLong.EncodeInt(_ChatMode),
+                (byte)((_ChatColors) ? 0x01 : 0x00),
+                _DisplayedSkinParts,
+                .. VarInt_VarLong.EncodeInt(_MainHand),
+                (byte)((_EnableTextFiltering) ? 0x01 : 0x00),
+                (byte)((_AllowServerListings) ? 0x01 : 0x00),
+                .. VarInt_VarLong.EncodeInt(_ParticleStatus),
             ];
         }
     }

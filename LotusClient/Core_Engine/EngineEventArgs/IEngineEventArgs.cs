@@ -2,16 +2,16 @@ namespace Core_Engine.EngineEventArgs
 {
     public class EngineEventArgs : EventArgs
     {
-        object[] args;
+        object[] _Args;
 
         public EngineEventArgs(object[] args)
         {
-            this.args = args;
+            this._Args = args;
         }
 
         public object[] Args
         {
-            get { return args; }
+            get { return _Args; }
         }
     }
 }

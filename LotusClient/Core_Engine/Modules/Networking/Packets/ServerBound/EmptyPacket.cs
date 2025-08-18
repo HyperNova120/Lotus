@@ -4,7 +4,7 @@ namespace Core_Engine.Modules.Networking.Packets
     {
         public EmptyPacket(int protocol)
         {
-            this.protocol_id = protocol;
+            this._Protocol_ID = protocol;
         }
 
         public override byte[] GetBytes()
