@@ -33,46 +33,48 @@ public class TAG_Int_Array : TAG_Base
         ];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
-
-        int sizeOfValue = sizeof(int);
-
-        int numBytesRead = 4;
-        //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
         int arraySize = BitConverter.ToInt32(
             [
                 inputBytes[offset + 3],
                 inputBytes[offset + 2],
                 inputBytes[offset + 1],
-                inputBytes[offset + 0],
+                inputBytes[offset],
             ],
             0
         );
 
-        Values = [arraySize];
+        Values = new int[arraySize];
 
-        int startIndex;
-        for (int i = 0; i < arraySize; i++)
+        offset += 4;
+        int i = 0;
+        try
         {
-            startIndex = offset + numBytesRead + (sizeOfValue * i);
-            /* Values[i] = BitConverter.ToInt32(
-                inputBytes[startIndex..(startIndex + sizeOfValue)].Reverse().ToArray(),
-                0
-            ); */
-            Values[i] = BitConverter.ToInt32(
-                [
-                    inputBytes[startIndex + 3],
-                    inputBytes[startIndex + 2],
-                    inputBytes[startIndex + 1],
-                    inputBytes[startIndex],
-                ],
-                0
+            for (i = 0; i < arraySize; i++)
+            {
+                Values[i] = BitConverter.ToInt32(
+                    [
+                        inputBytes[offset + 3],
+                        inputBytes[offset + 2],
+                        inputBytes[offset + 1],
+                        inputBytes[offset],
+                    ],
+                    0
+                );
+                offset += 4;
+            }
+        }
+        catch (Exception e)
+        {
+            Logging.LogError(
+                $"INT_ARRAY_OFFSET:{offset} inputBytes.length:{inputBytes.Length} Values.length:{Values.Length} i:{i}"
             );
+            throw;
         }
 
-        return inputBytes[(offset + numBytesRead + (sizeOfValue * arraySize))..];
+        return offset;
     }
 
     public override string ToString(int tabSpace = 0)

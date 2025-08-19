@@ -24,7 +24,7 @@ public class TAG_Byte_Array : TAG_Base
         ];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
 
@@ -46,7 +46,7 @@ public class TAG_Byte_Array : TAG_Base
             (Array)inputBytes[(offset + numBytesRead)..(offset + numBytesRead + arraySize)];
         //return remaining bytes
 
-        return inputBytes[(offset + numBytesRead + arraySize)..];
+        return offset + numBytesRead + arraySize;
     }
 
     public override string ToString(int tabSpace = 0)

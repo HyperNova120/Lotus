@@ -95,9 +95,9 @@ namespace Core_Engine.Modules.Networking.Internals
 
                 if (packetLength > (bytes.Length - packetLengthnumBytes))
                 {
-                    Logging.LogError(
+                    /* Logging.LogError(
                         $"MinecraftPacketHandler CompressionEnabled 1; DecodePacket ERROR: Size Mismatch, PacketLength:{packetLength}, RemainingBytes:{bytes.Length}"
-                    );
+                    ); */
                     return (null, bytes);
                 }
                 bytes = bytes[packetLengthnumBytes..];

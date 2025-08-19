@@ -33,45 +33,41 @@ public class TAG_Long_Array : TAG_Base
         ];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
-
-        int sizeOfValue = sizeof(long);
-
-        int numBytesRead = 4;
-        //int arraySize = BitConverter.ToInt32(inputBytes[..4].Reverse().ToArray(), 0);
         int arraySize = BitConverter.ToInt32(
             [
                 inputBytes[offset + 3],
                 inputBytes[offset + 2],
                 inputBytes[offset + 1],
-                inputBytes[offset + 0],
+                inputBytes[offset],
             ],
             0
         );
 
-        Values = [arraySize];
-        int startIndex;
+        Values = new long[arraySize];
+
+        offset += 4;
         for (int i = 0; i < arraySize; i++)
         {
-            startIndex = offset + numBytesRead + (sizeOfValue * i);
-            /* Values[i] = BitConverter.ToInt64(
-                inputBytes[startIndex..(startIndex + sizeOfValue)].Reverse().ToArray(),
-                0
-            ); */
             Values[i] = BitConverter.ToInt64(
                 [
-                    inputBytes[startIndex + 3],
-                    inputBytes[startIndex + 2],
-                    inputBytes[startIndex + 1],
-                    inputBytes[startIndex],
+                    inputBytes[offset + 7],
+                    inputBytes[offset + 6],
+                    inputBytes[offset + 5],
+                    inputBytes[offset + 4],
+                    inputBytes[offset + 3],
+                    inputBytes[offset + 2],
+                    inputBytes[offset + 1],
+                    inputBytes[offset],
                 ],
                 0
             );
+            offset += 8;
         }
 
-        return inputBytes[(offset + numBytesRead + (sizeOfValue * arraySize))..];
+        return offset;
     }
 
     public override string ToString(int tabSpace = 0)

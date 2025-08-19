@@ -17,7 +17,7 @@ public class TAG_Byte : TAG_Base
         return [.. GetIDAndNamesBytes(), (byte)Value];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
 
@@ -25,7 +25,7 @@ public class TAG_Byte : TAG_Base
         Value = (sbyte)inputBytes[offset + 0];
 
         //return remaining bytes
-        return inputBytes[(offset + 1)..];
+        return offset + 1;
     }
 
     public override string ToString(int tabSpace = 0)

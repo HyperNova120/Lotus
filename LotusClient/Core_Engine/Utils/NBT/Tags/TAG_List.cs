@@ -26,7 +26,7 @@ public class TAG_List : TAG_Base, TAG_Collection
         this.Name = Name;
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
         Contained_Tag_Type = inputBytes[offset + 0];
@@ -49,10 +49,11 @@ public class TAG_List : TAG_Base, TAG_Collection
             length = 1;
         }
 
-        inputBytes = inputBytes[(offset + 5)..];
+        offset += 5;
         for (int i = 0; i < length; i++)
         {
             int currentTagID = AcceptAnyType ? inputBytes[offset] : Contained_Tag_Type;
+            //++offset;
             if (!AcceptAnyType && currentTagID != Contained_Tag_Type)
             {
                 throw new IncorrectNBTTypeException(
@@ -64,91 +65,78 @@ public class TAG_List : TAG_Base, TAG_Collection
                 case (int)TAG_Base.TagTypeID.TAG_END:
                     TAG_End tmp_end = new TAG_End();
                     tmp_end.isInListTag = true;
-                    inputBytes = tmp_end.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_end.ProcessBytes(inputBytes[offset..]);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_BYTE:
                     TAG_Byte tmp_byte = new TAG_Byte();
                     tmp_byte.isInListTag = true;
-                    inputBytes = tmp_byte.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_byte.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_byte);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_SHORT:
                     TAG_Short tmp_short = new TAG_Short();
                     tmp_short.isInListTag = true;
-                    inputBytes = tmp_short.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_short.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_short);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_INT:
                     TAG_Int tmp_int = new TAG_Int();
                     tmp_int.isInListTag = true;
-                    inputBytes = tmp_int.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_int.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_int);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_LONG:
                     TAG_Long tmp_long = new TAG_Long();
                     tmp_long.isInListTag = true;
-                    inputBytes = tmp_long.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_long.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_long);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_FLOAT:
                     TAG_Float tmp_float = new TAG_Float();
                     tmp_float.isInListTag = true;
-                    inputBytes = tmp_float.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_float.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_float);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_DOUBLE:
                     TAG_Double tmp_double = new TAG_Double();
                     tmp_double.isInListTag = true;
-                    inputBytes = tmp_double.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_double.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_double);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_BYTE_ARRAY:
                     TAG_Byte_Array tmp_byte_array = new TAG_Byte_Array();
                     tmp_byte_array.isInListTag = true;
-                    inputBytes = tmp_byte_array.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_byte_array.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_byte_array);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_STRING:
                     TAG_String tmp_string = new TAG_String();
                     tmp_string.isInListTag = true;
-                    inputBytes = tmp_string.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_string.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_string);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_LIST:
                     TAG_List tmp_list = new TAG_List();
                     tmp_list.isInListTag = true;
-                    inputBytes = tmp_list.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_list.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_list);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_COMPOUND:
                     TAG_Compound tmp_compound = new TAG_Compound();
                     tmp_compound.isInListTag = true;
-                    inputBytes = tmp_compound.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_compound.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_compound);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_INT_ARRAY:
                     TAG_Int_Array tmp_int_array = new TAG_Int_Array();
                     tmp_int_array.isInListTag = true;
-                    inputBytes = tmp_int_array.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_int_array.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_int_array);
                     break;
                 case (int)TAG_Base.TagTypeID.TAG_LONG_ARRAY:
                     TAG_Long_Array tmp_long_array = new TAG_Long_Array();
                     tmp_long_array.isInListTag = true;
-                    inputBytes = tmp_long_array.ProcessBytes(inputBytes);
-                    offset = 0;
+                    offset += tmp_long_array.ProcessBytes(inputBytes[offset..]);
                     Contained_Tags.Add(tmp_long_array);
                     break;
                 default:
@@ -157,7 +145,7 @@ public class TAG_List : TAG_Base, TAG_Collection
                     );
             }
         }
-        return inputBytes;
+        return offset;
     }
 
     public override string ToString(int tabSpace = 0)

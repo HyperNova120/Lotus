@@ -56,7 +56,7 @@ public class Identifier
 
     public string GetString()
     {
-        Logging.LogDebug($"GetString: {IdentifierString ?? ""}");
-        return IdentifierString ?? "";
+        //Logging.LogDebug($"GetString: {IdentifierString ?? "NULL"}");
+        return IdentifierString ?? "NULL";
     }
 }

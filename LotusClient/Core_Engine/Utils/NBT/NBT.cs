@@ -27,7 +27,7 @@ public class NBT
 
     public NBT(bool IsNetworkNBT = false)
     {
-        _Base_Tag = new() { Name = "", IsNetworkNBT = IsNetworkNBT };
+        _Base_Tag = new() { Name = IsNetworkNBT ? null : "", IsNetworkNBT = IsNetworkNBT };
     }
 
     public NBT(string Compound_Name)
@@ -46,9 +46,8 @@ public class NBT
 
     public int ReadFromBytes(byte[] bytes, bool networkBytes = false)
     {
-        _Base_Tag = new();
-        _Base_Tag.IsNetworkNBT = networkBytes;
-        int numBytesRead = _Base_Tag.ProcessBytes(bytes).Length;
+        _Base_Tag = new() { IsNetworkNBT = networkBytes };
+        int numBytesRead = _Base_Tag.ProcessBytes(bytes);
 
         /* if (networkBytes)
         {
@@ -56,7 +55,7 @@ public class NBT
             base_Tag.IsNetworkNBT = networkBytes;
         } */
 
-        return numBytesRead - 1;
+        return numBytesRead;
     }
 
     public string GetNBTAsString(int tab_space = 0)

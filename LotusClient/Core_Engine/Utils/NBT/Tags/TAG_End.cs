@@ -15,7 +15,7 @@ public class TAG_End : TAG_Base
         throw new NotImplementedException();
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int packetTypeID = inputBytes[0];
         if (packetTypeID != this.Type_ID)
@@ -24,7 +24,7 @@ public class TAG_End : TAG_Base
                 "Packet ID from bytes does not match required packet id"
             );
         }
-        return inputBytes[1..];
+        return 1;
     }
 
     public override string ToString(int tabSpace = 0)

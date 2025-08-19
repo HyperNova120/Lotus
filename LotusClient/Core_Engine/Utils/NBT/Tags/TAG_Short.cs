@@ -16,7 +16,7 @@ public class TAG_Short : TAG_Base
         return [.. GetIDAndNamesBytes(), .. BitConverter.GetBytes(Value).Reverse()];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
 
@@ -24,7 +24,7 @@ public class TAG_Short : TAG_Base
         Value = BitConverter.ToInt16([inputBytes[offset + 1], inputBytes[offset + 0]], 0);
         //return remaining bytes
 
-        return inputBytes[(offset + 2)..];
+        return offset + 2;
     }
 
     public override string ToString(int tabSpace = 0)

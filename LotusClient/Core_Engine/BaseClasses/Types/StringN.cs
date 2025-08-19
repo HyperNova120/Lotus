@@ -13,8 +13,7 @@ namespace Core_Engine.BaseClasses.Types
         public static (string value, int numBytes) DecodeBytes(byte[] bytes)
         {
             (int size, int numBytes) = VarInt_VarLong.DecodeVarInt(bytes);
-            string strValue =
-                (size > 0) ? Encoding.UTF8.GetString(bytes[numBytes..(numBytes + size)]) : "";
+            string strValue = Encoding.UTF8.GetString(bytes[numBytes..(numBytes + size)]);
             return (strValue, size + numBytes);
         }
     }

@@ -17,7 +17,7 @@ public class TAG_Double : TAG_Base
         return [.. GetIDAndNamesBytes(), .. BitConverter.GetBytes(Value).Reverse()];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
 
@@ -38,7 +38,7 @@ public class TAG_Double : TAG_Base
         );
         //return remaining bytes
 
-        return inputBytes[(offset + 8)..];
+        return offset + 8;
     }
 
     public override string ToString(int tabSpace = 0)

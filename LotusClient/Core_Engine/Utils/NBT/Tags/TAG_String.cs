@@ -24,7 +24,7 @@ public class TAG_String : TAG_Base
         ];
     }
 
-    public override byte[] ProcessBytes(byte[] inputBytes)
+    public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
 
@@ -38,7 +38,7 @@ public class TAG_String : TAG_Base
         } */
         Value = Encoding.Default.GetString(inputBytes[(offset + 2)..(offset + 2 + length)]);
 
-        return inputBytes[(offset + 2 + length)..];
+        return offset + 2 + length;
     }
 
     public override string ToString(int tabSpace = 0)

@@ -28,7 +28,7 @@ public abstract class TAG_Base
 
     public bool isInListTag = false;
 
-    public abstract byte[] ProcessBytes(byte[] inputBytes);
+    public abstract int ProcessBytes(byte[] inputBytes);
 
     public abstract string ToString(int tabSpace = 0);
 
@@ -72,12 +72,13 @@ public abstract class TAG_Base
         }
 
         //add length of name
+        byte[] nameBytes = Encoding.UTF8.GetBytes(Name);
         return
         [
             idByte,
-            (byte)((Name.Length & 0xFF00) >> 8),
-            (byte)(Name.Length & 0xFF),
-            .. Encoding.UTF8.GetBytes(Name),
+            (byte)((nameBytes.Length & 0xFF00) >> 8),
+            (byte)(nameBytes.Length & 0xFF),
+            .. nameBytes,
         ];
     }
 }

@@ -53,59 +53,104 @@ public class ConfigurationInternals
         Identifier RegistryID = new();
         int offset = RegistryID.GetFromBytes(packet._Data);
 
-        Logging.LogDebug($"\t\tRegistryID: {RegistryID.GetString()}");
-
         (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(packet._Data[offset..]);
         offset += numBytesRead;
 
-        RegistryData registryData = new() { _RegistryNameSpace = RegistryID };
-        for (int i = 0; i < arraySize; i++)
+        RegistryData registry = new() { _RegistryNameSpace = RegistryID };
+        //Logging.LogDebug(RegistryID.GetString());
+
+        try
         {
-            if (offset == packet._Data.Length)
+            for (int i = 0; i < arraySize; i++)
             {
-                break;
-            }
-            RegistryEntry registryEntry = new();
+                Identifier EntryID = new();
+                int EntryIDBytes = EntryID.GetFromBytes(packet._Data[offset..]);
+                offset += EntryIDBytes;
 
-            Identifier ID = new();
-            Logging.LogDebug($"\t\t\toffset:{offset} packet.data Length:{packet._Data.Length}");
-            offset += ID.GetFromBytes(packet._Data[offset..]);
-            registryEntry.ID = ID;
-            //Logging.LogDebug("\t\tEntry: " + ID.GetString());
+                RegistryEntry registryEntry = new() { ID = EntryID };
+                //Logging.LogDebug("\t" + EntryID.GetString());
 
-            (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
-                packet._Data[offset..]
-            );
-            offset += numberBytesRead;
-
-            if (isPresent)
-            {
-                NBT Data = new(true);
-                try
+                (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
+                    packet._Data[offset..]
+                );
+                offset += numberBytesRead;
+                if (isPresent)
                 {
-                    //Logging.LogDebug($"NBT Present");
-                    offset += Data.ReadFromBytes(packet._Data[offset..], true);
-                    registryEntry.Data = Data;
-                    //Logging.LogDebug("\tNBT DATA:\n" + Data.GetNBTAsString(2));
+                    NBT EntryData = new();
+                    int EntryDataBytes = EntryData.ReadFromBytes(packet._Data[offset..], true);
+                    offset += EntryDataBytes;
+                    registryEntry.Data = EntryData;
+                    //Logging.LogDebug("\n" + EntryData.GetNBTAsString(2));
                 }
-                catch (Exception e)
-                {
-                    Logging.LogError(e.ToString(), false);
-                    //Logging.LogError($"DATA: {Data.GetNBTAsString()}", false);
-                }
-            }
-            else
-            {
-                /* Logging.LogDebug(
-                    $"NBT NOT PRESENT, offset:{offset} dataLength:{packet.data.Length}"
-                ); */
-            }
 
-            //Logging.LogDebug($"offset:{offset} dataLength:{packet.data.Length}");
-
-            registryData._Entries.Add(registryEntry);
+                registry._Entries.Add(registryEntry);
+            }
         }
-        _GameStateHandler.AddServerRegistryData(registryData);
+        catch (Exception e)
+        {
+            Logging.LogError("REGISTRY DATA: " + e.ToString());
+        }
+        _GameStateHandler.AddServerRegistryData(registry);
+
+        /*  Identifier RegistryID = new();
+         int offset = RegistryID.GetFromBytes(packet._Data);
+ 
+         Logging.LogDebug($"\t\tRegistryID: {RegistryID.GetString()}");
+ 
+         (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(packet._Data[offset..]);
+         offset += numBytesRead;
+ 
+         RegistryData registryData = new() { _RegistryNameSpace = RegistryID };
+         for (int i = 0; i < arraySize; i++)
+         {
+             try
+             {
+                 if (offset == packet._Data.Length)
+                 {
+                     break;
+                 }
+                 RegistryEntry registryEntry = new();
+ 
+                 Identifier ID = new();
+                 //Logging.LogDebug($"\t\t\toffset:{offset} packet.data Length:{packet._Data.Length}");
+                 offset += ID.GetFromBytes(packet._Data[offset..]);
+                 registryEntry.ID = ID;
+                 Logging.LogDebug("\t\tEntry: " + ID.GetString());
+ 
+                 (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
+                     packet._Data[offset..]
+                 );
+                 offset += numberBytesRead;
+ 
+                 if (isPresent)
+                 {
+                     NBT Data = new(true);
+                     try
+                     {
+                         //Logging.LogDebug($"NBT Present");
+                         offset += Data.ReadFromBytes(packet._Data[offset..], true);
+                         registryEntry.Data = Data;
+                         //Logging.LogDebug("\tNBT DATA:\n" + Data.GetNBTAsString(2));
+                     }
+                     catch (Exception e)
+                     {
+                         Logging.LogError("FUCK" + e.ToString(), false);
+                         //Logging.LogError($"DATA: {Data.GetNBTAsString()}", false);
+                     }
+                 }
+ 
+                 //Logging.LogDebug($"offset:{offset} dataLength:{packet.data.Length}");
+ 
+                 registryData._Entries.Add(registryEntry);
+             }
+             catch (Exception e)
+             {
+                 Logging.LogDebug($"\t\t\toffset:{offset} packet.data Length:{packet._Data.Length}");
+                 Logging.LogError(e.ToString());
+                 return;
+             }
+         }
+         _GameStateHandler.AddServerRegistryData(registryData); */
     }
 
     internal void Transfer(MinecraftServerPacket minecraftPacket)
@@ -151,7 +196,10 @@ public class ConfigurationInternals
             _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
             _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
             _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
-            _DisplayedSkinParts = IGameStateHandler._Settings._SkinCustomization._DisplayedSkinParts,
+            _DisplayedSkinParts = IGameStateHandler
+                ._Settings
+                ._SkinCustomization
+                ._DisplayedSkinParts,
             _EnableTextFiltering = false, //hardcoded for now, add setting later
             _Locale = "en_US", //hardcoded, chage if more locales added later
             _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,
@@ -174,7 +222,10 @@ public class ConfigurationInternals
             _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
             _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
             _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
-            _DisplayedSkinParts = IGameStateHandler._Settings._SkinCustomization._DisplayedSkinParts,
+            _DisplayedSkinParts = IGameStateHandler
+                ._Settings
+                ._SkinCustomization
+                ._DisplayedSkinParts,
             _EnableTextFiltering = false, //hardcoded for now, add setting later
             _Locale = "en_US", //hardcoded, chage if more locales added later
             _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,

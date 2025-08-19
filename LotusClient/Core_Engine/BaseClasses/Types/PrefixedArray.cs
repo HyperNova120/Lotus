@@ -26,8 +26,7 @@ namespace Core_Engine.BaseClasses.Types
 
         public static (int arraySize, int numBytesRead) GetSizeOfArray(byte[] data)
         {
-            (int size, int numSizeBytes) = VarInt_VarLong.DecodeVarInt(data);
-            return (size, numSizeBytes);
+            return VarInt_VarLong.DecodeVarInt(data);
         }
     }
 }

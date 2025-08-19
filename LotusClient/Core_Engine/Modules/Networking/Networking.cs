@@ -307,9 +307,9 @@ namespace Core_Engine.Modules.Networking
                         );
                         if (serverPacket == null)
                         {
-                            Logging.LogDebug(
+                            /* Logging.LogDebug(
                                 $"ReceiveConnections; bad packet, Remaining Size:{connection._IncompletePacketBytesBuffer.Length}"
-                            );
+                            ); */
                             break;
                             /* Logging.LogDebug("ReceiveConnections; bad packet, cancelling");
                             DisconnectFromServer(eventArgs.remoteHost);
