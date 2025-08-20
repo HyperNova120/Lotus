@@ -182,6 +182,10 @@ namespace Core_Engine.Interfaces
 
         public void ProcessGameStateReset();
 
+        public void SetLastKeepAliveTime(DateTime lastPacketTime);
+
+        public DateTime GetLastKeepAliveTime();
+
         //==========================================
         //===============PLAY METHODS===============
         //==========================================

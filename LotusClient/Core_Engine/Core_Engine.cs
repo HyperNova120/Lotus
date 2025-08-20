@@ -61,7 +61,7 @@ namespace Core_Engine
             return true;
         }
 
-        public static bool signalInteractiveTransferHold(State CallingState, State RequestedState)
+        public static bool signalInteractiveHoldTransfer(State CallingState, State RequestedState)
         {
             Logging.LogDebug(
                 $"signalInteractiveTransferHold From:{CallingState} To:{RequestedState}"

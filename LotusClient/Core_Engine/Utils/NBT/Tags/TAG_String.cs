@@ -36,7 +36,10 @@ public class TAG_String : TAG_Base
         {
             Value += (char)inputBytes[offset + 2 + i];
         } */
-        Value = Encoding.Default.GetString(inputBytes[(offset + 2)..(offset + 2 + length)]);
+        Value = Encoding
+            .UTF8.GetString(inputBytes[(offset + 2)..(offset + 2 + length)])
+            .Replace("\r", "")
+            .Replace("\n", "");
 
         return offset + 2 + length;
     }

@@ -27,6 +27,8 @@ namespace Core_Engine.Modules.Networking
             RegisterEvent.Invoke("STATUS_Packet_Received");
             RegisterEvent.Invoke("LOGIN_Packet_Received");
             RegisterEvent.Invoke("CONFIG_Packet_Received");
+            RegisterEvent.Invoke("PLUGIN_Packet_Received");
+            RegisterEvent.Invoke("PLAY_Packet_Received");
         }
 
         public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
@@ -354,11 +356,18 @@ namespace Core_Engine.Modules.Networking
                         new PacketReceivedEventArgs(packet, connection._RemoteHost)
                     );
                     break;
+                case ConnectionState.PLAY:
+                    Core_Engine.InvokeEvent(
+                        "PLAY_Packet_Received",
+                        new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                    );
+                    break;
                 default:
                     Logging.LogError(
                         $"ReceiveConnections State {connection._ConnectionState} Not Implemented"
                     );
                     DisconnectFromServer(connection._RemoteHost);
+                    Core_Engine.SignalInteractiveResetServerHolds();
                     return;
             }
         }

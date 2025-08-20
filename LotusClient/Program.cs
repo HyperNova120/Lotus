@@ -52,8 +52,14 @@ namespace LotusClient
                 .WriteTag("shortTest", (short)32767);
 
             Console.WriteLine(testEdit.GetNBTAsString());
+            testEdit.ReadFromBytes(testEdit.GetBytes());
+            Console.WriteLine("\n\n\n" + testEdit.GetNBTAsString()); */
 
-            Console.WriteLine(
+            /* NBT BigTest = new();
+            BigTest.ReadFromBytes(File.ReadAllBytes("Testing_Stuff/servers.dat"));
+            Console.WriteLine(BigTest.GetNBTAsString()); */
+
+            /* Console.WriteLine(
                 "TryGetTag Test: "
                     + ((testEdit.TryGetTag<TAG_Compound>("Egg") == null) ? "FAILED" : "PASS")
             );
@@ -62,11 +68,11 @@ namespace LotusClient
             testEdit.TryGetTag<TAG_Long>("longTest")!.Value = 12;
             Console.WriteLine(testEdit.GetNBTAsString()); */
 
-            NBT Test1 = new NBT(true)
+            /* NBT Test1 = new NBT(true)
                 .WriteTag("TestInt", 1234)
                 .WriteTag("TestString", "hello world");
 
-            NBT Test2 = new NBT(true).WriteTag("TestFloat", 12.34).WriteTag("TestDouble", 5728d);
+            NBT Test2 = new NBT(true).WriteTag("TestFloat", 12.34).WriteTag("TestDouble", 5728d); */
 
             /* Console.WriteLine(Test1.GetNBTAsString());
             Console.WriteLine(Test2.GetNBTAsString() + "\n\n");

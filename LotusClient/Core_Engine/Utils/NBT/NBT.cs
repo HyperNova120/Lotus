@@ -108,7 +108,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<byte> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_BYTE };
         foreach (byte b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Byte() { Value = (sbyte)b, isInListTag = true });
@@ -125,7 +125,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<short> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_SHORT };
         foreach (short b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Short() { Value = b, isInListTag = true });
@@ -142,7 +142,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<int> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_INT };
         foreach (int b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Int() { Value = b, isInListTag = true });
@@ -159,7 +159,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<long> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_LONG };
         foreach (long b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Long() { Value = b, isInListTag = true });
@@ -176,7 +176,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<float> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_FLOAT };
         foreach (float b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Float() { Value = b, isInListTag = true });
@@ -193,7 +193,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<double> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_DOUBLE };
         foreach (double b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Double() { Value = b, isInListTag = true });
@@ -210,7 +210,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<byte[]> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_BYTE_ARRAY };
         foreach (byte[] b in data)
         {
             tmp.Contained_Tags.Add(
@@ -229,7 +229,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<string> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_STRING };
         foreach (string b in data)
         {
             tmp.Contained_Tags.Add(new TAG_String() { Value = b, isInListTag = true });
@@ -246,7 +246,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<int[]> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_INT_ARRAY };
         foreach (int[] b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Int_Array() { Values = b, isInListTag = true });
@@ -263,7 +263,7 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<long[]> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_LONG_ARRAY };
         foreach (long[] b in data)
         {
             tmp.Contained_Tags.Add(new TAG_Long_Array() { Values = b, isInListTag = true });
@@ -287,9 +287,10 @@ public class NBT
 
     public NBT WriteListTag(string name, IEnumerable<NBT> data)
     {
-        TAG_List tmp = new(name);
+        TAG_List tmp = new(name) { Contained_Tag_Type = (int)TAG_Base.TagTypeID.TAG_COMPOUND };
         foreach (NBT b in data)
         {
+            b._Base_Tag!.isInListTag = true;
             tmp.Contained_Tags.Add(b._Base_Tag!);
         }
         _Base_Tag!.WriteTag<TAG_List>(tmp);

@@ -48,21 +48,22 @@ namespace Core_Engine.Modules.ServerLogin
                 switch (packet._Protocol_ID)
                 {
                     case 0x00:
-                        //Logging.LogDebug("Disconnect Packet Received");
                         internals.HandleLoginDisconnect(packet);
                         break;
                     case 0x01:
-                        //Logging.LogDebug("Encryption Request Packet Received");
                         await internals.HandleEncryptionRequest(packet);
                         break;
                     case 0x02:
-                        //Logging.LogDebug("Login Success Packet Received");
                         internals.HandleLoginSuccess(packet);
                         break;
                     case 0x03:
-
-                        //Logging.LogDebug("Compression Packet Received");
                         internals.HandleSetCompression(packet);
+                        break;
+                    case 0x04:
+                        internals.HandlePluginRequest(packet);
+                        break;
+                    case 0x05:
+                        internals.HandleCookieRequest(packet);
                         break;
                     default:
                         Logging.LogError(

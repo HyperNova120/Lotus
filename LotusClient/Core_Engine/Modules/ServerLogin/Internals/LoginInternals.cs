@@ -1,25 +1,38 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Core_Engine.BaseClasses;
 using Core_Engine.BaseClasses.Types;
 using Core_Engine.EngineEventArgs;
+using Core_Engine.Interfaces;
 using Core_Engine.Modules.Networking.Internals;
 using Core_Engine.Modules.Networking.Models;
 using Core_Engine.Modules.Networking.Packets;
 using Core_Engine.Modules.Networking.Packets.ClientBound.Login;
 using Core_Engine.Modules.Networking.Packets.ClientBound.Login.Internals;
+using Core_Engine.Modules.Networking.Packets.ServerBound.Configuration;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
 using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
+using Core_Engine.Utils;
 using static Core_Engine.Modules.Networking.Networking;
 
 namespace Core_Engine.Modules.ServerLogin.Internals
 {
     public class ServerLoginInternals
     {
+        private IGameStateHandler _GameStateHandler;
+        private Networking.Networking _NetworkingManager;
+
         private enum RegisteredEventIdentifiers
         {
             SERVERLOGIN_loginSuccessful,
             CONFIG_Start_Config_Process,
+        }
+
+        public ServerLoginInternals()
+        {
+            _GameStateHandler = Core_Engine.GetModule<IGameStateHandler>("GameStateHandler")!;
+            _NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
         }
 
         public void HandleLoginDisconnect(MinecraftServerPacket packet)
@@ -27,6 +40,9 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             Logging.LogInfo(
                 $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet._Data)}"
             );
+            NBT test = new(true);
+            test.ReadFromBytes(packet._Data, true);
+            Console.WriteLine(test.GetNBTAsString());
             Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
                 .DisconnectFromServer(packet._RemoteHost);
@@ -163,7 +179,7 @@ namespace Core_Engine.Modules.ServerLogin.Internals
             /* NetworkModuleCache.GetServerConnection(packet.remoteHost)!.connectionState =
                 ConnectionState.CONFIGURATION; */
 
-            Core_Engine.signalInteractiveTransferHold(
+            Core_Engine.signalInteractiveHoldTransfer(
                 Core_Engine.State.JoiningServer,
                 Core_Engine.State.Configuration
             );
@@ -177,6 +193,40 @@ namespace Core_Engine.Modules.ServerLogin.Internals
                 nameof(RegisteredEventIdentifiers.CONFIG_Start_Config_Process),
                 new ConnectionEventArgs(packet._RemoteHost)
             );
+        }
+
+        internal void HandlePluginRequest(MinecraftServerPacket packet)
+        {
+            (int value, int offset) = VarInt_VarLong.DecodeVarInt(packet._Data);
+            Identifier channel = new();
+            offset += channel.GetFromBytes(packet._Data[offset..]);
+
+            PluginMessageReceivedEventArgs args = new(
+                packet._RemoteHost,
+                ConnectionState.LOGIN,
+                channel,
+                packet._Data[offset..],
+                value
+            );
+
+            Core_Engine.InvokeEvent("PLUGIN_Packet_Received", args);
+        }
+
+        internal void HandleCookieRequest(MinecraftServerPacket packet)
+        {
+            Identifier Key = new();
+            Key.GetFromBytes(packet._Data);
+
+            var cookie = _GameStateHandler.GetServerCookie(Key);
+
+            CookieResponsepacket cookieResponsepacket = new()
+            {
+                _Protocol_ID = 0x05,
+                _Key = Key,
+                _Payload = cookie?._Payload ?? [],
+            };
+
+            _NetworkingManager.SendPacket(packet._RemoteHost, cookieResponsepacket);
         }
     }
 }

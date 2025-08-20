@@ -7,7 +7,7 @@ namespace Core_Engine.Modules.Networking.Packets
 {
     public abstract class MinecraftPacket
     {
-        public int _Protocol_ID { get; protected set; } = 0x00;
+        public int _Protocol_ID { get; set; } = 0x00;
 
         public abstract byte[] GetBytes();
     }

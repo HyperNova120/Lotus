@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using Core_Engine.EngineEventArgs;
+using Core_Engine.Modules.Networking.Packets;
 using static Core_Engine.Modules.Networking.Networking;
 
 namespace Core_Engine.Modules.Networking.Internals
@@ -18,6 +19,10 @@ namespace Core_Engine.Modules.Networking.Internals
 
         public byte[] _IncompletePacketBytesBuffer = [];
         public List<byte> _DataToSendBuffer = new();
+
+        public bool _ActiveBundleDelimiter = false;
+
+        public Queue<MinecraftServerPacket> _BundledPackets = new();
 
         public ServerConnection(string serverAddress)
         {

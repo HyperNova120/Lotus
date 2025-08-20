@@ -5,7 +5,7 @@ namespace Core_Engine.Utils.NBTInternals.Tags;
 
 public class TAG_List : TAG_Base, TAG_Collection
 {
-    int Contained_Tag_Type;
+    public int Contained_Tag_Type;
 
     bool AcceptAnyType = false;
 
@@ -29,27 +29,27 @@ public class TAG_List : TAG_Base, TAG_Collection
     public override int ProcessBytes(byte[] inputBytes)
     {
         int offset = ProcessIDAndNameBytes(inputBytes);
-        Contained_Tag_Type = inputBytes[offset + 0];
+        Contained_Tag_Type = inputBytes[offset++];
 
         //length = BitConverter.ToInt32(inputBytes[1..5].Reverse().ToArray(), 0);
         length = BitConverter.ToInt32(
             [
-                inputBytes[offset + 4],
                 inputBytes[offset + 3],
                 inputBytes[offset + 2],
                 inputBytes[offset + 1],
+                inputBytes[offset + 0],
             ],
             0
         );
+        offset += 4;
 
         if (length <= 0)
         {
             //list type may be tag end; parsers accept any type instead
             AcceptAnyType = true;
-            length = 1;
+            length = 0;
         }
 
-        offset += 5;
         for (int i = 0; i < length; i++)
         {
             int currentTagID = AcceptAnyType ? inputBytes[offset] : Contained_Tag_Type;

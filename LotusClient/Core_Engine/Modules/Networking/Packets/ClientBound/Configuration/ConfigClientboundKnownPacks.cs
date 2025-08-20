@@ -6,13 +6,13 @@ public class ConfigClientboundKnownPacks
 {
     public List<PackInfo> _KnownPacks = new();
 
-    public int DecideFromBytes(byte[] bytes)
+    public int DecodeFromBytes(byte[] bytes)
     {
         (int arraySize, int offset) = PrefixedArray.GetSizeOfArray(bytes);
         for (int i = 0; i < arraySize; i++)
         {
             PackInfo tmp = new();
-            (tmp.Namespcae, int numBytes) = StringN.DecodeBytes(bytes[offset..]);
+            (tmp.Namespace, int numBytes) = StringN.DecodeBytes(bytes[offset..]);
             offset += numBytes;
             (tmp.ID, int numBytes2) = StringN.DecodeBytes(bytes[offset..]);
             offset += numBytes2;
@@ -25,7 +25,7 @@ public class ConfigClientboundKnownPacks
 
     public struct PackInfo
     {
-        public string Namespcae;
+        public string Namespace;
         public string ID;
         public string Version;
     }

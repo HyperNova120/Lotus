@@ -52,17 +52,41 @@ namespace Core_Engine.Modules.ServerConfig
                 MinecraftServerPacket packet = eventArgs._Packet;
                 switch (packet._Protocol_ID)
                 {
+                    case 0x00:
+                        _ConfigurationInternals.HandleCookieRequest(packet);
+                        break;
+                    case 0x01:
+                        _ConfigurationInternals.HandlePluginMessage(packet);
+                        break;
+                    case 0x02:
+                        _ConfigurationInternals.HandleDisconnect(packet);
+                        break;
+                    case 0x03:
+                        _ConfigurationInternals.HandleFinishConfiguration(packet);
+                        break;
+                    case 0x04:
+                        _ConfigurationInternals.HandleKeepAlive(packet);
+                        break;
+                    case 0x05:
+                        _ConfigurationInternals.HandlePing(packet);
+                        break;
                     case 0x07:
-                        _ConfigurationInternals.RegistryData(packet);
+                        _ConfigurationInternals.HandleRegistryData(packet);
+                        break;
+                    case 0x08:
+                        _ConfigurationInternals.HandleRemoveResourcePack(packet);
+                        break;
+                    case 0x09:
+                        _ConfigurationInternals.HandleAddResourcePack(packet);
                         break;
                     case 0x0A:
-                        _ConfigurationInternals.StoreCookie(packet);
+                        _ConfigurationInternals.HandleStoreCookie(packet);
                         break;
                     case 0x0B:
-                        _ConfigurationInternals.Transfer(packet);
+                        _ConfigurationInternals.HandleTransfer(packet);
                         break;
                     case 0x0E:
-                        _ConfigurationInternals.ClientboundKnownPacks(packet);
+                        _ConfigurationInternals.HandleClientboundKnownPacks(packet);
                         break;
                     default:
                         Logging.LogError(

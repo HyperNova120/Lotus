@@ -27,6 +27,8 @@ namespace Core_Engine.Modules.GameStateHandler
         Dictionary<MinecraftUUID, ResourcePack> _ServerResourcePack = new();
         HashSet<Identifier> _ServerFeatureFlags = new();
 
+        DateTime _LastKeepAlivePacketTime = DateTime.Now;
+
         public void AddServerCookie(ServerCookie cookie)
         {
             _ServerCookies[cookie._Key!] = cookie;
@@ -88,6 +90,16 @@ namespace Core_Engine.Modules.GameStateHandler
         {
             ProcessTransfer();
             _ServerCookies.Clear();
+        }
+
+        public void SetLastKeepAliveTime(DateTime lastPacketTime)
+        {
+            _LastKeepAlivePacketTime = lastPacketTime;
+        }
+
+        public DateTime GetLastKeepAliveTime()
+        {
+            return _LastKeepAlivePacketTime;
         }
     }
 }

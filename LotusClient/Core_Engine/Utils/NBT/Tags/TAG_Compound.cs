@@ -161,7 +161,7 @@ public class TAG_Compound : TAG_Base, TAG_Collection
         {
             returner.AddRange(tagBase.GetBytes());
         }
-        returner.Add(0);
+        returner.Add(0x00);
         return returner.ToArray();
     }
 
