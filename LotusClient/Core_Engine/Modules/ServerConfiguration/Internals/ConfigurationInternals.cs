@@ -64,7 +64,15 @@ public class ConfigurationInternals
         offset += numBytesRead;
 
         RegistryData registry = new() { _RegistryNameSpace = RegistryID };
-        Logging.LogDebug(RegistryID.GetString());
+        bool shouldLogInfo = false;
+
+        if (RegistryID.GetString() == "minecraft:dimension_type")
+        {
+            shouldLogInfo = true;
+        }
+
+        if (shouldLogInfo)
+            Logging.LogDebug(RegistryID.GetString());
 
         try
         {
@@ -75,7 +83,8 @@ public class ConfigurationInternals
                 offset += EntryIDBytes;
 
                 RegistryEntry registryEntry = new() { ID = EntryID };
-                Logging.LogDebug("\t" + EntryID.GetString());
+                if (shouldLogInfo)
+                    Logging.LogDebug("\t" + EntryID.GetString());
 
                 (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
                     packet._Data[offset..]
@@ -87,7 +96,8 @@ public class ConfigurationInternals
                     int EntryDataBytes = EntryData.ReadFromBytes(packet._Data[offset..], true);
                     offset += EntryDataBytes;
                     registryEntry.Data = EntryData;
-                    Logging.LogDebug("\n" + EntryData.GetNBTAsString(2));
+                    if (shouldLogInfo)
+                        Logging.LogDebug("\n" + EntryData.GetNBTAsString(2));
                 }
 
                 registry._Entries.Add(registryEntry);

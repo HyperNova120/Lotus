@@ -15,14 +15,4 @@ public class ServerPlayInternals
         _NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
     }
 
-    public void HandleBundleDelimiter(MinecraftServerPacket packet)
-    {
-        ServerConnection serverConnection = _NetworkingManager.GetServerConnection(
-            packet._RemoteHost
-        )!;
-        if (!serverConnection._ActiveBundleDelimiter)
-        {
-            serverConnection._ActiveBundleDelimiter = true;
-        }
-    }
 }

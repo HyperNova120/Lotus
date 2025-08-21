@@ -2,19 +2,26 @@ namespace Core_Engine.BaseClasses;
 
 struct Position
 {
-    public int x,
-        y,
-        z;
+    public int _X,
+        _Y,
+        _Z;
 
-    public Position(long BigEndianPositionLong)
+    public Position()
     {
-        x = (int)(BigEndianPositionLong >> 38);
-        z = (int)((BigEndianPositionLong >> 12) & 0x3FFFFFF);
-        y = (int)(BigEndianPositionLong & 0xFFF);
+        _X = 0;
+        _Y = 0;
+        _Z = 0;
     }
 
-    public long GetBits()
+    public long GetAsBigEndianLongValue()
     {
-        return ((x & 0x3FFFFFF) << 38) | ((z & 0x3FFFFFF) << 12) | (y & 0xFFF);
+        return ((_X & 0x3FFFFFF) << 38) | ((_Z & 0x3FFFFFF) << 12) | (_Y & 0xFFF);
+    }
+
+    public void SetFromBigEndianLong(long BigEndianPositionLong)
+    {
+        _X = (int)(BigEndianPositionLong >> 38);
+        _Z = (int)((BigEndianPositionLong >> 12) & 0x3FFFFFF);
+        _Y = (int)(BigEndianPositionLong & 0xFFF);
     }
 }
