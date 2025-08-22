@@ -39,9 +39,38 @@ namespace Core_Engine.Modules.GameStateHandler
             _ServerFeatureFlags.Add(FeatureFlag);
         }
 
-        public void AddServerRegistryData(RegistryData registryData)
+        public void UpdateServerRegistryData(RegistryData registryData, bool overwrite = true)
         {
-            _ServerRegistryData[registryData._RegistryNameSpace!] = registryData;
+            if (!_ServerRegistryData.ContainsKey(registryData._RegistryNameSpace))
+            {
+                //new registry
+                _ServerRegistryData[registryData._RegistryNameSpace] = registryData;
+                return;
+            }
+            RegistryData knownData = _ServerRegistryData[registryData._RegistryNameSpace];
+            //update registry
+            foreach (RegistryEntry newEntry in registryData._Entries)
+            {
+                int index = knownData._Entries.IndexOf(newEntry);
+                if (index == -1)
+                {
+                    knownData._Entries.Add(new(newEntry));
+                    continue;
+                }
+                else if (newEntry.Data == null)
+                {
+                    continue;
+                }
+
+                RegistryEntry currentEntry = knownData._Entries[index];
+                if (currentEntry.Data == null)
+                {
+                    currentEntry.Data = newEntry.Data.Clone();
+                    continue;
+                }
+
+                currentEntry.Data.Combine(newEntry.Data, overwrite);
+            }
         }
 
         public void AddServerResourcePack(ResourcePack resourcePack)

@@ -23,10 +23,10 @@ public abstract class TAG_Base
         TAG_LONG_ARRAY,
     };
 
-    public int Type_ID = 0;
-    public string? Name = "";
+    public int _Type_ID = 0;
+    public string? _Name = "";
 
-    public bool isInListTag = false;
+    public bool _IsInListTag = false;
 
     public abstract int ProcessBytes(byte[] inputBytes);
 
@@ -34,15 +34,15 @@ public abstract class TAG_Base
 
     protected int ProcessIDAndNameBytes(byte[] inputBytes)
     {
-        if (isInListTag)
+        if (_IsInListTag)
         {
             return 0;
         }
         int packetTypeID = inputBytes[0];
-        if (packetTypeID != this.Type_ID)
+        if (packetTypeID != this._Type_ID)
         {
             throw new IncorrectNBTTypeException(
-                $"Packet ID from bytes does not match required packet id: Expected {Type_ID} Received {packetTypeID}"
+                $"Packet ID from bytes does not match required packet id: Expected {_Type_ID} Received {packetTypeID}"
             );
         }
         int nameLength;
@@ -51,7 +51,7 @@ public abstract class TAG_Base
         nameLength |= inputBytes[2];
         for (int i = 0; i < nameLength; i++)
         {
-            this.Name += (char)inputBytes[3 + i];
+            this._Name += (char)inputBytes[3 + i];
         }
         return 3 + nameLength;
     }
@@ -60,19 +60,19 @@ public abstract class TAG_Base
 
     protected byte[] GetIDAndNamesBytes()
     {
-        if (isInListTag)
+        if (_IsInListTag)
         {
             return [];
         }
 
-        byte idByte = (byte)Type_ID;
-        if (this.Name == null)
+        byte idByte = (byte)_Type_ID;
+        if (this._Name == null)
         {
             return [idByte];
         }
 
         //add length of name
-        byte[] nameBytes = Encoding.UTF8.GetBytes(Name);
+        byte[] nameBytes = Encoding.UTF8.GetBytes(_Name);
         return
         [
             idByte,
@@ -81,4 +81,6 @@ public abstract class TAG_Base
             .. nameBytes,
         ];
     }
+
+    public abstract TAG_Base Clone();
 }

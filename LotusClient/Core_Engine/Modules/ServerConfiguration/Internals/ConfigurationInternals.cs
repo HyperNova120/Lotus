@@ -107,7 +107,7 @@ public class ConfigurationInternals
         {
             Logging.LogError("REGISTRY DATA: " + e.ToString());
         }
-        _GameStateHandler.AddServerRegistryData(registry);
+        _GameStateHandler.UpdateServerRegistryData(registry);
     }
 
     internal void HandleTransfer(MinecraftServerPacket minecraftPacket)

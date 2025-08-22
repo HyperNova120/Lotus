@@ -10,7 +10,16 @@ public class TAG_Long_Array : TAG_Base
     public TAG_Long_Array()
     {
         Values = [];
-        Type_ID = 12;
+        _Type_ID = 12;
+    }
+
+    public override TAG_Base Clone()
+    {
+        TAG_Long_Array ret = new();
+        ret._IsInListTag = _IsInListTag;
+        ret._Name = _Name;
+        ret.Values = (long[])Values.Clone();
+        return ret;
     }
 
     public override byte[] GetBytes()
@@ -74,7 +83,7 @@ public class TAG_Long_Array : TAG_Base
     {
         string returner =
             new string('\t', tabSpace)
-            + $"TAG_Long_Array({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}):";
+            + $"TAG_Long_Array({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
         foreach (long cur in Values)
         {
             returner += " " + cur.ToString();

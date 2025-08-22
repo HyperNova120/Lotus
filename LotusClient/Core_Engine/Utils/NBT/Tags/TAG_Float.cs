@@ -9,7 +9,16 @@ public class TAG_Float : TAG_Base
 
     public TAG_Float()
     {
-        Type_ID = 5;
+        _Type_ID = 5;
+    }
+
+    public override TAG_Base Clone()
+    {
+        TAG_Float ret = new();
+        ret._IsInListTag = _IsInListTag;
+        ret._Name = _Name;
+        ret.Value = Value;
+        return ret;
     }
 
     public override byte[] GetBytes()
@@ -40,6 +49,6 @@ public class TAG_Float : TAG_Base
     public override string ToString(int tabSpace = 0)
     {
         return new string('\t', tabSpace)
-            + $"TAG_Float({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}): {Value}";
+            + $"TAG_Float({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}): {Value}";
     }
 }

@@ -1,4 +1,6 @@
-namespace Core_Engine.BaseClasses.World.Entity;
+using Core_Engine.BaseClasses.World.Interfaces;
+
+namespace Core_Engine.BaseClasses.World;
 
 public class LivingEntity : Entity, IAttackable
 {

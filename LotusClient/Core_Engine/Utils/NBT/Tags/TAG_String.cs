@@ -9,7 +9,16 @@ public class TAG_String : TAG_Base
 
     public TAG_String()
     {
-        Type_ID = 8;
+        _Type_ID = 8;
+    }
+
+    public override TAG_Base Clone()
+    {
+        TAG_String ret = new();
+        ret._IsInListTag = _IsInListTag;
+        ret._Name = _Name;
+        ret.Value = Value;
+        return ret;
     }
 
     public override byte[] GetBytes()
@@ -48,6 +57,6 @@ public class TAG_String : TAG_Base
     {
         //string returnValue = Encoding.UTF8.GetString(Encoding.Default.GetBytes(Value));
         return new string('\t', tabSpace)
-            + $"TAG_String({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}): \'{Value}\'";
+            + $"TAG_String({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}): \'{Value}\'";
     }
 }

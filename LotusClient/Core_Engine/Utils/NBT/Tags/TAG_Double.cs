@@ -9,7 +9,16 @@ public class TAG_Double : TAG_Base
 
     public TAG_Double()
     {
-        Type_ID = 6;
+        _Type_ID = 6;
+    }
+
+    public override TAG_Base Clone()
+    {
+        TAG_Double ret = new();
+        ret._IsInListTag = _IsInListTag;
+        ret._Name = _Name;
+        ret.Value = Value;
+        return ret;
     }
 
     public override byte[] GetBytes()
@@ -44,6 +53,6 @@ public class TAG_Double : TAG_Base
     public override string ToString(int tabSpace = 0)
     {
         return new string('\t', tabSpace)
-            + $"TAG_Double({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}): {Value}";
+            + $"TAG_Double({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}): {Value}";
     }
 }

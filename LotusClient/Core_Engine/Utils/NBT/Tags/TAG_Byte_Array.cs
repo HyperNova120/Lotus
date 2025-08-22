@@ -1,6 +1,7 @@
 using Core_Engine.BaseClasses.Types;
 using Core_Engine.Exceptions;
 using Core_Engine.Utils.NBTInternals.BaseClasses;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 
 namespace Core_Engine.Utils.NBTInternals.Tags;
 
@@ -11,7 +12,16 @@ public class TAG_Byte_Array : TAG_Base
     public TAG_Byte_Array()
     {
         Values = [];
-        Type_ID = 7;
+        _Type_ID = 7;
+    }
+
+    public override TAG_Base Clone()
+    {
+        TAG_Byte_Array ret = new();
+        ret._IsInListTag = _IsInListTag;
+        ret._Name = _Name;
+        ret.Values = (sbyte[])Values.Clone();
+        return ret;
     }
 
     public override byte[] GetBytes()
@@ -53,7 +63,7 @@ public class TAG_Byte_Array : TAG_Base
     {
         string returner =
             new string('\t', tabSpace)
-            + $"TAG_Byte_Array({((Name.Length == 0) ? "None" : "\'" + Name + "\'")}):";
+            + $"TAG_Byte_Array({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
         foreach (sbyte cur in Values)
         {
             returner += " " + ((byte)cur).ToString("X2");

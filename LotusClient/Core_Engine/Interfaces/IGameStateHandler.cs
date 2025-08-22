@@ -167,7 +167,7 @@ namespace Core_Engine.Interfaces
         public void AddServerCookie(ServerCookie cookie);
 
         public RegistryData? GetServerRegistryData(Identifier ID);
-        public void AddServerRegistryData(RegistryData registryData);
+        public void UpdateServerRegistryData(RegistryData registryData, bool overwrite = true);
 
         public ResourcePack? GetServerResourcePack(MinecraftUUID ID);
         public void AddServerResourcePack(ResourcePack resourcePack);

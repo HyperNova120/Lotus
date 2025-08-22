@@ -14,7 +14,7 @@ public interface TAG_Collection
     public TAG_Compound? TryGetCompountTag(string Tag_Name)
     {
         TAG_Base? tmp = TryGetTag(Tag_Name);
-        if (tmp == null || (tmp != null && tmp.Type_ID != (int)TAG_Base.TagTypeID.TAG_COMPOUND))
+        if (tmp == null || (tmp != null && tmp._Type_ID != (int)TAG_Base.TagTypeID.TAG_COMPOUND))
         {
             return null;
         }
@@ -24,7 +24,7 @@ public interface TAG_Collection
     public TAG_List? TryGetListTag(string Tag_Name)
     {
         TAG_Base? tmp = TryGetTag(Tag_Name);
-        if (tmp == null || (tmp != null && tmp.Type_ID != 9))
+        if (tmp == null || (tmp != null && tmp._Type_ID != 9))
         {
             return null;
         }

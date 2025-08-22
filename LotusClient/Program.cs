@@ -17,7 +17,7 @@ namespace LotusClient
 
             Environment.SetEnvironmentVariable("AppID", (string)configuration!["AzureApp:AppID"]!);
 
-            /* NBT testEdit = new NBT("Level")
+            NBT testEdit = new NBT("Level")
                 .WriteTag(
                     new NBT("nested compound test")
                         .WriteTag(
@@ -53,7 +53,7 @@ namespace LotusClient
 
             Console.WriteLine(testEdit.GetNBTAsString());
             testEdit.ReadFromBytes(testEdit.GetBytes());
-            Console.WriteLine("\n\n\n" + testEdit.GetNBTAsString()); */
+            Console.WriteLine("\n\n\n" + testEdit.GetNBTAsString());
 
             /* NBT BigTest = new();
             BigTest.ReadFromBytes(File.ReadAllBytes("Testing_Stuff/servers.dat"));
@@ -68,11 +68,18 @@ namespace LotusClient
             testEdit.TryGetTag<TAG_Long>("longTest")!.Value = 12;
             Console.WriteLine(testEdit.GetNBTAsString()); */
 
-            /* NBT Test1 = new NBT(true)
+            NBT Test1 = new NBT(true)
                 .WriteTag("TestInt", 1234)
                 .WriteTag("TestString", "hello world");
 
-            NBT Test2 = new NBT(true).WriteTag("TestFloat", 12.34).WriteTag("TestDouble", 5728d); */
+            NBT Test2 = new NBT(true).WriteTag("TestFloat", 12.34).WriteTag("TestDouble", 5728d);
+
+            Console.WriteLine($"Test1\n{Test1.GetNBTAsString()}");
+            Console.WriteLine($"Test2\n{Test2.GetNBTAsString()}");
+            Console.WriteLine($"Test1 Combine Test2\n{Test1.Combine(Test2).GetNBTAsString()}");
+            Console.WriteLine(
+                $"Test1 Combine Test2 Combine Big\n{Test1.Combine(Test2).Combine(testEdit).GetNBTAsString()}"
+            );
 
             /* Console.WriteLine(Test1.GetNBTAsString());
             Console.WriteLine(Test2.GetNBTAsString() + "\n\n");
@@ -97,8 +104,8 @@ namespace LotusClient
             Test1.ReadFromBytes(Test1.GetBytes(), true);
             Console.WriteLine(Test1.GetNBTAsString()); */
 
-            Core_Engine.Core_Engine.InitCore();
-            await Core_Engine.Core_Engine.GoInteractiveMode();
+            /* Core_Engine.Core_Engine.InitCore();
+            await Core_Engine.Core_Engine.GoInteractiveMode(); */
         }
     }
 }

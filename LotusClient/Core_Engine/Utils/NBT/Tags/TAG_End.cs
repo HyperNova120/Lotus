@@ -7,7 +7,12 @@ public class TAG_End : TAG_Base
 {
     public TAG_End()
     {
-        Type_ID = 0;
+        _Type_ID = 0;
+    }
+
+    public override TAG_Base Clone()
+    {
+        return new TAG_End();
     }
 
     public override byte[] GetBytes()
@@ -18,7 +23,7 @@ public class TAG_End : TAG_Base
     public override int ProcessBytes(byte[] inputBytes)
     {
         int packetTypeID = inputBytes[0];
-        if (packetTypeID != this.Type_ID)
+        if (packetTypeID != this._Type_ID)
         {
             throw new IncorrectNBTTypeException(
                 "Packet ID from bytes does not match required packet id"

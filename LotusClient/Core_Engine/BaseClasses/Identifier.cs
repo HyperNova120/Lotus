@@ -15,6 +15,12 @@ public class Identifier
 
     public Identifier() { }
 
+    public Identifier(Identifier other)
+    {
+        _Valid = other._Valid;
+        IdentifierString = other.IdentifierString;
+    }
+
     public Identifier(string IdentifierString)
     {
         ReadFromIdentifierString(IdentifierString);
@@ -35,6 +41,21 @@ public class Identifier
         }
         return false;
     }
+
+    public static bool operator ==(Identifier a, Identifier b)
+    {
+        if (ReferenceEquals(a, b))
+        {
+            return true;
+        }
+        if (a is null || b is null)
+        {
+            return false;
+        }
+        return a.IdentifierString == b.IdentifierString;
+    }
+
+    public static bool operator !=(Identifier a, Identifier b) => !(a == b);
 
     public void ReadFromIdentifierString(string IdentifierString)
     {
