@@ -1,8 +1,8 @@
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.Networking.Internals;
-using Core_Engine.Modules.Networking.Packets;
+using LotusCore.Interfaces;
+using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.Networking.Packets;
 
-namespace Core_Engine.Modules.ServerPlay.Internals;
+namespace LotusCore.Modules.ServerPlay.Internals;
 
 public class ServerPlayInternals
 {

@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using Core_Engine.Utils.NBTInternals.BaseClasses;
-using Core_Engine.Utils.NBTInternals.Tags;
+using LotusCore.Utils.NBTInternals.BaseClasses;
+using LotusCore.Utils.NBTInternals.Tags;
 
-namespace Core_Engine.Utils;
+namespace LotusCore.Utils;
 
 public class NBT
 {
@@ -333,13 +333,6 @@ public class NBT
                     tmp_compound,
                     overwrite
                 );
-            }
-            else if (
-                value.Value is TAG_List tmp_list
-                && _Base_Tag._Contained_Tags[value.Key] is TAG_List
-            )
-            {
-                ((TAG_List)_Base_Tag._Contained_Tags[value.Key]).Combine(tmp_list, overwrite);
             }
             else if (overwrite)
             {

@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
-using Core_Engine;
-using Core_Engine.Interfaces;
+using LotusCore;
+using LotusCore.Interfaces;
 using Graphics_Engine.Commands;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Bcpg.Sig;

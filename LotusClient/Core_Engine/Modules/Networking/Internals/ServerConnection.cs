@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Sockets;
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Modules.Networking.Packets;
-using static Core_Engine.Modules.Networking.Networking;
+using LotusCore.EngineEventArgs;
+using LotusCore.Modules.Networking.Packets;
+using static LotusCore.Modules.Networking.Networking;
 
-namespace Core_Engine.Modules.Networking.Internals
+namespace LotusCore.Modules.Networking.Internals
 {
     public class ServerConnection
     {

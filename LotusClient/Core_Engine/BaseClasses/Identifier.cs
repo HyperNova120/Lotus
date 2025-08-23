@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Core_Engine.BaseClasses.Types;
+using LotusCore.BaseClasses.Types;
 
-namespace Core_Engine.BaseClasses;
+namespace LotusCore.BaseClasses;
 
 public class Identifier
 {

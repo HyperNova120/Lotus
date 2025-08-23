@@ -1,6 +1,6 @@
-using Core_Engine.BaseClasses;
+using LotusCore.BaseClasses;
 
-namespace Core_Engine.Modules.GameStateHandler.BaseClasses
+namespace LotusCore.Modules.GameStateHandler.BaseClasses
 {
     public class ServerCookie
     {

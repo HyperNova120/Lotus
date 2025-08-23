@@ -1,4 +1,4 @@
-namespace Core_Engine.Modules.MojangLogin.MinecraftAuthModels
+namespace LotusCore.Modules.MojangLogin.MinecraftAuthModels
 {
     public class MinecraftXSTSModel
     {

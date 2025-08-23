@@ -1,7 +1,7 @@
 using System.Numerics;
 using Microsoft.Identity.Client;
 
-namespace Core_Engine.BaseClasses.Types
+namespace LotusCore.BaseClasses.Types
 {
     public static class VarInt_VarLong
     {

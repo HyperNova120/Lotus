@@ -1,6 +1,6 @@
-using Core_Engine.Utils.NBTInternals.BaseClasses;
+using LotusCore.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBTInternals.Tags;
+namespace LotusCore.Utils.NBTInternals.Tags;
 
 public class TAG_Long : TAG_Base
 {

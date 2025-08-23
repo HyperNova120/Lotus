@@ -1,9 +1,9 @@
 using System.Reflection.Metadata.Ecma335;
-using Core_Engine.BaseClasses;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.GameStateHandler.BaseClasses;
+using LotusCore.BaseClasses;
+using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandler.BaseClasses;
 
-namespace Core_Engine.Modules.GameStateHandler
+namespace LotusCore.Modules.GameStateHandler
 {
     public class GameStateHandler : IModuleBase, IGameStateHandler
     {

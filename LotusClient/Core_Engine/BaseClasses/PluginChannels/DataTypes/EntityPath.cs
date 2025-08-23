@@ -1,6 +1,6 @@
-using Core_Engine.BaseClasses.Types;
+using LotusCore.BaseClasses.Types;
 
-namespace Core_Engine.BaseClasses.PluginChannels.DataTypes;
+namespace LotusCore.BaseClasses.PluginChannels.DataTypes;
 
 
 struct EntityPath

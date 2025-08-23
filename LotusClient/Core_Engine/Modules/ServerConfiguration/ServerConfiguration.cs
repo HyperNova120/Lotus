@@ -1,9 +1,9 @@
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.ServerConfig.Internals;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.ServerConfig.Internals;
 
-namespace Core_Engine.Modules.ServerConfig
+namespace LotusCore.Modules.ServerConfig
 {
     public class ServerConfiguration : IModuleBase
     {

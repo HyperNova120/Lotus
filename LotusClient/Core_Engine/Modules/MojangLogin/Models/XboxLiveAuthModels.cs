@@ -1,4 +1,4 @@
-namespace Core_Engine.Modules.MojangLogin.Models
+namespace LotusCore.Modules.MojangLogin.Models
 {
     public class XboxLiveAuthModel
     {

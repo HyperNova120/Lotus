@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Core_Engine
+namespace LotusCore
 {
     public static class Logging
     {

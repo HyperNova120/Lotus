@@ -1,4 +1,4 @@
-namespace Core_Engine.BaseClasses.World;
+namespace LotusCore.BaseClasses.World;
 
 public class Entity {
     public int _EntityID;

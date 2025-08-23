@@ -1,6 +1,6 @@
-using Core_Engine.Utils.NBTInternals.Tags;
+using LotusCore.Utils.NBTInternals.Tags;
 
-namespace Core_Engine.Utils.NBTInternals.BaseClasses;
+namespace LotusCore.Utils.NBTInternals.BaseClasses;
 
 public interface TAG_Collection
 {

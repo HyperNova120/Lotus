@@ -1,10 +1,10 @@
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.Networking.Internals;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.ServerPlay.Internals;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.ServerPlay.Internals;
 
-namespace Core_Engine.Modules.ServerPlay;
+namespace LotusCore.Modules.ServerPlay;
 
 public class ServerPlayHandler : IModuleBase
 {

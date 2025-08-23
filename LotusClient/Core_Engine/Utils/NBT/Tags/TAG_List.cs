@@ -1,7 +1,7 @@
-using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBTInternals.BaseClasses;
+using LotusCore.Exceptions;
+using LotusCore.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBTInternals.Tags;
+namespace LotusCore.Utils.NBTInternals.Tags;
 
 public class TAG_List : TAG_Base, TAG_Collection
 {
@@ -232,43 +232,11 @@ public class TAG_List : TAG_Base, TAG_Collection
         return false;
     }
 
-    internal void Combine(TAG_List value, bool overwrite)
+    public override bool Equals(object? obj)
     {
-        if (value._Contained_Tags.Count == 0)
-        {
-            return;
-        }
-        else if (_Contained_Tags.Count == 0)
-        {
-            foreach (var item in value._Contained_Tags)
-            {
-                _Contained_Tags.Add(item.Clone());
-            }
-            return;
-        }
-
-        foreach (var item in value._Contained_Tags)
-        {
-            if (!_Contained_Tags.Contains(item))
-            {
-                _Contained_Tags.Add(item.Clone());
-                continue;
-            }
-
-            int index = _Contained_Tags.IndexOf(item);
-
-            if (item is TAG_Compound tmp_compound && _Contained_Tags[index] is TAG_Compound)
-            {
-                ((TAG_Compound)_Contained_Tags[index]).Combine(tmp_compound, overwrite);
-            }
-            else if (item is TAG_List tmp_list && _Contained_Tags[index] is TAG_List)
-            {
-                ((TAG_List)_Contained_Tags[index]).Combine(tmp_list, overwrite);
-            }
-            else if (overwrite)
-            {
-                _Contained_Tags.Add(item.Clone());
-            }
-        }
+        return obj is TAG_List list_tag
+            && _Name == list_tag._Name
+            && _AcceptAnyType == list_tag._AcceptAnyType
+            && _Contained_Tag_Type == list_tag._Contained_Tag_Type;
     }
 }

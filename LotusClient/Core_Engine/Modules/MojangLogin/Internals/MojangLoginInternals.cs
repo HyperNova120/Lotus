@@ -3,13 +3,13 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using Core_Engine.Modules.MojangLogin.MinecraftAuthModels;
-using Core_Engine.Modules.MojangLogin.Models;
-using Core_Engine.Modules.Networking.Internals;
+using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
+using LotusCore.Modules.MojangLogin.Models;
+using LotusCore.Modules.Networking.Internals;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 
-namespace Core_Engine.Modules.MojangLogin.Internals
+namespace LotusCore.Modules.MojangLogin.Internals
 {
     public class MojangLoginInternals
     {

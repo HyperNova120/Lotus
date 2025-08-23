@@ -1,4 +1,4 @@
-namespace Core_Engine.Modules.Networking.Packets
+namespace LotusCore.Modules.Networking.Packets
 {
     public class EmptyPacket : MinecraftPacket
     {

@@ -1,9 +1,9 @@
 using System.Text;
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Modules.GameStateHandler.BaseClasses;
-using static Core_Engine.Modules.Networking.Packets.ClientBound.Configuration.ConfigClientboundKnownPacks;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.GameStateHandler.BaseClasses;
+using static LotusCore.Modules.Networking.Packets.ClientBound.Configuration.ConfigClientboundKnownPacks;
 
-namespace Core_Engine.Modules.Networking.Packets.ServerBound.Configuration
+namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ServerboundKnownPacksPacket : MinecraftPacket
     {

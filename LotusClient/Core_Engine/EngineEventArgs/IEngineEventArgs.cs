@@ -1,4 +1,4 @@
-namespace Core_Engine.EngineEventArgs
+namespace LotusCore.EngineEventArgs
 {
     public class EngineEventArgs : EventArgs
     {

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Core_Engine.EngineEventArgs
+namespace LotusCore.EngineEventArgs
 {
     public class ServerConnectionSocketAsyncEventArgs : SocketAsyncEventArgs
     {

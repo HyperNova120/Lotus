@@ -3,7 +3,7 @@ using System.Collections;
 using System.Net;
 using Silk.NET.OpenGL;
 
-namespace Core_Engine.Modules.Networking.Packets
+namespace LotusCore.Modules.Networking.Packets
 {
     public abstract class MinecraftPacket
     {

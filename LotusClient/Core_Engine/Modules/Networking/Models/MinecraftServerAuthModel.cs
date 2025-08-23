@@ -1,4 +1,4 @@
-namespace Core_Engine.Modules.Networking.Models
+namespace LotusCore.Modules.Networking.Models
 {
     public class MinecraftServerAuthModel
     {

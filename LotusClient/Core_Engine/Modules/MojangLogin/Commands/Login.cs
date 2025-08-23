@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.MojangLogin.Models;
+using LotusCore.Interfaces;
+using LotusCore.Modules.MojangLogin.Models;
 
-namespace Core_Engine.Modules.MojangLogin.Commands
+namespace LotusCore.Modules.MojangLogin.Commands
 {
     public class LoginCommand : ICommandBase
     {

@@ -5,7 +5,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace Core_Engine.Modules.Networking.Internals
+namespace LotusCore.Modules.Networking.Internals
 {
     public class Encryption
     {

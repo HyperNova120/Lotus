@@ -1,15 +1,15 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.Networking.Internals;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Configuration;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
 using Microsoft.Identity.Client.NativeInterop;
 using Org.BouncyCastle.Asn1.Icao;
 
-namespace Core_Engine.Modules.Networking
+namespace LotusCore.Modules.Networking
 {
     public class Networking : IModuleBase
     {

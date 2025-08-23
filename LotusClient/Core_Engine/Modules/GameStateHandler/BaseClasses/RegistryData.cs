@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using Core_Engine.BaseClasses;
-using Core_Engine.Utils;
+using LotusCore.BaseClasses;
+using LotusCore.Utils;
 
-namespace Core_Engine.Modules.GameStateHandler.BaseClasses
+namespace LotusCore.Modules.GameStateHandler.BaseClasses
 {
     public class RegistryData
     {

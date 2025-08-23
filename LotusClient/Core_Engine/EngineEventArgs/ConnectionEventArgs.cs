@@ -1,7 +1,7 @@
 using System.Net;
-using Core_Engine.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets;
 
-namespace Core_Engine.EngineEventArgs
+namespace LotusCore.EngineEventArgs
 {
     public class ConnectionEventArgs : EventArgs
     {

@@ -1,15 +1,15 @@
 using System.Net;
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.MojangLogin.Commands;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Login;
-using Core_Engine.Modules.ServerLogin.Commands;
-using Core_Engine.Modules.ServerLogin.Internals;
-using static Core_Engine.Modules.Networking.Networking;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.MojangLogin.Commands;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
+using LotusCore.Modules.Networking.Packets.ServerBound.Login;
+using LotusCore.Modules.ServerLogin.Commands;
+using LotusCore.Modules.ServerLogin.Internals;
+using static LotusCore.Modules.Networking.Networking;
 
-namespace Core_Engine.Modules.ServerLogin
+namespace LotusCore.Modules.ServerLogin
 {
     public class LoginHandler : IModuleBase
     {

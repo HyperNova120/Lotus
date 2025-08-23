@@ -1,6 +1,6 @@
-using Core_Engine.BaseClasses.Types;
+using LotusCore.BaseClasses.Types;
 
-namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
+namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
 {
     public class HandshakePacket : MinecraftPacket
     {

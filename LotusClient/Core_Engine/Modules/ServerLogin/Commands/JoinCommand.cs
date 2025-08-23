@@ -1,6 +1,6 @@
-using Core_Engine.Interfaces;
+using LotusCore.Interfaces;
 
-namespace Core_Engine.Modules.ServerLogin.Commands
+namespace LotusCore.Modules.ServerLogin.Commands
 {
     public class JoinCommand : ICommandBase
     {

@@ -1,4 +1,4 @@
-namespace Core_Engine.BaseClasses;
+namespace LotusCore.BaseClasses;
 
 struct Position
 {

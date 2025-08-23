@@ -1,8 +1,8 @@
-using Core_Engine.BaseClasses;
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Modules.GameStateHandler.BaseClasses;
+using LotusCore.BaseClasses;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.GameStateHandler.BaseClasses;
 
-namespace Core_Engine.Modules.Networking.Packets.ClientBound.Configuration;
+namespace LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
 
 public class StoreCookiePacket
 {

@@ -1,7 +1,7 @@
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Utils.NBTInternals.BaseClasses;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBTInternals.Tags;
+namespace LotusCore.Utils.NBTInternals.Tags;
 
 public class TAG_Int_Array : TAG_Base
 {

@@ -1,4 +1,4 @@
-namespace Core_Engine.Interfaces
+namespace LotusCore.Interfaces
 {
     public interface ICommandBase
     {

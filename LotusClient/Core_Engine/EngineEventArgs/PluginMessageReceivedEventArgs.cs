@@ -1,8 +1,8 @@
 using System.Net;
-using Core_Engine.BaseClasses;
-using static Core_Engine.Modules.Networking.Networking;
+using LotusCore.BaseClasses;
+using static LotusCore.Modules.Networking.Networking;
 
-namespace Core_Engine.EngineEventArgs;
+namespace LotusCore.EngineEventArgs;
 
 public class PluginMessageReceivedEventArgs : EventArgs
 {

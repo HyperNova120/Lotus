@@ -1,8 +1,8 @@
 using System.Text;
-using Core_Engine.Exceptions;
+using LotusCore.Exceptions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
-namespace Core_Engine.Utils.NBTInternals.BaseClasses;
+namespace LotusCore.Utils.NBTInternals.BaseClasses;
 
 public abstract class TAG_Base
 {
@@ -24,7 +24,7 @@ public abstract class TAG_Base
     };
 
     public int _Type_ID = 0;
-    public string? _Name = "";
+    public string _Name = "";
 
     public bool _IsInListTag = false;
 

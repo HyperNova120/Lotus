@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Text;
-using Core_Engine.BaseClasses;
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Utils;
+using LotusCore.BaseClasses;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Utils;
 
-namespace Core_Engine.Modules.GameStateHandler.BaseClasses
+namespace LotusCore.Modules.GameStateHandler.BaseClasses
 {
     public class ResourcePack
     {

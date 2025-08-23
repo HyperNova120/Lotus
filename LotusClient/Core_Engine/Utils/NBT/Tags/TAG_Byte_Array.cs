@@ -1,9 +1,9 @@
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBTInternals.BaseClasses;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Exceptions;
+using LotusCore.Utils.NBTInternals.BaseClasses;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 
-namespace Core_Engine.Utils.NBTInternals.Tags;
+namespace LotusCore.Utils.NBTInternals.Tags;
 
 public class TAG_Byte_Array : TAG_Base
 {

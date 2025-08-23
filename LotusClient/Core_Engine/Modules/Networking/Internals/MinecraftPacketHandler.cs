@@ -1,8 +1,8 @@
 using System.Net;
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.Modules.Networking.Packets;
+using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.Networking.Packets;
 
-namespace Core_Engine.Modules.Networking.Internals
+namespace LotusCore.Modules.Networking.Internals
 {
     public class MinecraftPacketHandler
     {

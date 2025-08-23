@@ -1,19 +1,19 @@
 using System.Net;
 using System.Text;
-using Core_Engine.BaseClasses;
-using Core_Engine.BaseClasses.Types;
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.GameStateHandler;
-using Core_Engine.Modules.GameStateHandler.BaseClasses;
-using Core_Engine.Modules.Networking.Internals;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Packets.ClientBound.Configuration;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Configuration;
-using Core_Engine.Utils;
-using static Core_Engine.Modules.Networking.Networking;
+using LotusCore.BaseClasses;
+using LotusCore.BaseClasses.Types;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandler;
+using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
+using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
+using LotusCore.Utils;
+using static LotusCore.Modules.Networking.Networking;
 
-namespace Core_Engine.Modules.ServerConfig.Internals;
+namespace LotusCore.Modules.ServerConfig.Internals;
 
 public class ConfigurationInternals
 {

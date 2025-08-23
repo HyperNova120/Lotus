@@ -1,7 +1,7 @@
 
-using Core_Engine.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets;
 
-namespace Core_Engine.Modules.Networking.Packets.ServerBound.Status
+namespace LotusCore.Modules.Networking.Packets.ServerBound.Status
 {
     public class StatusPingRequestPacket : MinecraftPacket
     {

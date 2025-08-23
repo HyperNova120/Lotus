@@ -1,4 +1,4 @@
-namespace Core_Engine.BaseClasses.World.Interfaces;
+namespace LotusCore.BaseClasses.World.Interfaces;
 
 public interface IAttackable
 {

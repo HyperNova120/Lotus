@@ -2,7 +2,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 
-namespace Core_Engine.Modules.Networking.Internals
+namespace LotusCore.Modules.Networking.Internals
 {
     public static class HttpHandler
     {

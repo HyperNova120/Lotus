@@ -1,7 +1,7 @@
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.MojangLogin;
+using LotusCore.Interfaces;
+using LotusCore.Modules.MojangLogin;
 
-namespace Core_Engine.Commands.UserCommands
+namespace LotusCore.Commands.UserCommands
 {
     public class Whoami : ICommandBase
     {

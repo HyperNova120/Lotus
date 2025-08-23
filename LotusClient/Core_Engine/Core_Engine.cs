@@ -1,20 +1,20 @@
 using System.Reflection;
 using System.Threading.Tasks;
-using Core_Engine.Commands;
-using Core_Engine.Commands.UserCommands;
-using Core_Engine.Exceptions;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.GameStateHandler;
-using Core_Engine.Modules.MojangLogin;
-using Core_Engine.Modules.Networking;
-using Core_Engine.Modules.ServerConfig;
-using Core_Engine.Modules.ServerLogin;
-using Core_Engine.Modules.ServerStatus;
+using LotusCore.Commands;
+using LotusCore.Commands.UserCommands;
+using LotusCore.Exceptions;
+using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandler;
+using LotusCore.Modules.MojangLogin;
+using LotusCore.Modules.Networking;
+using LotusCore.Modules.ServerConfig;
+using LotusCore.Modules.ServerLogin;
+using LotusCore.Modules.ServerStatus;
 using Graphics_Engine;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Silk.NET.Vulkan;
 
-namespace Core_Engine
+namespace LotusCore
 {
     public static class Core_Engine
     {

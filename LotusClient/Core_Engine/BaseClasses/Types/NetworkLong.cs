@@ -1,4 +1,4 @@
-namespace Core_Engine.BaseClasses.Types
+namespace LotusCore.BaseClasses.Types
 {
     public static class NetworkLong
     {

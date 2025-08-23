@@ -1,14 +1,14 @@
 using System.Net;
-using Core_Engine.EngineEventArgs;
-using Core_Engine.Interfaces;
-using Core_Engine.Modules.Networking;
-using Core_Engine.Modules.Networking.Internals;
-using Core_Engine.Modules.Networking.Packets;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Handshake;
-using Core_Engine.Modules.Networking.Packets.ServerBound.Status;
-using Core_Engine.BaseClasses.Types;
+using LotusCore.EngineEventArgs;
+using LotusCore.Interfaces;
+using LotusCore.Modules.Networking;
+using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
+using LotusCore.Modules.Networking.Packets.ServerBound.Status;
+using LotusCore.BaseClasses.Types;
 
-namespace Core_Engine.Modules.ServerStatus
+namespace LotusCore.Modules.ServerStatus
 {
     public class ServerStatus : IModuleBase
     {

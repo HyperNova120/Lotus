@@ -1,7 +1,7 @@
-using Core_Engine.Exceptions;
-using Core_Engine.Utils.NBTInternals.BaseClasses;
+using LotusCore.Exceptions;
+using LotusCore.Utils.NBTInternals.BaseClasses;
 
-namespace Core_Engine.Utils.NBTInternals.Tags;
+namespace LotusCore.Utils.NBTInternals.Tags;
 
 public class TAG_Float : TAG_Base
 {

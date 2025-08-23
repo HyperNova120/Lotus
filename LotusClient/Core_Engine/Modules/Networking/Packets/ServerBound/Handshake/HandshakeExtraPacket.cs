@@ -1,4 +1,4 @@
-namespace Core_Engine.Modules.Networking.Packets.ServerBound.Handshake
+namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
 {
     public class HandshakeExtraPacket : MinecraftPacket
     {

@@ -1,4 +1,4 @@
-namespace Core_Engine.Exceptions
+namespace LotusCore.Exceptions
 {
     public class IdentifierMustBeUniqueException : Exception
     {

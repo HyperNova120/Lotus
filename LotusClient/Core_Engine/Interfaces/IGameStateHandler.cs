@@ -1,7 +1,7 @@
-using Core_Engine.BaseClasses;
-using Core_Engine.Modules.GameStateHandler.BaseClasses;
+using LotusCore.BaseClasses;
+using LotusCore.Modules.GameStateHandler.BaseClasses;
 
-namespace Core_Engine.Interfaces
+namespace LotusCore.Interfaces
 {
     public interface IGameStateHandler
     {

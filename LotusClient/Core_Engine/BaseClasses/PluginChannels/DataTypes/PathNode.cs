@@ -1,4 +1,4 @@
-namespace Core_Engine.BaseClasses.PluginChannels.DataTypes;
+namespace LotusCore.BaseClasses.PluginChannels.DataTypes;
 
 struct PathNode
 {
