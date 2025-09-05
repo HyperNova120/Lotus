@@ -1,4 +1,5 @@
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking.Packets;
 using LotusCore.Modules.ServerConfig.Internals;
@@ -13,20 +14,21 @@ namespace LotusCore.Modules.ServerConfig
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
             SubscribeToEvent.Invoke(
                 "CONFIG_Packet_Received",
-                new EventHandler(
+                new EngineEventHandler(
                     (sender, args) =>
                     {
                         _ = ProcessPacket(sender, args);
+                        return null;
                     }
                 )
             );
             SubscribeToEvent.Invoke(
                 "CONFIG_Start_Config_Process",
-                new EventHandler(
+                new EngineEventHandler(
                     (sender, args) =>
                     {
                         ConnectionEventArgs connectionEventArgs = (ConnectionEventArgs)args;
@@ -39,12 +41,13 @@ namespace LotusCore.Modules.ServerConfig
                         _ConfigurationInternals.SendConfigBrandAndClientInfo(
                             connectionEventArgs._RemoteHost
                         );
+                        return null;
                     }
                 )
             );
         }
 
-        public async Task ProcessPacket(object? sender, EventArgs args)
+        public async Task ProcessPacket(object? sender, IEngineEventArgs args)
         {
             try
             {

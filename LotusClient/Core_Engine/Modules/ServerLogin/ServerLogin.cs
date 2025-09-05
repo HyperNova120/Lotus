@@ -1,5 +1,6 @@
 using System.Net;
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.MojangLogin.Commands;
 using LotusCore.Modules.Networking.Packets;
@@ -17,7 +18,7 @@ namespace LotusCore.Modules.ServerLogin
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("join", new JoinCommand());
+            RegisterCommand.Invoke("directJoin", new JoinCommand());
         }
 
         public void RegisterEvents(Action<string> RegisterEvent)
@@ -26,20 +27,21 @@ namespace LotusCore.Modules.ServerLogin
             RegisterEvent.Invoke("CONFIG_Start_Config_Process");
         }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
             SubscribeToEvent.Invoke(
                 "LOGIN_Packet_Received",
-                new EventHandler(
+                new EngineEventHandler(
                     (sender, args) =>
                     {
                         _ = ProcessPacket(sender, args);
+                        return null;
                     }
                 )
             );
         }
 
-        public async Task ProcessPacket(object? sender, EventArgs args)
+        public async Task ProcessPacket(object? sender, IEngineEventArgs args)
         {
             try
             {

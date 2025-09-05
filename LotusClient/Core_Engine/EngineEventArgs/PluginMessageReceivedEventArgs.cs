@@ -4,7 +4,7 @@ using static LotusCore.Modules.Networking.Networking;
 
 namespace LotusCore.EngineEventArgs;
 
-public class PluginMessageReceivedEventArgs : EventArgs
+public class PluginMessageReceivedEventArgs : IEngineEventArgs
 {
     public IPAddress _RemoteHost { get; private set; }
 

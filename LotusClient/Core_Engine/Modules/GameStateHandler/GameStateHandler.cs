@@ -1,5 +1,6 @@
 using System.Reflection.Metadata.Ecma335;
 using LotusCore.BaseClasses;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.GameStateHandler.BaseClasses;
 
@@ -16,7 +17,7 @@ namespace LotusCore.Modules.GameStateHandler
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent) { }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
         //===========
         //IGameStateHandler

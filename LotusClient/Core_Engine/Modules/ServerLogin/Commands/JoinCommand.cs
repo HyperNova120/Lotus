@@ -9,13 +9,16 @@ namespace LotusCore.Modules.ServerLogin.Commands
             return "Attempts to join the provided server and (optional)IP";
         }
 
+        public string GetCommandHelpInfo()
+        {
+            return "Correct usage: 'directJoin <server/ip> <port>(optional); ex directJoin play.hypixel.net'";
+        }
+
         public async Task ProcessCommand(string[] commandArgs)
         {
             if (commandArgs.Length < 1 || commandArgs.Length > 2)
             {
-                Console.WriteLine(
-                    "Incorrect Usage; correct usage: join <server/ip> <port>(optional); ex join hypixel.net"
-                );
+                Console.WriteLine(GetCommandHelpInfo());
                 return;
             }
             LoginHandler loginHandler = Core_Engine.GetModule<LoginHandler>("LoginHandler")!;

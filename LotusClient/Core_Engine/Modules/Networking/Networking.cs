@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
@@ -31,11 +32,11 @@ namespace LotusCore.Modules.Networking
             RegisterEvent.Invoke("PLAY_Packet_Received");
         }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
             SubscribeToEvent.Invoke(
                 "SERVERLOGIN_loginSuccessful",
-                new EventHandler(
+                new EngineEventHandler(
                     (sender, args) =>
                     {
                         ConnectionEventArgs conArgs = (ConnectionEventArgs)args;
@@ -43,6 +44,7 @@ namespace LotusCore.Modules.Networking
                             ConnectionState.CONFIGURATION;
                         _PrimaryClientServerConnection = conArgs._RemoteHost;
                         _IsClientConnectedToPrimaryServer = true;
+                        return null;
                     }
                 )
             );

@@ -4,6 +4,8 @@ namespace LotusCore.Interfaces
     {
         public Task ProcessCommand(string[] commandArgs);
 
+        public string GetCommandHelpInfo();
+
         public string GetCommandDescription();
     }
 }

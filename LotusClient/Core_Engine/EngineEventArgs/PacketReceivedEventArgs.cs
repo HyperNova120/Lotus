@@ -3,7 +3,7 @@ using LotusCore.Modules.Networking.Packets;
 
 namespace LotusCore.EngineEventArgs
 {
-    public class PacketReceivedEventArgs : EventArgs
+    public class PacketReceivedEventArgs : IEngineEventArgs
     {
         public MinecraftServerPacket _Packet { get; private set; }
         public IPAddress _RemoteHost { get; private set; }

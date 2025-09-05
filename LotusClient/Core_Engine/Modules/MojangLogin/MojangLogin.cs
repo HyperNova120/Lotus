@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.MojangLogin.Commands;
 using LotusCore.Modules.MojangLogin.Internals;
@@ -22,7 +23,7 @@ namespace LotusCore.Modules.MojangLogin
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent) { }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {

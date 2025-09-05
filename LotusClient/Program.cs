@@ -113,6 +113,8 @@ namespace LotusClient
 
             Core_Engine.InitCore();
             await Core_Engine.GoInteractiveMode();
+
+            
         }
     }
 }

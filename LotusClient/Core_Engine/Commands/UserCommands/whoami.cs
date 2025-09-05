@@ -10,6 +10,11 @@ namespace LotusCore.Commands.UserCommands
             return "Prints the Username of the minecraft account currently signed in";
         }
 
+        public string GetCommandHelpInfo()
+        {
+            return "Correct Usage: 'whoami'";
+        }
+
         public Task ProcessCommand(string[] commandArgs)
         {
             MojangLogin mojangLoginModule = Core_Engine.GetModule<MojangLogin>("MojangLogin")!;

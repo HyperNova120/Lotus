@@ -3,7 +3,7 @@ using LotusCore.Modules.Networking.Packets;
 
 namespace LotusCore.EngineEventArgs
 {
-    public class ConnectionEventArgs : EventArgs
+    public class ConnectionEventArgs : IEngineEventArgs
     {
         public IPAddress _RemoteHost { get; private set; }
 

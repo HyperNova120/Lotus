@@ -1,27 +1,45 @@
 using System.Net;
+using LotusCore.BaseClasses.Types;
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
 using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
 using LotusCore.Modules.Networking.Packets.ServerBound.Status;
-using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.ServerList.Commands;
+using LotusCore.Utils;
+using LotusCore.Utils.MinecraftPaths;
 
-namespace LotusCore.Modules.ServerStatus
+namespace LotusCore.Modules.ServerList
 {
-    public class ServerStatus : IModuleBase
+    public class ServerList : IModuleBase
     {
-        public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
+        private NBT ServerListDat;
+
+        public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
+        {
+            RegisterCommand.Invoke("list", new ListCommand(ServerListDat));
+        }
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
-            SubscribeToEvent.Invoke("STATUS_Packet_Received", new EventHandler(ProcessPacket));
+            SubscribeToEvent.Invoke(
+                "STATUS_Packet_Received",
+                new EngineEventHandler(ProcessPacket)
+            );
         }
 
-        public void ProcessPacket(object? sender, EventArgs args)
+        public ServerList()
+        {
+            ServerListDat = new();
+            ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
+        }
+
+        public EngineEventResult? ProcessPacket(object? sender, IEngineEventArgs args)
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
             var packet = eventArgs._Packet;
@@ -42,6 +60,7 @@ namespace LotusCore.Modules.ServerStatus
                         .DisconnectFromServer(eventArgs._RemoteHost);
                     break;
             }
+            return null;
         }
 
         private void HandleStatusPingResponse(MinecraftServerPacket packet)

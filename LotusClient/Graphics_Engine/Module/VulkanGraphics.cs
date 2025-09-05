@@ -1,7 +1,8 @@
 using System.Runtime.InteropServices;
-using LotusCore;
-using LotusCore.Interfaces;
 using Graphics_Engine.Commands;
+using LotusCore;
+using LotusCore.EngineEvents;
+using LotusCore.Interfaces;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Bcpg.Sig;
 using Silk.NET.Core;
@@ -13,14 +14,14 @@ namespace Graphics_Engine
 {
     public unsafe class VulkanGraphics : IGraphicsModule
     {
-        private int WIDTH = 1920;
-        private int HEIGHT = 1080;
-        public Thread? _GraphicsThread;
+        private int _WIDTH = 1920;
+        private int _HEIGHT = 1080;
+        public Thread? _graphicsThread;
 
-        private static IWindow? _Window;
+        private static IWindow? _window;
 
-        private static Vk? _Vulkan;
-        private Instance _Instance;
+        private static Vk? _vulkan;
+        private Instance _instance;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
@@ -29,9 +30,18 @@ namespace Graphics_Engine
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent) { }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
-        public void StartGraphics()
+        public void StartGraphicsThread()
+        {
+            if (_graphicsThread == null)
+                return;
+
+            _graphicsThread = new(new ThreadStart(StartGraphics));
+            _graphicsThread.Start();
+        }
+
+        private void StartGraphics()
         {
             if (InitWindow())
             {
@@ -43,29 +53,29 @@ namespace Graphics_Engine
 
         private void MainLoop()
         {
-            _Window!.Run();
+            _window!.Run();
         }
 
         private void CleanUp()
         {
-            _Vulkan?.DestroyInstance(_Instance, null);
-            _Vulkan?.Dispose();
+            _vulkan?.DestroyInstance(_instance, null);
+            _vulkan?.Dispose();
 
-            _Window?.Dispose();
+            _window?.Dispose();
         }
 
         private bool InitWindow()
         {
             var options = WindowOptions.DefaultVulkan with
             {
-                Size = new Vector2D<int>(WIDTH, HEIGHT),
-                Title = "Vulkan",
+                Size = new Vector2D<int>(_WIDTH, _HEIGHT),
+                Title = "Lotus Client",
             };
 
-            _Window = Window.Create(options);
-            _Window.Initialize();
+            _window = Window.Create(options);
+            _window.Initialize();
 
-            if (_Window.VkSurface is null)
+            if (_window.VkSurface is null)
             {
                 Logging.LogError("Windowing Platform Doesn't Support Vulkan.");
                 return false;
@@ -75,7 +85,7 @@ namespace Graphics_Engine
 
         private void InitVulkan()
         {
-            _Vulkan = Vk.GetApi();
+            _vulkan = Vk.GetApi();
 
             ApplicationInfo appInfo = new()
             {
@@ -93,7 +103,7 @@ namespace Graphics_Engine
                 PApplicationInfo = &appInfo,
             };
 
-            var glfwExtensions = _Window!.VkSurface!.GetRequiredExtensions(
+            var glfwExtensions = _window!.VkSurface!.GetRequiredExtensions(
                 out var glfwExtensionCount
             );
 
@@ -101,7 +111,7 @@ namespace Graphics_Engine
             createInfo.PpEnabledExtensionNames = glfwExtensions;
             createInfo.EnabledLayerCount = 0;
 
-            if (_Vulkan.CreateInstance(in createInfo, null, out _Instance) != Result.Success)
+            if (_vulkan.CreateInstance(in createInfo, null, out _instance) != Result.Success)
             {
                 Logging.LogError("Failed to Create Graphics Instance");
             }

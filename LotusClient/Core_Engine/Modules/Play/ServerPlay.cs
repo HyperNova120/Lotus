@@ -1,4 +1,5 @@
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
@@ -20,20 +21,21 @@ public class ServerPlayHandler : IModuleBase
 
     public void RegisterEvents(Action<string> RegisterEvent) { }
 
-    public void SubscribeToEvents(Action<string, EventHandler> SubscribeToEvent)
+    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
     {
         SubscribeToEvent.Invoke(
             "PLAY_Packet_Received",
-            new EventHandler(
+            new EngineEventHandler(
                 (sender, args) =>
                 {
                     _ = ProcessPacket(sender, args);
+                    return null;
                 }
             )
         );
     }
 
-    public async Task ProcessPacket(object? sender, EventArgs args)
+    public async Task ProcessPacket(object? sender, IEngineEventArgs args)
     {
         try
         {

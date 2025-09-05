@@ -10,6 +10,11 @@ namespace Graphics_Engine.Commands
             return "Starts the graphics engine and opens the graphics window";
         }
 
+        public string GetCommandHelpInfo()
+        {
+            return "Correct usage: 'graphics'";
+        }
+
         public async Task ProcessCommand(string[] commandArgs)
         {
             VulkanGraphics VG = LotusCore.Core_Engine.GetModule<VulkanGraphics>(
@@ -17,8 +22,7 @@ namespace Graphics_Engine.Commands
             )!;
             //Core_Engine.Core_Engine.CurrentState = Core_Engine.Core_Engine.State.Waiting;
             LotusCore.Core_Engine.SignalInteractiveHold(LotusCore.Core_Engine.State.Graphics);
-            VG._GraphicsThread = new(new ThreadStart(VG.StartGraphics));
-            VG._GraphicsThread.Start();
+            VG.StartGraphicsThread();
         }
     }
 }
