@@ -10,7 +10,7 @@ namespace LotusCore.Commands.UserCommands
             return "Prints the Username of the minecraft account currently signed in";
         }
 
-        public string GetCommandHelpInfo()
+        public string GetCommandCorrectUsage()
         {
             return "Correct Usage: 'whoami'";
         }

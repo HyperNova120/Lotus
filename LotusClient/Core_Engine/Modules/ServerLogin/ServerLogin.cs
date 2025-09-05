@@ -18,7 +18,8 @@ namespace LotusCore.Modules.ServerLogin
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("directJoin", new JoinCommand());
+            RegisterCommand.Invoke("directJoin", new DirectJoinCommand());
+            RegisterCommand.Invoke("Join", new JoinCommand());
         }
 
         public void RegisterEvents(Action<string> RegisterEvent)

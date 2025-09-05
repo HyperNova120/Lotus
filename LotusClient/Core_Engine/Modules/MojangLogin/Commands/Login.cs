@@ -11,7 +11,7 @@ namespace LotusCore.Modules.MojangLogin.Commands
             return "Performs the login sequence to log into a Minecraft account";
         }
 
-        public string GetCommandHelpInfo()
+        public string GetCommandCorrectUsage()
         {
             return "Correct Usage: 'login'";
         }

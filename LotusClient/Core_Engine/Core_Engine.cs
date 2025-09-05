@@ -229,7 +229,7 @@ public static class Core_Engine
         await _Commands[command].ProcessCommand(args);
     }
 
-    public static void InvokeEvent(string EventIdentifier, IEngineEventArgs args)
+    public static EngineEventResult? InvokeEvent(string EventIdentifier, IEngineEventArgs args)
     {
         if (!_Events.ContainsKey(EventIdentifier))
         {
@@ -241,7 +241,7 @@ public static class Core_Engine
         {
             throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
         }
-        _Events[EventIdentifier].Invoke(null, args);
+        return _Events[EventIdentifier].Invoke(null, args);
     }
 
     //=========START===========

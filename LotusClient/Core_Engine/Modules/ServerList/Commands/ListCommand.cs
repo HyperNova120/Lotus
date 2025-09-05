@@ -18,7 +18,7 @@ namespace LotusCore.Modules.ServerList.Commands
             return "Lists all servers in the server lsit";
         }
 
-        public string GetCommandHelpInfo()
+        public string GetCommandCorrectUsage()
         {
             return "Correct usage: 'list'";
         }
@@ -27,7 +27,7 @@ namespace LotusCore.Modules.ServerList.Commands
         {
             if (commandArgs.Length != 0)
             {
-                Console.WriteLine(GetCommandHelpInfo());
+                Console.WriteLine(GetCommandCorrectUsage());
                 return;
             }
             Core_Engine.SignalInteractiveHold(Core_Engine.State.ServerList);

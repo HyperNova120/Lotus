@@ -1,4 +1,5 @@
 using System.Net;
+using LotusClient.EngineEvents;
 using LotusCore.BaseClasses.Types;
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
@@ -11,19 +12,23 @@ using LotusCore.Modules.Networking.Packets.ServerBound.Status;
 using LotusCore.Modules.ServerList.Commands;
 using LotusCore.Utils;
 using LotusCore.Utils.MinecraftPaths;
+using LotusCore.Utils.NBTInternals.Tags;
 
 namespace LotusCore.Modules.ServerList
 {
     public class ServerList : IModuleBase
     {
-        private NBT ServerListDat;
+        private NBT _ServerListDat;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("list", new ListCommand(ServerListDat));
+            RegisterCommand.Invoke("list", new ListCommand(_ServerListDat));
         }
 
-        public void RegisterEvents(Action<string> RegisterEvent) { }
+        public void RegisterEvents(Action<string> RegisterEvent)
+        {
+            RegisterEvent.Invoke("ServerListIP_Request");
+        }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
@@ -31,12 +36,44 @@ namespace LotusCore.Modules.ServerList
                 "STATUS_Packet_Received",
                 new EngineEventHandler(ProcessPacket)
             );
+            SubscribeToEvent.Invoke(
+                "ServerListIP_Request",
+                new EngineEventHandler(
+                    (sender, serverName) =>
+                    {
+                        string[] ipPort = GetServerIPFromName(
+                                ((ServerListIPRequestEventArgs)serverName)._serverName
+                            )
+                            .Split(":");
+                        if (ipPort.Length == 0)
+                        {
+                            //no ip
+                            return new ServerListServerIPResult() { _ip = "" };
+                        }
+                        else if (ipPort.Length == 1)
+                        {
+                            //only ip
+                            return new ServerListServerIPResult() { _ip = ipPort[0] };
+                        }
+                        else
+                        {
+                            //ip and port
+                            return new ServerListServerIPResult()
+                            {
+                                _ip = ipPort[0],
+                                _port = ipPort[1],
+                            };
+                        }
+                    }
+                )
+            );
         }
 
         public ServerList()
         {
-            ServerListDat = new();
-            ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
+            _ServerListDat = new();
+            _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
+            //Logging.LogDebug(_ServerListDat.GetNBTAsString());
         }
 
         public EngineEventResult? ProcessPacket(object? sender, IEngineEventArgs args)
@@ -96,6 +133,24 @@ namespace LotusCore.Modules.ServerList
                     .GetModule<Networking.Networking>("Networking")!
                     .SendPacket(connection._RemoteHost, new StatusPingRequestPacket());
             }
+        }
+
+        private string GetServerIPFromName(string name)
+        {
+            TAG_List? servers = _ServerListDat.TryGetTag<TAG_List>("servers");
+            if (servers == null)
+            {
+                return "";
+            }
+            foreach (var cur in servers._Contained_Tags)
+            {
+                TAG_Compound curTag = (TAG_Compound)cur;
+                if (((TAG_String)curTag.TryGetTag("name")!).Value == name)
+                {
+                    return ((TAG_String)curTag.TryGetTag("ip")!).Value;
+                }
+            }
+            return "";
         }
     }
 }
