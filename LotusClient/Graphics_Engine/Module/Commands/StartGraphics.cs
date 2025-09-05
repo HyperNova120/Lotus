@@ -10,7 +10,7 @@ namespace Graphics_Engine.Commands
             return "Starts the graphics engine and opens the graphics window";
         }
 
-        public string GetCommandHelpInfo()
+        public string GetCommandCorrectUsage()
         {
             return "Correct usage: 'graphics'";
         }
