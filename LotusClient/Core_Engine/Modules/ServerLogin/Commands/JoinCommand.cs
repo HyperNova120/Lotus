@@ -1,4 +1,4 @@
-using LotusClient.EngineEvents;
+using LotusCore.EngineEvents;
 using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
 

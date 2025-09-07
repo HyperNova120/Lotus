@@ -3,7 +3,7 @@ using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
 using Microsoft.Extensions.Configuration;
 
-namespace LotusClient
+namespace LotusCore
 {
     internal class Program
     {

@@ -1,4 +1,4 @@
-
+using LotusCore.BaseClasses.Types;
 using LotusCore.Modules.Networking.Packets;
 
 namespace LotusCore.Modules.Networking.Packets.ServerBound.Status
@@ -7,7 +7,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Status
     {
         public override byte[] GetBytes()
         {
-            return [.. BitConverter.GetBytes(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond)];
+            return [.. NetworkLong.GetBytes(DateTime.UtcNow.Millisecond)];
         }
 
         public StatusPingRequestPacket()

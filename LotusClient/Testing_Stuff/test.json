@@ -1,0 +1,58 @@
+{
+  "version": { "protocol": 772, "name": "1.21.4-1.21.8" },
+  "players": { "online": 4, "max": 999, "sample": [] },
+  "description": {
+    "extra": [
+      {
+        "color": "blue",
+        "extra": [{ "bold": true, "color": "blue", "text": "      ???" }],
+        "text": " "
+      },
+      { "strikethrough": true, "text": "[?" },
+      " ",
+      {
+        "color": "yellow",
+        "extra": [
+          { "bold": true, "text": "MINEPLEX" },
+          " ",
+          {
+            "color": "gold",
+            "extra": [
+              { "bold": true, "text": "GAMES" },
+              " ",
+              { "color": "white", "text": "[1.21.4+] " }
+            ],
+            "text": ""
+          }
+        ],
+        "text": ""
+      },
+      {
+        "strikethrough": true,
+        "extra": [
+          {
+            "bold": true,
+            "strikethrough": true,
+            "color": "blue",
+            "text": "???"
+          },
+          "\n"
+        ],
+        "text": "?]?"
+      },
+      "     ",
+      {
+        "color": "gray",
+        "extra": [{ "bold": true, "text": "CLOSED BETA" }, " "],
+        "text": ""
+      },
+      "? ",
+      {
+        "underlined": true,
+        "color": "aqua",
+        "text": "https://mineplex.com/store"
+      }
+    ],
+    "text": ""
+  },
+  "favicon": "data:image/png;base64,<data>"}

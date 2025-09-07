@@ -156,7 +156,14 @@ namespace LotusCore.Modules.Networking
                 ProtocolType.Tcp
             );
             serverConnection._TcpSocket.NoDelay = true;
-            serverConnection._TcpSocket.Connect(endPoint);
+            try
+            {
+                serverConnection._TcpSocket.Connect(endPoint);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
             _Connections[serverConnection._RemoteHost] = serverConnection;
 
             ResetBuffer(serverConnection._ServerConnectionSocketAsyncEventArgs);

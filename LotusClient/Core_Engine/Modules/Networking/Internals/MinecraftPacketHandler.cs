@@ -128,15 +128,23 @@ namespace LotusCore.Modules.Networking.Internals
             else
             {
                 //only data length
+                int totalLength = bytes.Length;
                 (int dataLength, int numDataBytes) = VarInt_VarLong.DecodeVarInt(bytes);
-                bytes = bytes[numDataBytes..];
+
+                Logging.LogDebug(
+                    $"DECODE PACKET: Total Length:{totalLength} packetLength:{numDataBytes + dataLength}"
+                );
 
                 if (dataLength > bytes.Length)
                 {
-                    Logging.LogError(
+                    Logging.LogDebug(
                         $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} bytes.Length:{bytes.Length}"
                     );
-                    return (null, []);
+                    (int packetID2, int packetIDNumBytes2) = VarInt_VarLong.DecodeVarInt(
+                        bytes[numDataBytes..]
+                    );
+                    Logging.LogDebug($"DECODE PACKET INCOMPLETE PACKET: PacketID:{packetID2}");
+                    return (null, bytes);
                 }
                 else
                 {
@@ -144,6 +152,7 @@ namespace LotusCore.Modules.Networking.Internals
                         $"Received Packet Data Length: {dataLength} Remaining Byte Length: {bytes.Length}"
                     ); */
                 }
+                bytes = bytes[numDataBytes..];
 
                 byte[] packetBytes = bytes[..dataLength];
                 bytes = bytes[dataLength..];

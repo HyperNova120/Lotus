@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using LotusCore.EngineEventArgs;
 using LotusCore.Modules.Networking.Packets;
+using LotusCore.Utils.NBTInternals.Tags;
 using static LotusCore.Modules.Networking.Networking;
 
 namespace LotusCore.Modules.Networking.Internals
@@ -23,6 +24,12 @@ namespace LotusCore.Modules.Networking.Internals
         public bool _ActiveBundleDelimiter = false;
 
         public Queue<MinecraftServerPacket> _BundledPackets = new();
+
+        public DateTime _LastPingTime;
+
+        public double _LastPingLength;
+
+        public TAG_Compound _ServerListEntry;
 
         public ServerConnection(string serverAddress)
         {

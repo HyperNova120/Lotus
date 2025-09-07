@@ -1,7 +1,7 @@
 using System.Net;
 using LotusCore.EngineEvents;
 
-namespace LotusClient.EngineEvents;
+namespace LotusCore.EngineEvents;
 
 public class ServerListServerIPResult : EngineEventResult
 {
