@@ -13,6 +13,7 @@ using LotusCore.Modules.Networking;
 using LotusCore.Modules.ServerConfig;
 using LotusCore.Modules.ServerList;
 using LotusCore.Modules.ServerLogin;
+using LotusCore.Modules.ServerPlay;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Silk.NET.Vulkan;
 
@@ -133,8 +134,9 @@ public static class Core_Engine
         RegisterModule("Networking", new Networking());
         RegisterModule("ServerList", new ServerList());
         RegisterModule("LoginHandler", new LoginHandler());
-        RegisterModule("VulkanGraphics", new VulkanGraphics());
         RegisterModule("ServerConfiguration", new ServerConfiguration());
+        //RegisterModule("ServerPlayHandler", new ServerPlayHandler());
+        RegisterModule("VulkanGraphics", new VulkanGraphics());
     }
 
     private static void InitCoreModuleEventSubscriptions()
@@ -223,7 +225,8 @@ public static class Core_Engine
     {
         if (!_Commands.ContainsKey(command.ToLower()))
         {
-            Console.WriteLine("Unknown Command, use 'help' to see a list of commands");
+            Console.WriteLine($"Unknown Command '{command}', use 'help' to see a list of commands");
+            Logging.LogError("", true);
             return;
         }
         await _Commands[command].ProcessCommand(args);
@@ -250,6 +253,7 @@ public static class Core_Engine
 
     public static void RegisterCommand(string CommandIdentifier, ICommandBase CommandToRegister)
     {
+        Logging.LogDebug("REGISTER COMMAND: " + CommandIdentifier);
         if (_Commands.ContainsKey(CommandIdentifier))
         {
             throw new Exceptions.IdentifierMustBeUniqueException(

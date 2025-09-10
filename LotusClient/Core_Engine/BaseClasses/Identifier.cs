@@ -80,4 +80,14 @@ public class Identifier
         //Logging.LogDebug($"GetString: {IdentifierString ?? "NULL"}");
         return IdentifierString ?? "NULL";
     }
+
+    public override string ToString()
+    {
+        return GetString();
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(IdentifierString);
+    }
 }

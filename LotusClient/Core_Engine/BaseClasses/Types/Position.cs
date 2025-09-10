@@ -1,6 +1,6 @@
 namespace LotusCore.BaseClasses;
 
-struct Position
+public class Position
 {
     public int _X,
         _Y,

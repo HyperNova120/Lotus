@@ -40,11 +40,21 @@ namespace LotusCore.Modules.GameStateHandler
             _ServerFeatureFlags.Add(FeatureFlag);
         }
 
-        public void UpdateServerRegistryData(RegistryData registryData, bool overwrite = true)
+        public void UpdateServerRegistryData(
+            RegistryData registryData,
+            bool overwrite = true,
+            bool replace = false
+        )
         {
+            Logging.LogDebug($"UpdateServerRegistryData: {registryData._RegistryNameSpace}");
             if (!_ServerRegistryData.ContainsKey(registryData._RegistryNameSpace))
             {
                 //new registry
+                _ServerRegistryData[registryData._RegistryNameSpace] = registryData;
+                return;
+            }
+            else if (replace)
+            {
                 _ServerRegistryData[registryData._RegistryNameSpace] = registryData;
                 return;
             }

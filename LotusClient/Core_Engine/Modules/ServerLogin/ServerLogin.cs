@@ -18,8 +18,8 @@ namespace LotusCore.Modules.ServerLogin
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("directJoin", new DirectJoinCommand());
-            RegisterCommand.Invoke("Join", new JoinCommand());
+            RegisterCommand.Invoke("join", new JoinCommand());
+            RegisterCommand.Invoke("listjoin", new ListJoinCommand());
         }
 
         public void RegisterEvents(Action<string> RegisterEvent)
@@ -90,7 +90,7 @@ namespace LotusCore.Modules.ServerLogin
             }
         }
 
-        public void LoginToServer(string serverIp, ushort port = 25565)
+        public void LoginToServer(string serverIp, bool isTransfer, ushort port = 25565)
         {
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
@@ -99,7 +99,17 @@ namespace LotusCore.Modules.ServerLogin
                 "MojangLogin"
             )!;
 
-            IPAddress remoteHost = Dns.GetHostAddresses(serverIp)[0];
+            IPAddress remoteHost;
+            try
+            {
+                remoteHost = Dns.GetHostAddresses(serverIp)[0];
+            }
+            catch
+            {
+                Logging.LogInfo("Invalid Server IP");
+                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                return;
+            }
 
             if (mojangLogin._UserProfile == null)
             {
@@ -113,6 +123,7 @@ namespace LotusCore.Modules.ServerLogin
             }
             try
             {
+                Logging.LogDebug($"\tisTransfer:{isTransfer}");
                 if (networking.GetServerConnection(remoteHost) == null)
                 {
                     networking.ConnectToServer(remoteHost.ToString(), port);
@@ -121,6 +132,11 @@ namespace LotusCore.Modules.ServerLogin
                     networking.SendPacket(
                         remoteHost,
                         new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                        {
+                            _NextState = isTransfer
+                                ? (int)HandshakePacket.Intent.Transfer
+                                : (int)HandshakePacket.Intent.Login,
+                        }
                     );
                     /* Logging.LogDebug(
                         $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"

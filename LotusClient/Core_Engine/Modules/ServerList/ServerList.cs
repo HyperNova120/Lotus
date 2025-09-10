@@ -78,7 +78,7 @@ namespace LotusCore.Modules.ServerList
             _ServerListDat = new();
             _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
             //Logging.LogDebug(_ServerListDat.GetNBTAsString());
-            _ = PingServerlist();
+            //_ = PingServerlist();
         }
 
         private async Task PingServerlist()
@@ -138,6 +138,7 @@ namespace LotusCore.Modules.ServerList
                 new HandshakePacket(ip.Value, HandshakePacket.Intent.Status, 25565)
                 {
                     _Protocol_ID = 0x00,
+                    _NextState = (int)HandshakePacket.Intent.Status,
                 }
             );
             SendStatusRequest(remoteHost);
@@ -248,7 +249,7 @@ namespace LotusCore.Modules.ServerList
                     return ((TAG_String)curTag.TryGetTag("ip")!).Value;
                 }
             }
-            
+
             return "";
         }
     }

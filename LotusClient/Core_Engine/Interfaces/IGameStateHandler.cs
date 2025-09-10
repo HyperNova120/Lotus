@@ -167,7 +167,11 @@ namespace LotusCore.Interfaces
         public void AddServerCookie(ServerCookie cookie);
 
         public RegistryData? GetServerRegistryData(Identifier ID);
-        public void UpdateServerRegistryData(RegistryData registryData, bool overwrite = true);
+        public void UpdateServerRegistryData(
+            RegistryData registryData,
+            bool overwrite = true,
+            bool replace = false
+        );
 
         public ResourcePack? GetServerResourcePack(MinecraftUUID ID);
         public void AddServerResourcePack(ResourcePack resourcePack);

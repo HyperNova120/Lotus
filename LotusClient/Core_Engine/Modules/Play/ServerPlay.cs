@@ -65,7 +65,12 @@ public class ServerPlayHandler : IModuleBase
 
     private void HandlePacketSwitch(MinecraftServerPacket packet)
     {
-        switch (packet._Protocol_ID) { }
+        switch (packet._Protocol_ID)
+        {
+            default:
+                Logging.LogError($"Play Packet ID: 0x{packet._Protocol_ID:X} not implemented");
+                break;
+        }
     }
 
     private void HandleBundleDelimiter(MinecraftServerPacket packet)

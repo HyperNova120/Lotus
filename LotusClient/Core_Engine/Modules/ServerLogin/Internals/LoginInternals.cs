@@ -221,7 +221,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
             CookieResponsepacket cookieResponsepacket = new()
             {
-                _Protocol_ID = 0x05,
+                _Protocol_ID = 0x04,
                 _Key = Key,
                 _Payload = cookie?._Payload ?? [],
             };

@@ -125,7 +125,7 @@ public class ConfigurationInternals
             _NetworkingManager.DisconnectFromServer(minecraftPacket._RemoteHost);
             _ = Core_Engine.HandleCommand(
                 "join",
-                [configTransferPacket._Host, configTransferPacket._Port.ToString()]
+                [configTransferPacket._Host, "-t", configTransferPacket._Port.ToString()]
             );
         }
         catch (Exception e)

@@ -1,38 +1,51 @@
-using LotusCore.EngineEvents;
 using LotusCore.EngineEventArgs;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 
 namespace LotusCore.Modules.ServerLogin.Commands
 {
-    public class DirectJoinCommand : ICommandBase
+    public class ListJoinCommand : ICommandBase
     {
         public string GetCommandDescription()
         {
-            return "Attempts to join the provided server and (optional)IP";
+            return "Attempts to join the provided server from the server list";
         }
 
         public string GetCommandCorrectUsage()
         {
-            return "Correct usage: 'directJoin <server/ip> <port>(optional); ex directJoin play.hypixel.net'";
+            return "Correct usage: 'listjoin <server list name>";
         }
 
         public async Task ProcessCommand(string[] commandArgs)
         {
-            /* ServerListServerIPResult? result = (ServerListServerIPResult?)
-                Core_Engine.InvokeEvent(
-                    "ServerListIP_Request",
-                    new ServerListIPRequestEventArgs("Wynncraft")
-                );
-
-            string resultString = (result == null) ? "NULL" : $"{result._ip}:{result._port}";
-            Logging.LogDebug($"Try Use Return: {resultString}"); */
-
-
-            if (commandArgs.Length < 1 || commandArgs.Length > 2)
+            if (commandArgs.Length != 1)
             {
                 Console.WriteLine(GetCommandCorrectUsage());
                 return;
             }
+            ServerListServerIPResult? result = (ServerListServerIPResult?)
+                Core_Engine.InvokeEvent(
+                    "ServerListIP_Request",
+                    new ServerListIPRequestEventArgs(commandArgs[0])
+                );
+            if (result == null || (result != null && result._ip == ""))
+            {
+                Console.WriteLine("Server not found in server list");
+                return;
+            }
+
+            if (result._port == "")
+            {
+                await Core_Engine.HandleCommand("join", [result._ip]);
+            }
+            else
+            {
+                await Core_Engine.HandleCommand("join", [result._ip, result._port]);
+            }
+
+            /* string resultString = (result == null) ? "NULL" : $"{result._ip}:{result._port}";
+            Logging.LogDebug($"Try Use Return: {resultString}");
+
             LoginHandler loginHandler = Core_Engine.GetModule<LoginHandler>("LoginHandler")!;
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
@@ -52,7 +65,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
             else
             {
                 loginHandler.LoginToServer(commandArgs[0], ushort.Parse(commandArgs[1]));
-            }
+            } */
         }
     }
 }
