@@ -14,6 +14,7 @@ using LotusCore.Modules.ServerConfig;
 using LotusCore.Modules.ServerList;
 using LotusCore.Modules.ServerLogin;
 using LotusCore.Modules.ServerPlay;
+using LotusCore.Utils.MinecraftPaths;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Silk.NET.Vulkan;
 
@@ -117,6 +118,7 @@ public static class Core_Engine
 
     public static void InitCore()
     {
+        MinecraftPathsStruct.InitRequiredFolderStructure();
         InitCoreCommands();
         InitCoreModules();
         InitCoreModuleEventSubscriptions();
@@ -242,7 +244,9 @@ public static class Core_Engine
         }
         if (_Events[EventIdentifier] == null)
         {
-            throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
+            //throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
+            Logging.LogError($"Event {EventIdentifier} null");
+            return null;
         }
         return _Events[EventIdentifier].Invoke(null, args);
     }
@@ -253,7 +257,7 @@ public static class Core_Engine
 
     public static void RegisterCommand(string CommandIdentifier, ICommandBase CommandToRegister)
     {
-        Logging.LogDebug("REGISTER COMMAND: " + CommandIdentifier);
+        //Logging.LogDebug("REGISTER COMMAND: " + CommandIdentifier);
         if (_Commands.ContainsKey(CommandIdentifier))
         {
             throw new Exceptions.IdentifierMustBeUniqueException(

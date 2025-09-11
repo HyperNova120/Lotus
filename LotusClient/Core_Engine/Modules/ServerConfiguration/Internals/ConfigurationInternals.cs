@@ -66,7 +66,7 @@ public class ConfigurationInternals
         RegistryData registry = new() { _RegistryNameSpace = RegistryID };
         bool shouldLogInfo = false;
 
-        if (RegistryID.GetString() == "minecraft:dimension_type")
+        if (RegistryID.GetString() == "minecraft:enchantment")
         {
             shouldLogInfo = true;
         }
@@ -214,7 +214,8 @@ public class ConfigurationInternals
 
     internal void HandlePluginMessage(MinecraftServerPacket packet)
     {
-        (int value, int offset) = VarInt_VarLong.DecodeVarInt(packet._Data);
+        //(int value, int offset) = VarInt_VarLong.DecodeVarInt(packet._Data);
+        int offset = 0;
         Identifier channel = new();
         offset += channel.GetFromBytes(packet._Data[offset..]);
 
@@ -222,8 +223,7 @@ public class ConfigurationInternals
             packet._RemoteHost,
             ConnectionState.CONFIGURATION,
             channel,
-            packet._Data[offset..],
-            value
+            packet._Data[offset..]
         );
 
         Core_Engine.InvokeEvent("PLUGIN_Packet_Received", args);
@@ -287,5 +287,54 @@ public class ConfigurationInternals
     internal void HandleRemoveResourcePack(MinecraftServerPacket packet)
     {
         throw new NotImplementedException();
+    }
+
+    internal void HandleFeatureFlags(MinecraftServerPacket packet)
+    {
+        Logging.LogDebug("HandleFeatureFlags");
+        (int arraySize, int offset) = PrefixedArray.GetSizeOfArray(packet._Data);
+        for (int i = 0; i < arraySize; i++)
+        {
+            Identifier tmp = new();
+            offset += tmp.GetFromBytes(packet._Data[offset..]);
+            Logging.LogDebug("\t" + tmp.GetString());
+        }
+    }
+
+    internal void HandleUpdateTags(MinecraftServerPacket packet)
+    {
+        int offset = 0;
+        (int arraySize, offset) = PrefixedArray.GetSizeOfArray(packet._Data);
+        //Logging.LogDebug("HandleUpdateTags");
+        for (int i = 0; i < arraySize; i++)
+        {
+            Identifier Registry = new();
+            offset += Registry.GetFromBytes(packet._Data[offset..]);
+            //Logging.LogDebug($"\tRegistry_Name: {Registry}");
+            (int TagsArraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(
+                packet._Data[offset..]
+            );
+            offset += numBytesRead;
+            for (int j = 0; j < TagsArraySize; j++)
+            {
+                Identifier TagName = new();
+                offset += TagName.GetFromBytes(packet._Data[offset..]);
+                //Logging.LogDebug($"\t\tTag_Name: {TagName}");
+
+                (int tagArraySize, numBytesRead) = PrefixedArray.GetSizeOfArray(
+                    packet._Data[offset..]
+                );
+                offset += numBytesRead;
+                List<int> values = new();
+                for (int k = 0; k < tagArraySize; k++)
+                {
+                    (int value, numBytesRead) = VarInt_VarLong.DecodeVarInt(packet._Data[offset..]);
+                    offset += numBytesRead;
+                    values.Add(value);
+                    //Logging.LogDebug($"\t\t\tTag_Value: {value}");
+                }
+                _GameStateHandler.AddServerTag(Registry, TagName, values);
+            }
+        }
     }
 }

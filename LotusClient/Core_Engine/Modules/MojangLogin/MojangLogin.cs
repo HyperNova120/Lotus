@@ -41,6 +41,7 @@ namespace LotusCore.Modules.MojangLogin
                     Logging.LogError("Auth Fail", true);
                     return false;
                 }
+                //Logging.LogDebug($"AuthResult.AccessToken:{AuthResult.AccessToken}");
 
                 TokenAuthCert? XboxLiveAuth = await _Internals.AuthWithXboxLive(
                     AuthResult.AccessToken

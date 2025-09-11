@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using LotusCore.EngineEventArgs;
 using LotusCore.Modules.Networking.Packets;
+using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
 using static LotusCore.Modules.Networking.Networking;
 
@@ -17,6 +18,7 @@ namespace LotusCore.Modules.Networking.Internals
         public ServerConnectionSocketAsyncEventArgs _ServerConnectionSocketAsyncEventArgs;
 
         public IPAddress _RemoteHost { get; private set; }
+        public int _RemotePort { get; private set; }
 
         public byte[] _IncompletePacketBytesBuffer = [];
         public List<byte> _DataToSendBuffer = new();
@@ -31,9 +33,11 @@ namespace LotusCore.Modules.Networking.Internals
 
         public TAG_Compound _ServerListEntry;
 
-        public ServerConnection(string serverAddress)
+        public ServerConnection(string serverAddress, int port)
         {
-            _RemoteHost = Dns.GetHostAddresses(serverAddress)[0];
+            (string? serverIP, _) = ServerDNSLookup.GetServerDNSRecord(serverAddress);
+            _RemoteHost = IPAddress.Parse(serverIP!);
+            _RemotePort = port;
             _TcpSocket = null;
             _ConnectionState = ConnectionState.NONE;
             _Encryption = new();

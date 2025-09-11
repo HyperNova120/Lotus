@@ -177,7 +177,7 @@ namespace LotusCore.Interfaces
         public void AddServerResourcePack(ResourcePack resourcePack);
 
         public ServerTag? GetServerTag(Identifier Registry, Identifier TagName);
-        public void AddServerTag(Identifier Registry, Identifier TagName);
+        public void AddServerTag(Identifier Registry, Identifier TagName, List<int> Entries);
 
         public Identifier? GetServerFeatureFlag(Identifier FeatureFlag);
         public void AddServerFeatureFlag(Identifier FeatureFlag);

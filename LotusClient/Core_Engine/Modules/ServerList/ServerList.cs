@@ -23,6 +23,15 @@ namespace LotusCore.Modules.ServerList
         private NBT _ServerListDat;
         private Networking.Networking _networkingModule;
 
+        public ServerList()
+        {
+            _networkingModule = Core_Engine.GetModule<Networking.Networking>("Networking")!;
+            _ServerListDat = new();
+            _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
+            //Logging.LogDebug(_ServerListDat.GetNBTAsString());
+            _ = PingServerlist();
+        }
+
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
             RegisterCommand.Invoke("list", new ListCommand(_ServerListDat));
@@ -72,15 +81,6 @@ namespace LotusCore.Modules.ServerList
             );
         }
 
-        public ServerList()
-        {
-            _networkingModule = Core_Engine.GetModule<Networking.Networking>("Networking")!;
-            _ServerListDat = new();
-            _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
-            //Logging.LogDebug(_ServerListDat.GetNBTAsString());
-            //_ = PingServerlist();
-        }
-
         private async Task PingServerlist()
         {
             await Task.Delay(100);
@@ -111,20 +111,18 @@ namespace LotusCore.Modules.ServerList
                 return false;
             }
             IPAddress remoteHost;
-            try
-            {
-                remoteHost = (await Dns.GetHostAddressesAsync(ip.Value))[0];
-            }
-            catch (Exception e)
+            (string? serverIP, int? port) = await ServerDNSLookup.GetServerDNSRecordAsync(ip.Value);
+            if (serverIP == null)
             {
                 //no such host
                 return false;
             }
+            remoteHost = IPAddress.Parse(serverIP);
             //Logging.LogDebug($"ServerName:{serverName!.Value} IP:{remoteHost.ToString()}");
             ServerConnection? connection = _networkingModule.GetServerConnection(remoteHost);
             if (connection == null)
             {
-                if (!_networkingModule.ConnectToServer(remoteHost.ToString()))
+                if (!_networkingModule.ConnectToServer(remoteHost.ToString(), port ?? 25565))
                 {
                     //connection refused
                     return false;

@@ -73,6 +73,9 @@ namespace LotusCore.Modules.ServerConfig
                     case 0x05:
                         _ConfigurationInternals.HandlePing(packet);
                         break;
+                    case 0x06:
+                        //reset chat, no use at this moment
+                        break;
                     case 0x07:
                         _ConfigurationInternals.HandleRegistryData(packet);
                         break;
@@ -87,6 +90,12 @@ namespace LotusCore.Modules.ServerConfig
                         break;
                     case 0x0B:
                         _ConfigurationInternals.HandleTransfer(packet);
+                        break;
+                    case 0x0C:
+                        _ConfigurationInternals.HandleFeatureFlags(packet);
+                        break;
+                    case 0x0D:
+                        _ConfigurationInternals.HandleUpdateTags(packet);
                         break;
                     case 0x0E:
                         _ConfigurationInternals.HandleClientboundKnownPacks(packet);

@@ -148,7 +148,7 @@ namespace LotusCore.Modules.Networking
 
         public bool ConnectToServer(string ip, int port = 25565)
         {
-            ServerConnection serverConnection = new(ip);
+            ServerConnection serverConnection = new(ip, port);
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
             serverConnection._TcpSocket = new Socket(
                 endPoint.AddressFamily,
@@ -162,6 +162,7 @@ namespace LotusCore.Modules.Networking
             }
             catch (Exception e)
             {
+                //Logging.LogError($"ConnectToServer:{e.ToString()}");
                 return false;
             }
             _Connections[serverConnection._RemoteHost] = serverConnection;
@@ -170,6 +171,7 @@ namespace LotusCore.Modules.Networking
             serverConnection._ServerConnectionSocketAsyncEventArgs.Completed += ReceiveCompleted;
 
             StartReceiving(serverConnection._ServerConnectionSocketAsyncEventArgs);
+            Logging.LogDebug($"Successfully Connected to Server: {ip}:{port}");
             return true;
         }
 
@@ -345,39 +347,50 @@ namespace LotusCore.Modules.Networking
             Logging.LogDebug(
                 $"\tProcessing Packet 0x{packet._Protocol_ID:X} in State: {connection._ConnectionState.ToString()}"
             );
-            switch (connection._ConnectionState)
+            try
             {
-                case ConnectionState.STATUS:
-                    Core_Engine.InvokeEvent(
-                        "STATUS_Packet_Received",
-                        new PacketReceivedEventArgs(packet, connection._RemoteHost)
-                    );
-                    break;
-                case ConnectionState.LOGIN:
-                    Core_Engine.InvokeEvent(
-                        "LOGIN_Packet_Received",
-                        new PacketReceivedEventArgs(packet, connection._RemoteHost)
-                    );
-                    break;
-                case ConnectionState.CONFIGURATION:
-                    Core_Engine.InvokeEvent(
-                        "CONFIG_Packet_Received",
-                        new PacketReceivedEventArgs(packet, connection._RemoteHost)
-                    );
-                    break;
-                case ConnectionState.PLAY:
-                    Core_Engine.InvokeEvent(
-                        "PLAY_Packet_Received",
-                        new PacketReceivedEventArgs(packet, connection._RemoteHost)
-                    );
-                    break;
-                default:
-                    Logging.LogError(
-                        $"ReceiveConnections State {connection._ConnectionState} Not Implemented"
-                    );
-                    DisconnectFromServer(connection._RemoteHost);
-                    Core_Engine.SignalInteractiveResetServerHolds();
-                    return;
+                switch (connection._ConnectionState)
+                {
+                    case ConnectionState.STATUS:
+                        Core_Engine.InvokeEvent(
+                            "STATUS_Packet_Received",
+                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                        );
+                        break;
+                    case ConnectionState.LOGIN:
+                        Core_Engine.InvokeEvent(
+                            "LOGIN_Packet_Received",
+                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                        );
+                        break;
+                    case ConnectionState.CONFIGURATION:
+                        Core_Engine.InvokeEvent(
+                            "CONFIG_Packet_Received",
+                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                        );
+                        break;
+                    case ConnectionState.PLAY:
+                        /* Core_Engine.InvokeEvent(
+                            "PLAY_Packet_Received",
+                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                        ); */
+                        DisconnectFromServer(connection._RemoteHost);
+                        Core_Engine.SignalInteractiveResetServerHolds();
+                        break;
+                    default:
+                        Logging.LogError(
+                            $"ReceiveConnections State {connection._ConnectionState} Not Implemented"
+                        );
+                        DisconnectFromServer(connection._RemoteHost);
+                        Core_Engine.SignalInteractiveResetServerHolds();
+                        return;
+                }
+            }
+            catch
+            {
+                DisconnectFromServer(connection._RemoteHost);
+                Core_Engine.SignalInteractiveResetServerHolds();
+                return;
             }
         }
 

@@ -1,18 +1,49 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
 using LotusCore.Modules.MojangLogin.Models;
 using LotusCore.Modules.Networking.Internals;
+using LotusCore.Utils.CacheEncryption;
+using LotusCore.Utils.MinecraftPaths;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
+using Org.BouncyCastle.Crypto.Engines;
 
 namespace LotusCore.Modules.MojangLogin.Internals
 {
     public class MojangLoginInternals
     {
+        void BeforeAccess(TokenCacheNotificationArgs args)
+        {
+            if (File.Exists(MinecraftPathsStruct._LotusCache))
+            {
+                var decrypted = CacheEncryption.DecryptCache(
+                    File.ReadAllBytes(MinecraftPathsStruct._LotusCache)
+                );
+                if (decrypted == null)
+                {
+                    //decryption failed
+                    return;
+                }
+                args.TokenCache.DeserializeMsalV3(decrypted);
+            }
+        }
+
+        void AfterAccess(TokenCacheNotificationArgs args)
+        {
+            if (args.HasStateChanged)
+            {
+                File.WriteAllBytes(
+                    MinecraftPathsStruct._LotusCache,
+                    CacheEncryption.EncryptCache(args.TokenCache.SerializeMsalV3())
+                );
+            }
+        }
+
         public async Task<AuthenticationResult?> GetUserAuth()
         {
             var scopes = new[] { "XboxLive.signin" };
@@ -27,6 +58,9 @@ namespace LotusCore.Modules.MojangLogin.Internals
                 .WithParentActivityOrWindow(GetConsoleOrTerminalWindow)
                 .WithBroker(options)
                 .Build();
+
+            app.UserTokenCache.SetBeforeAccess(BeforeAccess);
+            app.UserTokenCache.SetAfterAccess(AfterAccess);
 
             var accounts = await app.GetAccountsAsync();
             var existingAccount = accounts.FirstOrDefault();

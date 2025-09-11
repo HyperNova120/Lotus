@@ -18,15 +18,20 @@ namespace LotusCore.Modules.ServerLogin.Commands
 
         public async Task ProcessCommand(string[] commandArgs)
         {
-            if (commandArgs.Length != 1)
+            if (commandArgs.Length == 0)
             {
                 Console.WriteLine(GetCommandCorrectUsage());
                 return;
             }
+            string serverListName = "";
+            foreach (string s in commandArgs)
+            {
+                serverListName += (serverListName == "") ? s : $" {s}";
+            }
             ServerListServerIPResult? result = (ServerListServerIPResult?)
                 Core_Engine.InvokeEvent(
                     "ServerListIP_Request",
-                    new ServerListIPRequestEventArgs(commandArgs[0])
+                    new ServerListIPRequestEventArgs(serverListName)
                 );
             if (result == null || (result != null && result._ip == ""))
             {

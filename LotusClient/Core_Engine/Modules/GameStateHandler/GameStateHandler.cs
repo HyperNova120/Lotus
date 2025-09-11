@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection.Metadata.Ecma335;
 using LotusCore.BaseClasses;
 using LotusCore.EngineEvents;
@@ -26,6 +27,7 @@ namespace LotusCore.Modules.GameStateHandler
         Dictionary<Identifier, ServerCookie> _ServerCookies = new();
         public Dictionary<Identifier, RegistryData> _ServerRegistryData = new();
         Dictionary<MinecraftUUID, ResourcePack> _ServerResourcePack = new();
+        Dictionary<Identifier, List<ServerTag>> _ServerTags = new();
         HashSet<Identifier> _ServerFeatureFlags = new();
 
         DateTime _LastKeepAlivePacketTime = DateTime.Now;
@@ -89,9 +91,22 @@ namespace LotusCore.Modules.GameStateHandler
             _ServerResourcePack[resourcePack._UUID!] = resourcePack;
         }
 
-        public void AddServerTag(Identifier Registry, Identifier TagName)
+        public void AddServerTag(Identifier Registry, Identifier TagName, List<int> Entries)
         {
-            throw new NotImplementedException();
+            if (_ServerTags.ContainsKey(Registry))
+            {
+                foreach (var tmp in _ServerTags[Registry])
+                {
+                    if (tmp._TagName! == TagName)
+                    {
+                        //replace
+                        tmp._Entries = Entries;
+                        return;
+                    }
+                }
+            }
+            ServerTag serverTag = new() { _TagName = TagName, _Entries = Entries };
+            _ServerTags[Registry].Add(serverTag);
         }
 
         public ServerCookie? GetServerCookie(Identifier key)
@@ -116,7 +131,18 @@ namespace LotusCore.Modules.GameStateHandler
 
         public ServerTag? GetServerTag(Identifier Registry, Identifier TagName)
         {
-            throw new NotImplementedException();
+            if (!_ServerTags.ContainsKey(Registry))
+            {
+                return null;
+            }
+            foreach (var tmp in _ServerTags[Registry])
+            {
+                if (tmp._TagName! == TagName)
+                {
+                    return tmp;
+                }
+            }
+            return null;
         }
 
         public void ProcessTransfer()

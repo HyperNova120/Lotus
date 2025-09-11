@@ -8,6 +8,7 @@ using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
 using LotusCore.Modules.Networking.Packets.ServerBound.Login;
 using LotusCore.Modules.ServerLogin.Commands;
 using LotusCore.Modules.ServerLogin.Internals;
+using LotusCore.Utils;
 using static LotusCore.Modules.Networking.Networking;
 
 namespace LotusCore.Modules.ServerLogin
@@ -100,15 +101,20 @@ namespace LotusCore.Modules.ServerLogin
             )!;
 
             IPAddress remoteHost;
-            try
-            {
-                remoteHost = Dns.GetHostAddresses(serverIp)[0];
-            }
-            catch
+
+            (string? serverIP, int? srvPort) = ServerDNSLookup.GetServerDNSRecord(serverIp);
+            if (serverIP == null)
             {
                 Logging.LogInfo("Invalid Server IP");
                 Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                 return;
+            }
+            remoteHost = IPAddress.Parse(serverIP);
+            if (port == 25565)
+            {
+                //only use srv provided port if the default port is provided.
+                //ensures users take priority over dns record
+                port = (ushort)(srvPort ?? 25565);
             }
 
             if (mojangLogin._UserProfile == null)
@@ -126,7 +132,12 @@ namespace LotusCore.Modules.ServerLogin
                 Logging.LogDebug($"\tisTransfer:{isTransfer}");
                 if (networking.GetServerConnection(remoteHost) == null)
                 {
-                    networking.ConnectToServer(remoteHost.ToString(), port);
+                    if (!networking.ConnectToServer(remoteHost.ToString(), port))
+                    {
+                        Logging.LogInfo("Unable to connect to server");
+                        Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                        return;
+                    }
                     networking.GetServerConnection(remoteHost)!._ConnectionState =
                         ConnectionState.LOGIN;
                     networking.SendPacket(
