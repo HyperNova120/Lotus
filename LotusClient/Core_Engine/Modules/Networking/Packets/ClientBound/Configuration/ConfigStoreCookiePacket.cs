@@ -17,13 +17,12 @@ public class StoreCookiePacket
     {
         _ServerCookie = new();
         _ServerCookie._Key = new Identifier();
-        int numBytesRead = _ServerCookie._Key.GetFromBytes(data);
-        (byte[] bytesOfArray, int numberBytesRead) = PrefixedArray.DecodeBytes(
-            data[numBytesRead..]
-        );
+        int offset = 0;
+        _ServerCookie._Key.GetFromBytes(data, ref offset);
+        byte[] bytesOfArray = PrefixedArray.DecodeBytes(data, ref offset);
 
         _ServerCookie._Payload = bytesOfArray;
 
-        return numBytesRead + numberBytesRead;
+        return offset;
     }
 }

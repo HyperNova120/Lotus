@@ -31,26 +31,26 @@ namespace LotusCore.BaseClasses.Types
         /// <param name="input"></param>
         /// <returns>(value, number of bytes read)</returns>
         /// <exception cref="Exception"></exception>
-        public static (int value, int numBytes) DecodeVarInt(byte[] input)
+        public static int DecodeVarInt(byte[] input, ref int offset)
         {
             int value = 0;
             int position = 0;
-            int currentByte = 0;
             while (true)
             {
-                value |= (input[currentByte] & SEGMENT_BITS) << position;
-                if ((input[currentByte] & CONTINUE_BIT) == 0)
+                value |= (input[offset] & SEGMENT_BITS) << position;
+                if ((input[offset] & CONTINUE_BIT) == 0)
                 {
                     break;
                 }
                 position += 7;
-                currentByte++;
+                offset++;
                 if (position >= 32)
                 {
                     throw new Exception("VarInt is too big");
                 }
             }
-            return (value, currentByte + 1);
+            ++offset;
+            return value;
         }
 
         /// <summary>
@@ -59,26 +59,26 @@ namespace LotusCore.BaseClasses.Types
         /// <param name="input"></param>
         /// <returns>(value, number of bytes read)</returns>
         /// <exception cref="Exception"></exception>
-        public static (long value, int numBytes) DecodeVarLong(byte[] input)
+        public static long DecodeVarLong(byte[] input, ref int offset)
         {
             long value = 0;
             int position = 0;
-            int currentByte = 0;
             while (true)
             {
-                value |= (long)(input[currentByte] & SEGMENT_BITS) << position;
-                if ((input[currentByte] & CONTINUE_BIT) == 0)
+                value |= (long)(input[offset] & SEGMENT_BITS) << position;
+                if ((input[offset] & CONTINUE_BIT) == 0)
                 {
                     break;
                 }
                 position += 7;
-                currentByte++;
+                offset++;
                 if (position >= 64)
                 {
                     throw new Exception("VarLong is too big");
                 }
             }
-            return (value, currentByte + 1);
+            ++offset;
+            return value;
         }
 
         public static byte[] EncodeLong(long value)

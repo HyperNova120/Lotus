@@ -1,15 +1,21 @@
+using LotusCore.Interfaces;
+
 namespace LotusCore.BaseClasses.Types
 {
-    public static class NetworkInt
+    public class NetworkInt : INetworkData<int>
     {
         public static byte[] GetBytes(int data)
         {
             return [.. BitConverter.GetBytes(data).Reverse()];
         }
 
-        public static int DecodeBytes(byte[] data)
+        public static int DecodeBytes(byte[] data, ref int offset)
         {
-            return BitConverter.ToInt32(data[..4].Reverse().ToArray());
+            int returner = BitConverter.ToInt32(
+                data[offset..(offset + sizeof(int))].Reverse().ToArray()
+            );
+            offset += sizeof(int);
+            return returner;
         }
     }
 }

@@ -172,7 +172,8 @@ namespace LotusCore.Modules.ServerList
         {
             try
             {
-                long value = NetworkLong.DecodeBytes(packet._Data);
+                int offset = 0;
+                long value = NetworkLong.DecodeBytes(packet._Data, ref offset);
                 ServerConnection connection = _networkingModule.GetServerConnection(
                     packet._RemoteHost
                 )!;
@@ -196,7 +197,8 @@ namespace LotusCore.Modules.ServerList
 
         private void HandleStatusResponse(MinecraftServerPacket packet)
         {
-            (string value, int size) = StringN.DecodeBytes(packet._Data);
+            int offset = 0;
+            string value = StringN.DecodeBytes(packet._Data, ref offset);
             //Logging.LogDebug($"Response Size: {size}\n{value.Replace("\r", "").Replace("\n", "")}");
             ServerConnection connection = _networkingModule.GetServerConnection(
                 packet._RemoteHost

@@ -1,6 +1,8 @@
+using LotusCore.Interfaces;
+
 namespace LotusCore.BaseClasses.Types
 {
-    public static class PrefixedArray
+    public class PrefixedArray : INetworkData<byte[]>
     {
         public static byte[] GetBytes(byte[] data)
         {
@@ -14,19 +16,27 @@ namespace LotusCore.BaseClasses.Types
 
         public static (byte[] bytesOfArray, int numberBytesRead) DecodeBytes(byte[] data)
         {
-            (int size, int numSizeBytes) = VarInt_VarLong.DecodeVarInt(data);
-            data = data[numSizeBytes..];
+            int offset = 0;
+            int size = VarInt_VarLong.DecodeVarInt(data, ref offset);
 
-            byte[] arrayBytes = (size == 0) ? [] : data[..size];
+            byte[] arrayBytes = (size == 0) ? [] : data[offset..(offset + size)];
             /* Logging.LogDebug(
                 $"PrefixedArray Array_Length:{size} Tota_Byte_Length:{numSizeBytes + arrayBytes.Length}"
             ); */
-            return (arrayBytes, numSizeBytes + arrayBytes.Length);
+            return (arrayBytes, offset + arrayBytes.Length);
         }
 
-        public static (int arraySize, int numBytesRead) GetSizeOfArray(byte[] data)
+        public static byte[] DecodeBytes(byte[] data, ref int offset)
         {
-            return VarInt_VarLong.DecodeVarInt(data);
+            int size = VarInt_VarLong.DecodeVarInt(data, ref offset);
+            byte[] arrayBytes = (size == 0) ? [] : data[offset..(offset + size)];
+            offset += size;
+            return arrayBytes;
+        }
+
+        public static int GetSizeOfArray(byte[] data, ref int offset)
+        {
+            return VarInt_VarLong.DecodeVarInt(data, ref offset);
         }
     }
 }

@@ -1,5 +1,5 @@
-using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
 using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
 
 namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
 {
@@ -19,10 +19,10 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
             (byte[] uuidBytes, _) = NetworkUUID.DecodeNetworkBytes(data[0..16]);
             _uuid = new Guid(uuidBytes);
             data = data[16..];
-            (_Username, int usernameNumBytes) = StringN.DecodeBytes(data);
-            data = data[usernameNumBytes..];
-            (int arraySize, int arraySizeNumBytesRead) = PrefixedArray.GetSizeOfArray(data);
-            data = data[arraySizeNumBytesRead..];
+            int offset = 0;
+            _Username = StringN.DecodeBytes(data, ref offset);
+            int arraySize = PrefixedArray.GetSizeOfArray(data, ref offset);
+            data = data[offset..];
             int arraySizeIncrementor = 0;
             for (int i = 0; i < arraySize; i++)
             {
@@ -33,7 +33,7 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
                 _Elements.Add(tmp);
             }
 
-            return 16 + usernameNumBytes + arraySizeNumBytesRead + arraySizeIncrementor;
+            return 16 + offset + arraySizeIncrementor;
         }
     }
 
@@ -47,18 +47,16 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
 
             public int decodeFromBytes(byte[] data)
             {
-                (s1, int s1NumBytes) = StringN.DecodeBytes(data);
-                data = data[s1NumBytes..];
-                (s2, int s2NumBytes) = StringN.DecodeBytes(data);
-                data = data[s2NumBytes..];
-                (bool isPresent, int isPresentNumBytes) = PrefixedOptional.DecodeBytes(data);
+                int offset = 0;
+                s1 = StringN.DecodeBytes(data, ref offset);
+                s2 = StringN.DecodeBytes(data, ref offset);
+                bool isPresent = PrefixedOptional.DecodeBytes(data, ref offset);
                 if (!isPresent)
                 {
-                    return s1NumBytes + s2NumBytes + isPresentNumBytes;
+                    return offset;
                 }
-                data = data[1..];
-                (optionalS3, int seNumBytes) = StringN.DecodeBytes(data);
-                return s1NumBytes + s2NumBytes + isPresentNumBytes + seNumBytes;
+                optionalS3 = StringN.DecodeBytes(data, ref offset);
+                return offset;
             }
         }
     }

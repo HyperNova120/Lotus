@@ -1,6 +1,8 @@
+using LotusCore.Interfaces;
+
 namespace LotusCore.BaseClasses.Types
 {
-    public static class NetworkUUID
+    public class NetworkUUID
     {
         public static byte[] GetNetworkBytes(UInt128 uuid)
         {

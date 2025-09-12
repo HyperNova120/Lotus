@@ -1,18 +1,21 @@
+using LotusCore.Interfaces;
+
 namespace LotusCore.BaseClasses.Types
 {
-    public static class NetworkDouble
+    public class NetworkDouble : INetworkData<double>
     {
         public static byte[] GetBytes(double data)
         {
             return [.. BitConverter.GetBytes(data).Reverse()];
         }
 
-        public static (double value, int numBytesRead) DecodeBytes(byte[] data)
+        public static double DecodeBytes(byte[] data, ref int offset)
         {
-            return (
-                BitConverter.ToDouble(data[..sizeof(double)].Reverse().ToArray()),
-                sizeof(double)
+            double returner = BitConverter.ToDouble(
+                data[offset..(offset + sizeof(double))].Reverse().ToArray()
             );
+            offset += sizeof(double);
+            return returner;
         }
     }
 }

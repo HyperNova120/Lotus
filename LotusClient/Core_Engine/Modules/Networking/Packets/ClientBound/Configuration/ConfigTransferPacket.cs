@@ -14,9 +14,10 @@ public class ConfigTransferPacket
     /// <returns>number of bytes
     public int DecodeFromBytes(byte[] data)
     {
-        (_Host, int numBytes) = StringN.DecodeBytes(data);
-        (_Port, int portNumBytes) = VarInt_VarLong.DecodeVarInt(data[numBytes..]);
+        int offset = 0;
+        _Host = StringN.DecodeBytes(data, ref offset);
+        _Port = VarInt_VarLong.DecodeVarInt(data, ref offset);
 
-        return portNumBytes + portNumBytes;
+        return offset;
     }
 }

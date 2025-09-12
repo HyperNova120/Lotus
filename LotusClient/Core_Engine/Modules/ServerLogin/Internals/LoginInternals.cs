@@ -52,9 +52,10 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
         {
-            (string serverID, int serverIDBytes) = StringN.DecodeBytes(packet._Data);
+            int offset = 0;
+            string serverID = StringN.DecodeBytes(packet._Data, ref offset);
 
-            byte[] remainingBytes = packet._Data[serverIDBytes..];
+            byte[] remainingBytes = packet._Data[offset..];
             (byte[] PublicKey, int PublicKeyBytes) = PrefixedArray.DecodeBytes(remainingBytes);
 
             remainingBytes = remainingBytes[PublicKeyBytes..];
@@ -147,7 +148,8 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
         public void HandleSetCompression(MinecraftServerPacket packet)
         {
-            (int CompresionThreshold, _) = VarInt_VarLong.DecodeVarInt(packet._Data);
+            int offset = 0;
+            int CompresionThreshold = VarInt_VarLong.DecodeVarInt(packet._Data, ref offset);
             //Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
             ServerConnection connection = Core_Engine
                 .GetModule<Networking.Networking>("Networking")!
@@ -197,9 +199,10 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
         internal void HandlePluginRequest(MinecraftServerPacket packet)
         {
-            (int value, int offset) = VarInt_VarLong.DecodeVarInt(packet._Data);
+            int offset = 0;
+            int value = VarInt_VarLong.DecodeVarInt(packet._Data, ref offset);
             Identifier channel = new();
-            offset += channel.GetFromBytes(packet._Data[offset..]);
+            channel.GetFromBytes(packet._Data, ref offset);
 
             PluginMessageReceivedEventArgs args = new(
                 packet._RemoteHost,
@@ -215,7 +218,8 @@ namespace LotusCore.Modules.ServerLogin.Internals
         internal void HandleCookieRequest(MinecraftServerPacket packet)
         {
             Identifier Key = new();
-            Key.GetFromBytes(packet._Data);
+            int offset = 0;
+            Key.GetFromBytes(packet._Data, ref offset);
 
             var cookie = _GameStateHandler.GetServerCookie(Key);
 

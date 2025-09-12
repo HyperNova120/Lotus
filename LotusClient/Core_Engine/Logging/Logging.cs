@@ -30,6 +30,7 @@ namespace LotusCore
             _Lock.Wait();
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("[ERROR] " + msg);
+            File.AppendAllText("ERROR_Log.txt", $"[ERROR] {msg}\n");
             if (showStackTrace)
             {
                 Console.WriteLine(new StackTrace(true));

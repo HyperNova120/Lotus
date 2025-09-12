@@ -16,16 +16,12 @@ namespace LotusCore.Modules.GameStateHandler.BaseClasses
 
         public int DecodeBytes(byte[] inputBytes)
         {
-            int offset = _UUID.DecodeBytes(inputBytes);
-            (_URL, int numBytes) = StringN.DecodeBytes(inputBytes[offset..]);
-            offset += numBytes;
-            (_Hash, int numBytes2) = StringN.DecodeBytes(inputBytes[offset..]);
-            offset += numBytes2;
+            int offset = 0;
+            _UUID.DecodeBytes(inputBytes, ref offset);
+            _URL = StringN.DecodeBytes(inputBytes, ref offset);
+            _Hash = StringN.DecodeBytes(inputBytes, ref offset);
             _Forced = inputBytes[offset++] == 1;
-            (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
-                inputBytes[offset..]
-            );
-            offset += numberBytesRead;
+            bool isPresent = PrefixedOptional.DecodeBytes(inputBytes, ref offset);
             if (isPresent)
             {
                 _TextComponent = new(true);

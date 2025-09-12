@@ -1,15 +1,21 @@
+using LotusCore.Interfaces;
+
 namespace LotusCore.BaseClasses.Types
 {
-    public static class NetworkShort
+    public class NetworkShort : INetworkData<short>
     {
         public static byte[] GetBytes(short data)
         {
             return [.. BitConverter.GetBytes(data).Reverse()];
         }
 
-        public static (short value, int numBytesRead) DecodeBytes(byte[] data)
+        public static short DecodeBytes(byte[] data, ref int offset)
         {
-            return (BitConverter.ToInt16(data[..2].Reverse().ToArray()), 2);
+            short returner = BitConverter.ToInt16(
+                data[offset..(offset + sizeof(short))].Reverse().ToArray()
+            );
+            offset += sizeof(short);
+            return returner;
         }
     }
 }

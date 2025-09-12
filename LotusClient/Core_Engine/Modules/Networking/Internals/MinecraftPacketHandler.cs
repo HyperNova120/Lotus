@@ -91,7 +91,8 @@ namespace LotusCore.Modules.Networking.Internals
                 //has packet length
                 //Logging.LogDebug("Decoding Compressed Packet");
 
-                (int packetLength, int packetLengthnumBytes) = VarInt_VarLong.DecodeVarInt(bytes);
+                int packetLengthnumBytes = 0;
+                int packetLength = VarInt_VarLong.DecodeVarInt(bytes, ref packetLengthnumBytes);
 
                 if (packetLength > (bytes.Length - packetLengthnumBytes))
                 {
@@ -101,7 +102,8 @@ namespace LotusCore.Modules.Networking.Internals
                     return (null, bytes);
                 }
                 bytes = bytes[packetLengthnumBytes..];
-                (int dataLength, int dataLengthNumBytes) = VarInt_VarLong.DecodeVarInt(bytes);
+                int dataLengthNumBytes = 0;
+                int dataLength = VarInt_VarLong.DecodeVarInt(bytes, ref dataLengthNumBytes);
                 bytes = bytes[dataLengthNumBytes..];
                 int remainingBytesInPacket = packetLength - dataLengthNumBytes;
 
@@ -121,7 +123,8 @@ namespace LotusCore.Modules.Networking.Internals
                     }
                 }
 
-                (int packetID, int packetIDNumBytes) = VarInt_VarLong.DecodeVarInt(packetBytes);
+                int packetIDNumBytes = 0;
+                int packetID = VarInt_VarLong.DecodeVarInt(packetBytes, ref packetIDNumBytes);
                 packetBytes = packetBytes[packetIDNumBytes..];
                 return (new MinecraftServerPacket(remoteHost, packetID, packetBytes), bytes);
             }
@@ -129,7 +132,8 @@ namespace LotusCore.Modules.Networking.Internals
             {
                 //only data length
                 int totalLength = bytes.Length;
-                (int dataLength, int numDataBytes) = VarInt_VarLong.DecodeVarInt(bytes);
+                int numDataBytes = 0;
+                int dataLength = VarInt_VarLong.DecodeVarInt(bytes, ref numDataBytes);
 
                 Logging.LogDebug(
                     $"DECODE PACKET: Total Length:{totalLength} packetLength:{numDataBytes + dataLength}"
@@ -140,8 +144,10 @@ namespace LotusCore.Modules.Networking.Internals
                     Logging.LogDebug(
                         $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} bytes.Length:{bytes.Length}"
                     );
-                    (int packetID2, int packetIDNumBytes2) = VarInt_VarLong.DecodeVarInt(
-                        bytes[numDataBytes..]
+                    int packetIDNumBytes2 = 0;
+                    int packetID2 = VarInt_VarLong.DecodeVarInt(
+                        bytes[numDataBytes..],
+                        ref packetIDNumBytes2
                     );
                     Logging.LogDebug($"DECODE PACKET INCOMPLETE PACKET: PacketID:{packetID2}");
                     return (null, bytes);
@@ -157,7 +163,8 @@ namespace LotusCore.Modules.Networking.Internals
                 byte[] packetBytes = bytes[..dataLength];
                 bytes = bytes[dataLength..];
 
-                (int packetID, int packetIDNumBytes) = VarInt_VarLong.DecodeVarInt(packetBytes);
+                int packetIDNumBytes = 0;
+                int packetID = VarInt_VarLong.DecodeVarInt(packetBytes, ref packetIDNumBytes);
                 packetBytes = packetBytes[packetIDNumBytes..];
 
                 return (new(remoteHost, packetID, packetBytes), bytes);

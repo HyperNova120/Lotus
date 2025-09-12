@@ -58,17 +58,17 @@ public class ConfigurationInternals
     internal void HandleRegistryData(MinecraftServerPacket packet)
     {
         Identifier RegistryID = new();
-        int offset = RegistryID.GetFromBytes(packet._Data);
+        int offset = 0;
+        RegistryID.GetFromBytes(packet._Data, ref offset);
 
-        (int arraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(packet._Data[offset..]);
-        offset += numBytesRead;
+        int arraySize = PrefixedArray.GetSizeOfArray(packet._Data, ref offset);
 
         RegistryData registry = new() { _RegistryNameSpace = RegistryID };
         bool shouldLogInfo = false;
 
         if (RegistryID.GetString() == "minecraft:enchantment")
         {
-            shouldLogInfo = true;
+            //shouldLogInfo = true;
         }
 
         if (shouldLogInfo)
@@ -79,17 +79,13 @@ public class ConfigurationInternals
             for (int i = 0; i < arraySize; i++)
             {
                 Identifier EntryID = new();
-                int EntryIDBytes = EntryID.GetFromBytes(packet._Data[offset..]);
-                offset += EntryIDBytes;
+                EntryID.GetFromBytes(packet._Data, ref offset);
 
                 RegistryEntry registryEntry = new() { ID = EntryID };
                 if (shouldLogInfo)
                     Logging.LogDebug("\t" + EntryID.GetString());
 
-                (bool isPresent, int numberBytesRead) = PrefixedOptional.DecodeBytes(
-                    packet._Data[offset..]
-                );
-                offset += numberBytesRead;
+                bool isPresent = PrefixedOptional.DecodeBytes(packet._Data, ref offset);
                 if (isPresent)
                 {
                     NBT EntryData = new();
@@ -198,7 +194,8 @@ public class ConfigurationInternals
     internal void HandleCookieRequest(MinecraftServerPacket packet)
     {
         Identifier Key = new();
-        Key.GetFromBytes(packet._Data);
+        int offset = 0;
+        Key.GetFromBytes(packet._Data, ref offset);
 
         var cookie = _GameStateHandler.GetServerCookie(Key);
 
@@ -217,7 +214,7 @@ public class ConfigurationInternals
         //(int value, int offset) = VarInt_VarLong.DecodeVarInt(packet._Data);
         int offset = 0;
         Identifier channel = new();
-        offset += channel.GetFromBytes(packet._Data[offset..]);
+        channel.GetFromBytes(packet._Data, ref offset);
 
         PluginMessageReceivedEventArgs args = new(
             packet._RemoteHost,
@@ -266,14 +263,19 @@ public class ConfigurationInternals
 
     internal void HandleKeepAlive(MinecraftServerPacket packet)
     {
-        KeepAlivePacket keepAlivePacket = new(0x04, NetworkLong.DecodeBytes(packet._Data));
+        int offset = 0;
+        KeepAlivePacket keepAlivePacket = new(
+            0x04,
+            NetworkLong.DecodeBytes(packet._Data, ref offset)
+        );
         _GameStateHandler.SetLastKeepAliveTime(DateTime.Now);
         _NetworkingManager.SendPacket(packet._RemoteHost, keepAlivePacket);
     }
 
     internal void HandlePing(MinecraftServerPacket packet)
     {
-        PongPacket pongPacket = new(0x05, NetworkInt.DecodeBytes(packet._Data));
+        int offset = 0;
+        PongPacket pongPacket = new(0x05, NetworkInt.DecodeBytes(packet._Data, ref offset));
         _NetworkingManager.SendPacket(packet._RemoteHost, pongPacket);
     }
 
@@ -292,11 +294,12 @@ public class ConfigurationInternals
     internal void HandleFeatureFlags(MinecraftServerPacket packet)
     {
         Logging.LogDebug("HandleFeatureFlags");
-        (int arraySize, int offset) = PrefixedArray.GetSizeOfArray(packet._Data);
+        int offset = 0;
+        int arraySize = PrefixedArray.GetSizeOfArray(packet._Data, ref offset);
         for (int i = 0; i < arraySize; i++)
         {
             Identifier tmp = new();
-            offset += tmp.GetFromBytes(packet._Data[offset..]);
+            tmp.GetFromBytes(packet._Data, ref offset);
             Logging.LogDebug("\t" + tmp.GetString());
         }
     }
@@ -304,32 +307,25 @@ public class ConfigurationInternals
     internal void HandleUpdateTags(MinecraftServerPacket packet)
     {
         int offset = 0;
-        (int arraySize, offset) = PrefixedArray.GetSizeOfArray(packet._Data);
+        int arraySize = PrefixedArray.GetSizeOfArray(packet._Data, ref offset);
         //Logging.LogDebug("HandleUpdateTags");
         for (int i = 0; i < arraySize; i++)
         {
             Identifier Registry = new();
-            offset += Registry.GetFromBytes(packet._Data[offset..]);
+            Registry.GetFromBytes(packet._Data, ref offset);
             //Logging.LogDebug($"\tRegistry_Name: {Registry}");
-            (int TagsArraySize, int numBytesRead) = PrefixedArray.GetSizeOfArray(
-                packet._Data[offset..]
-            );
-            offset += numBytesRead;
+            int TagsArraySize = PrefixedArray.GetSizeOfArray(packet._Data, ref offset);
             for (int j = 0; j < TagsArraySize; j++)
             {
                 Identifier TagName = new();
-                offset += TagName.GetFromBytes(packet._Data[offset..]);
+                TagName.GetFromBytes(packet._Data, ref offset);
                 //Logging.LogDebug($"\t\tTag_Name: {TagName}");
 
-                (int tagArraySize, numBytesRead) = PrefixedArray.GetSizeOfArray(
-                    packet._Data[offset..]
-                );
-                offset += numBytesRead;
+                int tagArraySize = PrefixedArray.GetSizeOfArray(packet._Data, ref offset);
                 List<int> values = new();
                 for (int k = 0; k < tagArraySize; k++)
                 {
-                    (int value, numBytesRead) = VarInt_VarLong.DecodeVarInt(packet._Data[offset..]);
-                    offset += numBytesRead;
+                    int value = VarInt_VarLong.DecodeVarInt(packet._Data, ref offset);
                     values.Add(value);
                     //Logging.LogDebug($"\t\t\tTag_Value: {value}");
                 }

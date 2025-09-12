@@ -8,16 +8,14 @@ public class ConfigClientboundKnownPacks
 
     public int DecodeFromBytes(byte[] bytes)
     {
-        (int arraySize, int offset) = PrefixedArray.GetSizeOfArray(bytes);
+        int offset = 0;
+        int arraySize = PrefixedArray.GetSizeOfArray(bytes, ref offset);
         for (int i = 0; i < arraySize; i++)
         {
             PackInfo tmp = new();
-            (tmp.Namespace, int numBytes) = StringN.DecodeBytes(bytes[offset..]);
-            offset += numBytes;
-            (tmp.ID, int numBytes2) = StringN.DecodeBytes(bytes[offset..]);
-            offset += numBytes2;
-            (tmp.Version, int numBytes3) = StringN.DecodeBytes(bytes[offset..]);
-            offset += numBytes3;
+            tmp.Namespace = StringN.DecodeBytes(bytes, ref offset);
+            tmp.ID = StringN.DecodeBytes(bytes, ref offset);
+            tmp.Version = StringN.DecodeBytes(bytes, ref offset);
             _KnownPacks.Add(tmp);
         }
         return offset;

@@ -48,7 +48,7 @@ namespace LotusCore.Modules.GameStateHandler
             bool replace = false
         )
         {
-            Logging.LogDebug($"UpdateServerRegistryData: {registryData._RegistryNameSpace}");
+            //Logging.LogDebug($"UpdateServerRegistryData: {registryData._RegistryNameSpace}");
             if (!_ServerRegistryData.ContainsKey(registryData._RegistryNameSpace))
             {
                 //new registry
@@ -106,7 +106,7 @@ namespace LotusCore.Modules.GameStateHandler
                 }
             }
             ServerTag serverTag = new() { _TagName = TagName, _Entries = Entries };
-            _ServerTags[Registry].Add(serverTag);
+            _ServerTags[Registry] = [serverTag];
         }
 
         public ServerCookie? GetServerCookie(Identifier key)

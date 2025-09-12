@@ -33,41 +33,31 @@ public class SpawnEntityPacket
 
     public int DecodeBytes(byte[] inputBytes)
     {
-        (_EntityID, int offset) = VarInt_VarLong.DecodeVarInt(inputBytes);
+        int offset = 0;
+        _EntityID = VarInt_VarLong.DecodeVarInt(inputBytes, ref offset);
 
         _EntityUUID = new();
-        offset += _EntityUUID.DecodeBytes(inputBytes[offset..]);
+        _EntityUUID.DecodeBytes(inputBytes, ref offset);
 
-        (_Type, int numBytesRead) = VarInt_VarLong.DecodeVarInt(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Type = VarInt_VarLong.DecodeVarInt(inputBytes, ref offset);
 
-        (_X, numBytesRead) = NetworkDouble.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _X = NetworkDouble.DecodeBytes(inputBytes, ref offset);
 
-        (_Y, numBytesRead) = NetworkDouble.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Y = NetworkDouble.DecodeBytes(inputBytes, ref offset);
 
-        (_Z, numBytesRead) = NetworkDouble.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Z = NetworkDouble.DecodeBytes(inputBytes, ref offset);
 
-        (_Pitch, int numBytesRead5) = MinecraftAngle.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Pitch = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
-        (_Yaw, numBytesRead) = MinecraftAngle.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Yaw = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
-        (_HeadYaw, numBytesRead) = MinecraftAngle.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _HeadYaw = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
-        (_Data, numBytesRead) = VarInt_VarLong.DecodeVarInt(inputBytes[offset..]);
-        offset += numBytesRead;
+        _Data = VarInt_VarLong.DecodeVarInt(inputBytes, ref offset);
 
-        (_VelocityX, numBytesRead) = NetworkShort.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
-        (_VelocityY, numBytesRead) = NetworkShort.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
-        (_VelocityZ, numBytesRead) = NetworkShort.DecodeBytes(inputBytes[offset..]);
-        offset += numBytesRead;
+        _VelocityX = NetworkShort.DecodeBytes(inputBytes, ref offset);
+        _VelocityY = NetworkShort.DecodeBytes(inputBytes, ref offset);
+        _VelocityZ = NetworkShort.DecodeBytes(inputBytes, ref offset);
 
         return offset;
     }

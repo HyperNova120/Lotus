@@ -26,11 +26,10 @@ public class Identifier
         ReadFromIdentifierString(IdentifierString);
     }
 
-    public int GetFromBytes(byte[] bytes)
+    public void GetFromBytes(byte[] bytes, ref int offset)
     {
-        (string value, int numBytes) = StringN.DecodeBytes(bytes);
+        string value = StringN.DecodeBytes(bytes, ref offset);
         ReadFromIdentifierString(value);
-        return numBytes;
     }
 
     public override bool Equals(object? obj)
