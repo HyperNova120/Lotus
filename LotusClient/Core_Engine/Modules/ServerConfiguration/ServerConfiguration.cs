@@ -12,7 +12,10 @@ namespace LotusCore.Modules.ServerConfig
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
-        public void RegisterEvents(Action<string> RegisterEvent) { }
+        public void RegisterEvents(Action<string> RegisterEvent)
+        {
+            RegisterEvent.Invoke("CONFIG_Complete");
+         }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {

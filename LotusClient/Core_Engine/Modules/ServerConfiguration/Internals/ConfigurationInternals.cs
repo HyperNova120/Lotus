@@ -4,8 +4,8 @@ using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
-using LotusCore.Modules.GameStateHandler;
-using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule;
+using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
 using LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
@@ -259,6 +259,7 @@ public class ConfigurationInternals
         _NetworkingManager.GetServerConnection(packet._RemoteHost)!._ConnectionState =
             ConnectionState.PLAY;
         _NetworkingManager.SendPacket(packet._RemoteHost, new EmptyPacket(0x03));
+        Core_Engine.InvokeEvent("CONFIG_Complete", new ConnectionEventArgs(packet._RemoteHost));
     }
 
     internal void HandleKeepAlive(MinecraftServerPacket packet)

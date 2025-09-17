@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.MojangLogin.Commands;
@@ -21,7 +22,10 @@ namespace LotusCore.Modules.MojangLogin
 
         private readonly MojangLoginInternals _Internals = new();
 
-        public void RegisterEvents(Action<string> RegisterEvent) { }
+        public void RegisterEvents(Action<string> RegisterEvent)
+        {
+            RegisterEvent.Invoke("MOJANGLOGIN_loginSuccessful");
+        }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
@@ -92,6 +96,14 @@ namespace LotusCore.Modules.MojangLogin
                 }
 
                 Core_Engine.SignalInteractiveFree(Core_Engine.State.AccountLogin);
+                Core_Engine.InvokeEvent(
+                    "MOJANGLOGIN_loginSuccessful",
+                    new MojangLoginEventArgs()
+                    {
+                        _AuthModel = _MinecraftAuth,
+                        _UserProfile = this._UserProfile,
+                    }
+                );
                 return true;
             }
             catch (Exception e)

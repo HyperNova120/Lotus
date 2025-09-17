@@ -10,7 +10,7 @@ namespace LotusCore.Modules.ServerPlay;
 public class ServerPlayHandler : IModuleBase
 {
     private Networking.Networking _NetworkingManager;
-    private readonly ServerPlayInternals playInternals = new();
+    private readonly ServerPlayInternals _playInternals = new();
 
     public ServerPlayHandler()
     {
@@ -29,6 +29,19 @@ public class ServerPlayHandler : IModuleBase
                 (sender, args) =>
                 {
                     _ = ProcessPacket(sender, args);
+                    return null;
+                }
+            )
+        );
+
+        SubscribeToEvent.Invoke(
+            "CONFIG_Complete",
+            new EngineEventHandler(
+                (sender, args) =>
+                {
+                    _playInternals.ServerboundPlayerSession(
+                        ((ConnectionEventArgs)args)._RemoteHost
+                    );
                     return null;
                 }
             )
@@ -59,17 +72,32 @@ public class ServerPlayHandler : IModuleBase
         catch (Exception e)
         {
             Logging.LogError($"ServerPlayHandler; ProcessPacket ERROR: {e}");
-            Core_Engine.SignalInteractiveFree(Core_Engine.State.Play);
+            //Core_Engine.SignalInteractiveFree(Core_Engine.State.Play);
         }
     }
 
     private void HandlePacketSwitch(MinecraftServerPacket packet)
     {
-        switch (packet._Protocol_ID)
+        try
         {
-            default:
-                Logging.LogError($"Play Packet ID: 0x{packet._Protocol_ID:X} not implemented");
-                break;
+            switch (packet._Protocol_ID)
+            {
+                case 0x3A:
+                    Logging.LogDebug("HandlePlayerChatMessage");
+                    _playInternals.HandlePlayerChatMessage(packet);
+                    break;
+                case 0x72:
+                    Logging.LogDebug("HandleSystemChatMessage");
+                    _playInternals.HandleSystemChatMessage(packet);
+                    break;
+                default:
+                    //Logging.LogError($"Play Packet ID: 0x{packet._Protocol_ID:X} not implemented");
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Logging.LogError($"Play HandlePacketSwitch: {e.ToString()}");
         }
     }
 

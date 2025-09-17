@@ -7,6 +7,7 @@ using System.Text.Json;
 using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
 using LotusCore.Modules.MojangLogin.Models;
 using LotusCore.Modules.Networking.Internals;
+using LotusCore.Utils;
 using LotusCore.Utils.CacheEncryption;
 using LotusCore.Utils.MinecraftPaths;
 using Microsoft.Identity.Client;
@@ -222,6 +223,7 @@ namespace LotusCore.Modules.MojangLogin.Internals
                 await response.Content.ReadAsStringAsync()
             );
         }
+
 
         enum GetAncestorFlags
         {

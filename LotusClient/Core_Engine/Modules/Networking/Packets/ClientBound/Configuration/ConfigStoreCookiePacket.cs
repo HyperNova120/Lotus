@@ -1,6 +1,6 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
-using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 
 namespace LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
 

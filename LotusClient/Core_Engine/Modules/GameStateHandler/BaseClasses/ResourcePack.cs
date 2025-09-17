@@ -4,7 +4,7 @@ using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Utils;
 
-namespace LotusCore.Modules.GameStateHandler.BaseClasses
+namespace LotusCore.Modules.GameStateHandlerModule.BaseClasses
 {
     public class ResourcePack
     {

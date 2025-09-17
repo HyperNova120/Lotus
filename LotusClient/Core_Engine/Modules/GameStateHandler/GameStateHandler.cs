@@ -1,15 +1,61 @@
 using System.ComponentModel;
+using System.Net.Http.Headers;
 using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
 using LotusCore.BaseClasses;
+using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
-using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.Models;
+using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
+using LotusCore.Modules.MojangLogin.Models;
+using LotusCore.Utils;
+using LotusCore.Utils.MinecraftPaths;
+using Microsoft.AspNetCore.Identity;
 
-namespace LotusCore.Modules.GameStateHandler
+namespace LotusCore.Modules.GameStateHandlerModule
 {
     public class GameStateHandler : IModuleBase, IGameStateHandler
     {
         public GameStateHandler() { }
+
+        private async Task HttpGetMojangKeyPair(MinecraftAuthResponseModel MinecraftAuth)
+        {
+            try
+            {
+                HttpRequestMessage requestMessage = HttpHandler.CreateHttpRequestMessage(
+                    HttpMethod.Post,
+                    $"{MojangAPIEndpoints._PlayerConfigEndpoints}/player/certificates",
+                    null
+                );
+                requestMessage.Headers.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/json")
+                );
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue(
+                    "Bearer",
+                    MinecraftAuth!.access_token
+                );
+
+                HttpResponseMessage response = await HttpHandler.SendRequest(requestMessage);
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    Logging.LogError(
+                        $"Unable to get Mojang Key Pair: Code:{response.StatusCode.ToString()}"
+                    );
+                    return;
+                }
+                _MojangKeyPair = JsonSerializer.Deserialize<MojangKeyPair>(
+                    await response.Content.ReadAsStringAsync()
+                )!;
+
+                Logging.LogDebug($"HttpGetMojangKeyPair:{_MojangKeyPair.expiresAt}");
+            }
+            catch (Exception e)
+            {
+                Logging.LogError($"GameStateHandler.HttpGetMojangKeyPair: {e}");
+            }
+        }
 
         //===========
         //IModuleBase
@@ -18,7 +64,21 @@ namespace LotusCore.Modules.GameStateHandler
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
 
-        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
+        {
+            SubscribeToEvent.Invoke(
+                "MOJANGLOGIN_loginSuccessful",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        MojangLoginEventArgs EventArgs = (MojangLoginEventArgs)args;
+                        _ = HttpGetMojangKeyPair(EventArgs._AuthModel);
+                        _UserProfile = EventArgs._UserProfile;
+                        return null;
+                    }
+                )
+            );
+        }
 
         //===========
         //IGameStateHandler
@@ -31,6 +91,9 @@ namespace LotusCore.Modules.GameStateHandler
         HashSet<Identifier> _ServerFeatureFlags = new();
 
         DateTime _LastKeepAlivePacketTime = DateTime.Now;
+
+        public MojangKeyPair _MojangKeyPair { get; private set; }
+        public MinecraftProfile _UserProfile { get; private set; }
 
         public void AddServerCookie(ServerCookie cookie)
         {

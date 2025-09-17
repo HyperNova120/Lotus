@@ -63,6 +63,11 @@ public class NBT
         return (_Base_Tag != null) ? _Base_Tag.ToString(tab_space) : "";
     }
 
+    public override string ToString()
+    {
+        return GetNBTAsString();
+    }
+
     public byte[] GetBytes()
     {
         return (_Base_Tag != null) ? _Base_Tag.GetBytes() : [];

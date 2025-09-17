@@ -1,5 +1,5 @@
 using LotusCore.BaseClasses;
-using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 
 namespace LotusCore.Interfaces
 {

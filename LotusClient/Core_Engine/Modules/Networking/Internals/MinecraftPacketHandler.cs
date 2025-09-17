@@ -61,6 +61,7 @@ namespace LotusCore.Modules.Networking.Internals
                 else
                 {
                     //compress
+                    Logging.LogDebug($"Compression Required For Packet");
                     byte[] data_length = VarInt_VarLong.EncodeInt(
                         packet_id.Length + packet_data.Length
                     );
@@ -68,7 +69,7 @@ namespace LotusCore.Modules.Networking.Internals
                         [.. packet_id, .. packet_data]
                     );
                     byte[] packet_length = VarInt_VarLong.EncodeInt(
-                        data_length.Length + packet_id.Length + packet_data.Length
+                        data_length.Length + compressed_Section.Length
                     );
                     byte[] packetBytes = [.. packet_length, .. data_length, .. compressed_Section];
 
@@ -135,21 +136,21 @@ namespace LotusCore.Modules.Networking.Internals
                 int numDataBytes = 0;
                 int dataLength = VarInt_VarLong.DecodeVarInt(bytes, ref numDataBytes);
 
-                Logging.LogDebug(
+                /* Logging.LogDebug(
                     $"DECODE PACKET: Total Length:{totalLength} packetLength:{numDataBytes + dataLength}"
-                );
+                ); */
 
                 if (dataLength > bytes.Length)
                 {
-                    Logging.LogDebug(
+                    /* Logging.LogDebug(
                         $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} bytes.Length:{bytes.Length}"
-                    );
+                    ); */
                     int packetIDNumBytes2 = 0;
                     int packetID2 = VarInt_VarLong.DecodeVarInt(
                         bytes[numDataBytes..],
                         ref packetIDNumBytes2
                     );
-                    Logging.LogDebug($"DECODE PACKET INCOMPLETE PACKET: PacketID:{packetID2}");
+                    //Logging.LogDebug($"DECODE PACKET INCOMPLETE PACKET: PacketID:{packetID2}");
                     return (null, bytes);
                 }
                 else

@@ -2,7 +2,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 
-namespace LotusCore.Modules.Networking.Internals
+namespace LotusCore.Utils
 {
     public static class HttpHandler
     {
@@ -61,6 +61,23 @@ namespace LotusCore.Modules.Networking.Internals
             msg.RequestUri = new Uri(Uri);
             msg.Content = httpContent;
             return msg;
+        }
+
+        public static async Task<byte[]> DownloadSkinTexture(string url)
+        {
+            if (_HttpClient == null)
+            {
+                _HttpClient = new HttpClient();
+            }
+            try
+            {
+                return await _HttpClient.GetByteArrayAsync(url);
+            }
+            catch (Exception e)
+            {
+                Logging.LogError($"DownloadSkinTexture: {e}");
+                return [];
+            }
         }
     }
 }

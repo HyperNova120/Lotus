@@ -7,7 +7,7 @@ using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Exceptions;
 using LotusCore.Interfaces;
-using LotusCore.Modules.GameStateHandler;
+using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.MojangLogin;
 using LotusCore.Modules.Networking;
 using LotusCore.Modules.ServerConfig;
@@ -131,13 +131,13 @@ public static class Core_Engine
 
     private static void InitCoreModules()
     {
-        RegisterModule("GameStateHandler", new GameStateHandler());
         RegisterModule("MojangLogin", new MojangLogin());
+        RegisterModule("GameStateHandler", new GameStateHandler());
         RegisterModule("Networking", new Networking());
         RegisterModule("ServerList", new ServerList());
         RegisterModule("LoginHandler", new LoginHandler());
         RegisterModule("ServerConfiguration", new ServerConfiguration());
-        //RegisterModule("ServerPlayHandler", new ServerPlayHandler());
+        RegisterModule("ServerPlayHandler", new ServerPlayHandler());
         RegisterModule("VulkanGraphics", new VulkanGraphics());
     }
 
@@ -228,7 +228,7 @@ public static class Core_Engine
         if (!_Commands.ContainsKey(command.ToLower()))
         {
             Console.WriteLine($"Unknown Command '{command}', use 'help' to see a list of commands");
-            Logging.LogError("", true);
+            //Logging.LogError("", true);
             return;
         }
         await _Commands[command].ProcessCommand(args);

@@ -130,36 +130,40 @@ namespace LotusCore.Modules.ServerLogin
             try
             {
                 Logging.LogDebug($"\tisTransfer:{isTransfer}");
-                if (networking.GetServerConnection(remoteHost) == null)
+                if (networking.GetServerConnection(remoteHost) != null)
                 {
-                    if (!networking.ConnectToServer(remoteHost.ToString(), port))
-                    {
-                        Logging.LogInfo("Unable to connect to server");
-                        Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
-                        return;
-                    }
-                    networking.GetServerConnection(remoteHost)!._ConnectionState =
-                        ConnectionState.LOGIN;
-                    networking.SendPacket(
-                        remoteHost,
-                        new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
-                        {
-                            _NextState = isTransfer
-                                ? (int)HandshakePacket.Intent.Transfer
-                                : (int)HandshakePacket.Intent.Login,
-                        }
-                    );
-                    /* Logging.LogDebug(
-                        $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
-                    ); */
-                    networking.SendPacket(
-                        remoteHost,
-                        new LoginStartPacket(
-                            mojangLogin._UserProfile!.name,
-                            new Guid(mojangLogin._UserProfile!.id)
-                        )
-                    );
+                    //disconnect if already connected
+                    networking.DisconnectFromServer(remoteHost);
                 }
+
+                if (!networking.ConnectToServer(remoteHost.ToString(), port))
+                {
+                    Logging.LogInfo("Unable to connect to server");
+                    Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                    return;
+                }
+                
+                networking.GetServerConnection(remoteHost)!._ConnectionState =
+                    ConnectionState.LOGIN;
+                networking.SendPacket(
+                    remoteHost,
+                    new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                    {
+                        _NextState = isTransfer
+                            ? (int)HandshakePacket.Intent.Transfer
+                            : (int)HandshakePacket.Intent.Login,
+                    }
+                );
+                /* Logging.LogDebug(
+                    $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
+                ); */
+                networking.SendPacket(
+                    remoteHost,
+                    new LoginStartPacket(
+                        mojangLogin._UserProfile!.name,
+                        new Guid(mojangLogin._UserProfile!.id)
+                    )
+                );
             }
             catch (Exception e)
             {

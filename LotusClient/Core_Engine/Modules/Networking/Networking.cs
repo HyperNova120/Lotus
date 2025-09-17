@@ -239,7 +239,7 @@ namespace LotusCore.Modules.Networking
 
         private void ReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
-            Logging.LogDebug("ReceiveCompleted");
+            //Logging.LogDebug("ReceiveCompleted");
             ServerConnectionSocketAsyncEventArgs eventArgs =
                 (ServerConnectionSocketAsyncEventArgs)e;
             ServerConnection connection = GetServerConnection(eventArgs._RemoteHost)!;
@@ -268,7 +268,13 @@ namespace LotusCore.Modules.Networking
             {
                 Logging.LogError($"Handle Packet Received ERROR: {exc}");
                 DisconnectFromServer(connection._RemoteHost);
-                Core_Engine.SignalInteractiveResetServerHolds();
+                if (
+                    _IsClientConnectedToPrimaryServer
+                    && _PrimaryClientServerConnection == eventArgs._RemoteHost
+                )
+                {
+                    Core_Engine.SignalInteractiveResetServerHolds();
+                }
             }
         }
 
@@ -344,9 +350,9 @@ namespace LotusCore.Modules.Networking
 
         private void ProcessPacketEvent(ServerConnection connection, MinecraftServerPacket packet)
         {
-            Logging.LogDebug(
+            /* Logging.LogDebug(
                 $"\tProcessing Packet 0x{packet._Protocol_ID:X} in State: {connection._ConnectionState.ToString()}"
-            );
+            ); */
             try
             {
                 switch (connection._ConnectionState)
@@ -370,18 +376,25 @@ namespace LotusCore.Modules.Networking
                         );
                         break;
                     case ConnectionState.PLAY:
-                        /* Core_Engine.InvokeEvent(
+                        Core_Engine.InvokeEvent(
                             "PLAY_Packet_Received",
                             new PacketReceivedEventArgs(packet, connection._RemoteHost)
-                        ); */
-                        DisconnectFromServer(connection._RemoteHost);
-                        Core_Engine.SignalInteractiveResetServerHolds();
+                        );
+                        //DisconnectFromServer(connection._RemoteHost);
+                        //Core_Engine.SignalInteractiveResetServerHolds();
                         break;
                     default:
                         Logging.LogError(
                             $"ReceiveConnections State {connection._ConnectionState} Not Implemented"
                         );
                         DisconnectFromServer(connection._RemoteHost);
+                        if (
+                            _IsClientConnectedToPrimaryServer
+                            && _PrimaryClientServerConnection == connection._RemoteHost
+                        )
+                        {
+                            Core_Engine.SignalInteractiveResetServerHolds();
+                        }
                         Core_Engine.SignalInteractiveResetServerHolds();
                         return;
                 }
@@ -389,7 +402,13 @@ namespace LotusCore.Modules.Networking
             catch
             {
                 DisconnectFromServer(connection._RemoteHost);
-                Core_Engine.SignalInteractiveResetServerHolds();
+                if (
+                    _IsClientConnectedToPrimaryServer
+                    && _PrimaryClientServerConnection == connection._RemoteHost
+                )
+                {
+                    Core_Engine.SignalInteractiveResetServerHolds();
+                }
                 return;
             }
         }

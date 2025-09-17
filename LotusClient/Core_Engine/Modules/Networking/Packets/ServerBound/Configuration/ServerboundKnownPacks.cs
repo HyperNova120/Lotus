@@ -1,6 +1,6 @@
 using System.Text;
 using LotusCore.BaseClasses.Types;
-using LotusCore.Modules.GameStateHandler.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 using static LotusCore.Modules.Networking.Packets.ClientBound.Configuration.ConfigClientboundKnownPacks;
 
 namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration

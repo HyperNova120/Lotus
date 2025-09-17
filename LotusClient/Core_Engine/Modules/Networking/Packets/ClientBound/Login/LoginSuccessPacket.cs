@@ -32,7 +32,6 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
                 data = data[tmpSize..];
                 _Elements.Add(tmp);
             }
-
             return 16 + offset + arraySizeIncrementor;
         }
     }
