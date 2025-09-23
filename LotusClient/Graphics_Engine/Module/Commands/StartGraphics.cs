@@ -5,6 +5,13 @@ namespace Graphics_Engine.Commands
 {
     public class StartGraphicsCommand : ICommandBase
     {
+        private VulkanGraphics _vulkanGraphics;
+
+        public StartGraphicsCommand(VulkanGraphics vulkanGraphics)
+        {
+            this._vulkanGraphics = vulkanGraphics;
+        }
+
         public string GetCommandDescription()
         {
             return "Starts the graphics engine and opens the graphics window";
@@ -17,12 +24,9 @@ namespace Graphics_Engine.Commands
 
         public async Task ProcessCommand(string[] commandArgs)
         {
-            VulkanGraphics VG = LotusCore.Core_Engine.GetModule<VulkanGraphics>(
-                "VulkanGraphics"
-            )!;
             //Core_Engine.Core_Engine.CurrentState = Core_Engine.Core_Engine.State.Waiting;
             LotusCore.Core_Engine.SignalInteractiveHold(LotusCore.Core_Engine.State.Graphics);
-            VG.StartGraphicsThread();
+            _vulkanGraphics.StartGraphicsThread();
         }
     }
 }

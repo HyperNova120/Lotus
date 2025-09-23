@@ -25,7 +25,7 @@ namespace Graphics_Engine
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("graphics", new StartGraphicsCommand());
+            RegisterCommand.Invoke("graphics", new StartGraphicsCommand(this));
         }
 
         public void RegisterEvents(Action<string> RegisterEvent) { }
