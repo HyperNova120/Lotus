@@ -10,7 +10,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public PluginMessagePacket()
         {
-            this._Protocol_ID = 0x02;
+            this._protocol_ID = 0x02;
         }
 
         public override byte[] GetBytes()

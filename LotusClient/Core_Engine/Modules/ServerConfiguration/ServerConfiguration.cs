@@ -15,7 +15,7 @@ namespace LotusCore.Modules.ServerConfig
         public void RegisterEvents(Action<string> RegisterEvent)
         {
             RegisterEvent.Invoke("CONFIG_Complete");
-         }
+        }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
@@ -34,7 +34,7 @@ namespace LotusCore.Modules.ServerConfig
                 new EngineEventHandler(
                     (sender, args) =>
                     {
-                        ConnectionEventArgs connectionEventArgs = (ConnectionEventArgs)args;
+                        ConnectionEventArgs connectionEventArgs = (ConnectionEventArgs)args!;
                         /* configurationInternals.SendServerboundPluginMessage(
                             connectionEventArgs.remoteHost
                         );
@@ -42,7 +42,7 @@ namespace LotusCore.Modules.ServerConfig
                             connectionEventArgs.remoteHost
                         ); */
                         _ConfigurationInternals.SendConfigBrandAndClientInfo(
-                            connectionEventArgs._RemoteHost
+                            connectionEventArgs._remoteHostID
                         );
                         return null;
                     }
@@ -55,8 +55,8 @@ namespace LotusCore.Modules.ServerConfig
             try
             {
                 PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-                MinecraftServerPacket packet = eventArgs._Packet;
-                switch (packet._Protocol_ID)
+                MinecraftServerPacket packet = eventArgs._packet;
+                switch (packet._protocol_ID)
                 {
                     case 0x00:
                         _ConfigurationInternals.HandleCookieRequest(packet);
@@ -105,7 +105,7 @@ namespace LotusCore.Modules.ServerConfig
                         break;
                     default:
                         Logging.LogError(
-                            $"ServerConfiguration State 0x{packet._Protocol_ID:X} Not Implemented"
+                            $"ServerConfiguration State 0x{packet._protocol_ID:X} Not Implemented"
                         );
                         /* Core_Engine
                             .GetModule<Networking.Networking>("Networking")!

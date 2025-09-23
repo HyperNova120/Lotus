@@ -12,7 +12,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Status
 
         public StatusPingRequestPacket()
         {
-            _Protocol_ID = 0x01;
+            _protocol_ID = 0x01;
         }
     }
 }

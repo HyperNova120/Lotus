@@ -7,22 +7,24 @@ namespace LotusCore.Modules.Networking.Packets
 {
     public abstract class MinecraftPacket
     {
-        public int _Protocol_ID { get; set; } = 0x00;
+        public int _protocol_ID { get; set; } = 0x00;
 
         public abstract byte[] GetBytes();
+
+        public MinecraftPacket() { }
     }
 
     public class MinecraftServerPacket
     {
-        public int _Protocol_ID = 0x00;
-        public byte[] _Data;
-        public IPAddress _RemoteHost;
+        public int _protocol_ID = 0x00;
+        public byte[] _data;
+        public Guid _remoteHostID;
 
-        public MinecraftServerPacket(IPAddress remoteHost, int protocol_id, byte[] data)
+        public MinecraftServerPacket(Guid remoteHostID, int protocol_id, byte[] data)
         {
-            this._Data = data;
-            this._Protocol_ID = protocol_id;
-            this._RemoteHost = remoteHost;
+            this._data = data;
+            this._protocol_ID = protocol_id;
+            this._remoteHostID = remoteHostID;
         }
     }
 

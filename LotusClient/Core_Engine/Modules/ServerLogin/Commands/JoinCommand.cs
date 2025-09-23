@@ -1,11 +1,19 @@
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandlerModule;
 
 namespace LotusCore.Modules.ServerLogin.Commands
 {
     public class JoinCommand : ICommandBase
     {
+        LoginHandler _loginHandler;
+
+        public JoinCommand(LoginHandler loginHandler)
+        {
+            _loginHandler = loginHandler;
+        }
+
         public string GetCommandDescription()
         {
             return "Attempts to join the provided server and (optional)IP";
@@ -32,11 +40,15 @@ namespace LotusCore.Modules.ServerLogin.Commands
                 Console.WriteLine(GetCommandCorrectUsage());
                 return;
             }
-            LoginHandler loginHandler = Core_Engine.GetModule<LoginHandler>("LoginHandler")!;
+            /* LoginHandler loginHandler = Core_Engine.GetModule<LoginHandler>("LoginHandler")!;
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
-            )!;
-            if (networking._IsClientConnectedToPrimaryServer)
+            )!; */
+            if (
+                Core_Engine
+                    .InvokeEvent<GuidResult>("NETWORKING_GetServerConnectionInState", null)!
+                    ._result != null
+            )
             {
                 Console.WriteLine("you are already connected to a server");
                 return;
@@ -62,11 +74,11 @@ namespace LotusCore.Modules.ServerLogin.Commands
             commandArgs = tmp.ToArray();
             if (commandArgs.Length == 1)
             {
-                loginHandler.LoginToServer(commandArgs[0], isTransfer);
+                _loginHandler.LoginToServer(commandArgs[0], isTransfer);
             }
             else
             {
-                loginHandler.LoginToServer(
+                _loginHandler.LoginToServer(
                     commandArgs[0],
                     isTransfer,
                     ushort.Parse(commandArgs[1])

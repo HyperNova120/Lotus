@@ -8,7 +8,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public ConfigServerBoundKeepAlivePacket()
         {
-            _Protocol_ID = 0x04;
+            _protocol_ID = 0x04;
         }
 
         public override byte[] GetBytes()

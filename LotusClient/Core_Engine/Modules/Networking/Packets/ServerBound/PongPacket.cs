@@ -8,7 +8,7 @@ namespace LotusCore.Modules.Networking.Packets
 
         public PongPacket(int protocol_ID, int PongID)
         {
-            this._Protocol_ID = protocol_ID;
+            this._protocol_ID = protocol_ID;
             _PongID = PongID;
         }
 

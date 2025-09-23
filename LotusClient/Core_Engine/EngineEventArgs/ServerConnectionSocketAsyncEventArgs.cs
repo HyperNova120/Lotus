@@ -8,12 +8,12 @@ namespace LotusCore.EngineEventArgs
         /// <summary>
         /// server connection linked to this event
         /// </summary>
-        public IPAddress _RemoteHost { get; private set; }
+        public Guid _remoteHostID { get; private set; }
 
-        public ServerConnectionSocketAsyncEventArgs(IPAddress remoteHost)
+        public ServerConnectionSocketAsyncEventArgs(Guid remoteHostID)
             : base()
         {
-            this._RemoteHost = remoteHost;
+            this._remoteHostID = remoteHostID;
         }
     }
 }

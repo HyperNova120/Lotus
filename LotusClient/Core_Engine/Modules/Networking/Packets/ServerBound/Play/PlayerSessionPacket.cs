@@ -7,7 +7,7 @@ public class PlayerSessionPacket : MinecraftPacket
 {
     public PlayerSessionPacket()
     {
-        _Protocol_ID = 0x09;
+        _protocol_ID = 0x09;
     }
 
     public MinecraftUUID _UUID;

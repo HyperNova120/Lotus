@@ -9,7 +9,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
 
         public HandshakeExtraPacket()
         {
-            _Protocol_ID = 0xFE;
+            _protocol_ID = 0xFE;
         }
     }
 }

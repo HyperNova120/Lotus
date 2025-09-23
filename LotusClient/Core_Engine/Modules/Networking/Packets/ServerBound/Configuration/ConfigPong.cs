@@ -8,7 +8,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public ConfigPongPacket()
         {
-            _Protocol_ID = 0x05;
+            _protocol_ID = 0x05;
         }
 
         public override byte[] GetBytes()

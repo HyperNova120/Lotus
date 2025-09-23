@@ -9,6 +9,7 @@ using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
 using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
 using LotusCore.Modules.Networking.Packets.ServerBound.Status;
+using LotusCore.Modules.Networking.Types;
 using LotusCore.Modules.ServerList.Commands;
 using LotusCore.Utils;
 using LotusCore.Utils;
@@ -21,11 +22,9 @@ namespace LotusCore.Modules.ServerList
     public class ServerList : IModuleBase
     {
         private NBT _ServerListDat;
-        private Networking.Networking _networkingModule;
 
         public ServerList()
         {
-            _networkingModule = Core_Engine.GetModule<Networking.Networking>("Networking")!;
             _ServerListDat = new();
             _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
             //Logging.LogDebug(_ServerListDat.GetNBTAsString());
@@ -105,50 +104,66 @@ namespace LotusCore.Modules.ServerList
         private async Task<bool> HandshakeServer(TAG_Compound tmp)
         {
             TAG_String? ip = (TAG_String?)tmp.TryGetTag("ip");
+            ip.Value = ip.Value.ToLower();
             TAG_String? serverName = (TAG_String?)tmp.TryGetTag("name");
             if (ip == null)
             {
                 return false;
             }
-            IPAddress remoteHost;
-            (string? serverIP, int? port) = await ServerDNSLookup.GetServerDNSRecordAsync(ip.Value);
+            (string? serverIP, int? port) = await ServerDNSLookup.GetServerDNSRecordAsync(
+                ip.Value
+            );
             if (serverIP == null)
             {
                 //no such host
                 return false;
             }
-            remoteHost = IPAddress.Parse(serverIP);
-            //Logging.LogDebug($"ServerName:{serverName!.Value} IP:{remoteHost.ToString()}");
-            ServerConnection? connection = _networkingModule.GetServerConnection(remoteHost);
-            if (connection == null)
+
+            //Guid? remoteHostID = _networkingModule.ConnectToServer(serverIP, port ?? 25565);
+
+            Guid? remoteHostID = Core_Engine
+                .InvokeEvent<GuidResult>(
+                    "NETWORKING_ConnectToServer",
+                    new ConnectToServerArgs(serverIP, port ?? 25565)
+                )!
+                ._result;
+
+            if (remoteHostID == null)
             {
-                if (!_networkingModule.ConnectToServer(remoteHost.ToString(), port ?? 25565))
-                {
-                    //connection refused
-                    return false;
-                }
-                connection = _networkingModule.GetServerConnection(remoteHost)!;
+                //connection refused
+                return false;
             }
-            connection._ServerListEntry = tmp;
-            connection._ConnectionState = Networking.Networking.ConnectionState.STATUS;
-            _networkingModule.SendPacket(
-                remoteHost,
-                new HandshakePacket(ip.Value, HandshakePacket.Intent.Status, 25565)
-                {
-                    _Protocol_ID = 0x00,
-                    _NextState = (int)HandshakePacket.Intent.Status,
-                }
+
+            ServerConnection connection = Core_Engine
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(remoteHostID.Value)
+                )!
+                ._serverConnection!;
+
+            connection._serverListInfo._ServerListEntry = tmp;
+            connection._connectionState = Networking.Networking.ConnectionState.STATUS;
+            Core_Engine.InvokeEvent(
+                "NETWORKING_SendPacket",
+                new SendPacketArgs(
+                    connection._id,
+                    new HandshakePacket(ip.Value, HandshakePacket.Intent.Status, 25565)
+                    {
+                        _protocol_ID = 0x00,
+                        _NextState = (int)HandshakePacket.Intent.Status,
+                    }
+                )
             );
-            SendStatusRequest(remoteHost);
+            SendStatusRequest(remoteHostID.Value);
             return true;
         }
 
         public EngineEventResult? ProcessPacket(object? sender, IEngineEventArgs args)
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-            var packet = eventArgs._Packet;
+            var packet = eventArgs._packet;
             //Logging.LogDebug($"StatusHandler State 0x{packet._Protocol_ID:X}");
-            switch (packet._Protocol_ID)
+            switch (packet._protocol_ID)
             {
                 case 0x00:
                     HandleStatusResponse(packet);
@@ -158,11 +173,13 @@ namespace LotusCore.Modules.ServerList
                     break;
                 default:
                     Logging.LogError(
-                        $"StatusHandler State 0x{packet._Protocol_ID:X} Not Implemented"
+                        $"StatusHandler State 0x{packet._protocol_ID:X} Not Implemented"
                     );
-                    Core_Engine
-                        .GetModule<Networking.Networking>("Networking")!
-                        .DisconnectFromServer(eventArgs._RemoteHost);
+
+                    Core_Engine.InvokeEvent(
+                        "NETWORKING_DisconnectFromServer",
+                        new GuidEngineArgs(eventArgs._remoteHostID)
+                    );
                     break;
             }
             return null;
@@ -173,16 +190,23 @@ namespace LotusCore.Modules.ServerList
             try
             {
                 int offset = 0;
-                long value = NetworkLong.DecodeBytes(packet._Data, ref offset);
-                ServerConnection connection = _networkingModule.GetServerConnection(
-                    packet._RemoteHost
-                )!;
-                connection._LastPingLength = (
-                    DateTime.UtcNow - connection._LastPingTime
+                long value = NetworkLong.DecodeBytes(packet._data, ref offset);
+                ServerConnection connection = Core_Engine
+                    .InvokeEvent<ServerConnectionResult>(
+                        "NETWORKING_GetServerConnection",
+                        new GuidEngineArgs(packet._remoteHostID)
+                    )!
+                    ._serverConnection!;
+                connection._serverListInfo._LastPingLength = (
+                    DateTime.UtcNow - connection._serverListInfo._LastPingTime
                 ).TotalMilliseconds;
 
-                connection._ServerListEntry.WriteTag<TAG_Double>(
-                    new TAG_Double() { _Name = "ping", Value = connection._LastPingLength }
+                connection._serverListInfo._ServerListEntry.WriteTag<TAG_Double>(
+                    new TAG_Double()
+                    {
+                        _Name = "ping",
+                        Value = connection._serverListInfo._LastPingLength,
+                    }
                 );
                 /* Logging.LogDebug(
                     $"Response: {value} Ping:{(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - value}m"
@@ -192,45 +216,71 @@ namespace LotusCore.Modules.ServerList
             {
                 Logging.LogDebug(e.ToString());
             }
-            _networkingModule.DisconnectFromServer(packet._RemoteHost);
+            Core_Engine.InvokeEvent(
+                "NETWORKING_DisconnectFromServer",
+                new GuidEngineArgs(packet._remoteHostID)
+            );
         }
 
         private void HandleStatusResponse(MinecraftServerPacket packet)
         {
             int offset = 0;
-            string value = StringN.DecodeBytes(packet._Data, ref offset);
+            string value = StringN.DecodeBytes(packet._data, ref offset);
             //Logging.LogDebug($"Response Size: {size}\n{value.Replace("\r", "").Replace("\n", "")}");
-            ServerConnection connection = _networkingModule.GetServerConnection(
-                packet._RemoteHost
-            )!;
-            connection._ServerListEntry.WriteTag<TAG_String>(
+
+            ServerConnection connection = Core_Engine
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(packet._remoteHostID)
+                )!
+                ._serverConnection!;
+            connection._serverListInfo._ServerListEntry.WriteTag(
                 new TAG_String()
                 {
                     _Name = "serverlist_info",
                     Value = value.Replace("\r", "").Replace("\n", ""),
                 }
             );
-            SendPingRequest(packet._RemoteHost);
+            SendPingRequest(packet._remoteHostID);
         }
 
-        private void SendPingRequest(IPAddress remoteHost)
+        private void SendPingRequest(Guid remoteHostID)
         {
-            ServerConnection connection = _networkingModule.GetServerConnection(remoteHost)!;
-            var connectionState = connection._ConnectionState;
+            ServerConnection connection = Core_Engine
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(remoteHostID)
+                )!
+                ._serverConnection!;
+            var connectionState = connection._connectionState;
             if (connectionState == Networking.Networking.ConnectionState.STATUS)
             {
-                connection._LastPingTime = DateTime.UtcNow;
-                _networkingModule.SendPacket(connection._RemoteHost, new StatusPingRequestPacket());
+                connection._serverListInfo._LastPingTime = DateTime.UtcNow;
+                //_networkingModule.SendPacket(connection._id, new StatusPingRequestPacket());
+                Core_Engine.InvokeEvent(
+                    "NETWORKING_SendPacket",
+                    new SendPacketArgs(connection._id, new StatusPingRequestPacket())
+                );
             }
         }
 
-        private void SendStatusRequest(IPAddress remoteHost)
+        private void SendStatusRequest(Guid remoteHostID)
         {
-            ServerConnection connection = _networkingModule.GetServerConnection(remoteHost)!;
-            var connectionState = connection._ConnectionState;
+            ServerConnection connection = Core_Engine
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(remoteHostID)
+                )!
+                ._serverConnection!;
+            var connectionState = connection._connectionState;
             if (connectionState == Networking.Networking.ConnectionState.STATUS)
             {
-                _networkingModule.SendPacket(connection._RemoteHost, new EmptyPacket(0x00));
+                //_networkingModule.SendPacket(connection._id, new EmptyPacket(0x00));
+
+                Core_Engine.InvokeEvent(
+                    "NETWORKING_SendPacket",
+                    new SendPacketArgs(connection._id, new EmptyPacket(0x00))
+                );
             }
         }
 

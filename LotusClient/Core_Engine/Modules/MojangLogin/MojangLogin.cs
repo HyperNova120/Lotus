@@ -10,6 +10,7 @@ using LotusCore.Modules.MojangLogin.Commands;
 using LotusCore.Modules.MojangLogin.Internals;
 using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
 using LotusCore.Modules.MojangLogin.Models;
+using LotusCore.Modules.MojangLogin.Types;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Broker;
 
@@ -17,17 +18,47 @@ namespace LotusCore.Modules.MojangLogin
 {
     public class MojangLogin : IModuleBase
     {
-        public MinecraftProfile? _UserProfile { get; private set; } = null;
-        public MinecraftAuthResponseModel? _MinecraftAuth { get; private set; } = null;
+        public MinecraftProfile? _userProfile { get; private set; } = null;
+        public MinecraftAuthResponseModel? _minecraftAuth { get; private set; } = null;
 
-        private readonly MojangLoginInternals _Internals = new();
+        private readonly MojangLoginInternals _internals = new();
 
         public void RegisterEvents(Action<string> RegisterEvent)
         {
             RegisterEvent.Invoke("MOJANGLOGIN_loginSuccessful");
+            RegisterEvent.Invoke("MOJANGLOGIN_GetUserProfile");
+            RegisterEvent.Invoke("MOJANGLOGIN_GetMinecraftAuth");
+            RegisterEvent.Invoke("MOJANGLOGIN_LoginAsync");
         }
 
-        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
+        {
+            SubscribeToEvent.Invoke(
+                "MOJANGLOGIN_GetUserProfile",
+                new EngineEventHandler(
+                    (sender, _) =>
+                    {
+                        return new UserProfileResult(_userProfile);
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "MOJANGLOGIN_GetMinecraftAuth",
+                new EngineEventHandler(
+                    (sender, _) =>
+                    {
+                        return new MinecraftAuthResult(_minecraftAuth);
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "MOJANGLOGIN_LoginAsync",
+                (sender, _) =>
+                {
+                    return new BoolResult(LoginAsync().Result);
+                }
+            );
+        }
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
@@ -38,7 +69,7 @@ namespace LotusCore.Modules.MojangLogin
         {
             try
             {
-                AuthenticationResult? AuthResult = await _Internals.GetUserAuth();
+                AuthenticationResult? AuthResult = await _internals.GetUserAuth();
                 if (AuthResult == null)
                 {
                     Core_Engine.SignalInteractiveFree(Core_Engine.State.AccountLogin);
@@ -47,7 +78,7 @@ namespace LotusCore.Modules.MojangLogin
                 }
                 //Logging.LogDebug($"AuthResult.AccessToken:{AuthResult.AccessToken}");
 
-                TokenAuthCert? XboxLiveAuth = await _Internals.AuthWithXboxLive(
+                TokenAuthCert? XboxLiveAuth = await _internals.AuthWithXboxLive(
                     AuthResult.AccessToken
                 );
                 if (XboxLiveAuth == null)
@@ -57,7 +88,7 @@ namespace LotusCore.Modules.MojangLogin
                     return false;
                 }
 
-                TokenAuthCert? MinecraftXSTSCert = await _Internals.ObtainMinecraftXSTSToken(
+                TokenAuthCert? MinecraftXSTSCert = await _internals.ObtainMinecraftXSTSToken(
                     XboxLiveAuth
                 );
                 if (MinecraftXSTSCert == null)
@@ -67,18 +98,18 @@ namespace LotusCore.Modules.MojangLogin
                     return false;
                 }
 
-                _MinecraftAuth = await _Internals.AuthWithMinecraft(
+                _minecraftAuth = await _internals.AuthWithMinecraft(
                     XboxLiveAuth,
                     MinecraftXSTSCert
                 );
-                if (_MinecraftAuth == null)
+                if (_minecraftAuth == null)
                 {
                     Core_Engine.SignalInteractiveFree(Core_Engine.State.AccountLogin);
                     Logging.LogError("Auth Fail", true);
                     return false;
                 }
 
-                if (!await _Internals.CheckGameOwned(_MinecraftAuth))
+                if (!await _internals.CheckGameOwned(_minecraftAuth))
                 {
                     Logging.LogInfo("Your account does not own Minecraft");
                     Core_Engine.SignalInteractiveFree(Core_Engine.State.AccountLogin);
@@ -86,8 +117,8 @@ namespace LotusCore.Modules.MojangLogin
                     return false;
                 }
 
-                _UserProfile = await _Internals.GetUserMinecraftProfile(_MinecraftAuth);
-                if (_UserProfile == null)
+                _userProfile = await _internals.GetUserMinecraftProfile(_minecraftAuth);
+                if (_userProfile == null)
                 {
                     Logging.LogError("Unable to get Minecraft profile");
                     Core_Engine.SignalInteractiveFree(Core_Engine.State.AccountLogin);
@@ -100,8 +131,8 @@ namespace LotusCore.Modules.MojangLogin
                     "MOJANGLOGIN_loginSuccessful",
                     new MojangLoginEventArgs()
                     {
-                        _AuthModel = _MinecraftAuth,
-                        _UserProfile = this._UserProfile,
+                        _AuthModel = _minecraftAuth,
+                        _UserProfile = this._userProfile,
                     }
                 );
                 return true;

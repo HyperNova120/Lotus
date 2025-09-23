@@ -16,7 +16,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public ClientInformationPacket()
         {
-            this._Protocol_ID = 0x00;
+            this._protocol_ID = 0x00;
         }
 
         public override byte[] GetBytes()

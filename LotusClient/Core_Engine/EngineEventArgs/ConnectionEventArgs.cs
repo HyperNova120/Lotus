@@ -5,11 +5,11 @@ namespace LotusCore.EngineEventArgs
 {
     public class ConnectionEventArgs : IEngineEventArgs
     {
-        public IPAddress _RemoteHost { get; private set; }
+        public Guid _remoteHostID { get; private set; }
 
-        public ConnectionEventArgs(IPAddress remoteHost)
+        public ConnectionEventArgs(Guid remoteHostID)
         {
-            this._RemoteHost = remoteHost;
+            this._remoteHostID = remoteHostID;
         }
     }
 }

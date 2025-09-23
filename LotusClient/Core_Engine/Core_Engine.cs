@@ -153,7 +153,7 @@ public static class Core_Engine
     //Initiate Core Engine
     //========================
 
-    public static T? GetModule<T>(string ModuleIdentifier)
+    private static T? GetModule<T>(string ModuleIdentifier)
     {
         if (!_Modules.ContainsKey(ModuleIdentifier))
         {
@@ -234,7 +234,8 @@ public static class Core_Engine
         await _Commands[command].ProcessCommand(args);
     }
 
-    public static EngineEventResult? InvokeEvent(string EventIdentifier, IEngineEventArgs args)
+    public static T? InvokeEvent<T>(string EventIdentifier, IEngineEventArgs? args)
+        where T : EngineEventResult
     {
         if (!_Events.ContainsKey(EventIdentifier))
         {
@@ -248,7 +249,43 @@ public static class Core_Engine
             Logging.LogError($"Event {EventIdentifier} null");
             return null;
         }
-        return _Events[EventIdentifier].Invoke(null, args);
+        try
+        {
+            return (T?)_Events[EventIdentifier].Invoke(null, args);
+        }
+        catch (Exception e)
+        {
+            Logging.LogError($"CoreEngine.InvokeEvent: EventIdentifier: {EventIdentifier}, \n{e}");
+            return null;
+        }
+    }
+
+    public static T? InvokeEvent<T>(string EventIdentifier)
+        where T : EngineEventResult
+    {
+        return InvokeEvent<T>(EventIdentifier, null);
+    }
+
+    public static void InvokeEvent(string EventIdentifier, IEngineEventArgs? args)
+    {
+        if (!_Events.ContainsKey(EventIdentifier))
+        {
+            throw new IdentifierNotFoundException(
+                $"Event {EventIdentifier} has not been registered"
+            );
+        }
+        if (_Events[EventIdentifier] == null)
+        {
+            //throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
+            Logging.LogError($"Event {EventIdentifier} null");
+            return;
+        }
+        _Events[EventIdentifier].Invoke(null, args);
+    }
+
+    public static void InvokeEvent(string EventIdentifier)
+    {
+        InvokeEvent(EventIdentifier, null);
     }
 
     //=========START===========

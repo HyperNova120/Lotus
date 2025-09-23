@@ -28,11 +28,10 @@ namespace LotusCore.Modules.ServerLogin.Commands
             {
                 serverListName += (serverListName == "") ? s : $" {s}";
             }
-            ServerListServerIPResult? result = (ServerListServerIPResult?)
-                Core_Engine.InvokeEvent(
-                    "ServerListIP_Request",
-                    new ServerListIPRequestEventArgs(serverListName)
-                );
+            ServerListServerIPResult result = Core_Engine.InvokeEvent<ServerListServerIPResult>(
+                "ServerListIP_Request",
+                new ServerListIPRequestEventArgs(serverListName)
+            )!;
             if (result == null || (result != null && result._ip == ""))
             {
                 Console.WriteLine("Server not found in server list");

@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
+using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.MojangLogin.Models;
+using LotusCore.Modules.MojangLogin.Types;
 
 namespace LotusCore.Modules.MojangLogin.Commands
 {
@@ -18,24 +20,29 @@ namespace LotusCore.Modules.MojangLogin.Commands
 
         public async Task ProcessCommand(string[] commandArgs)
         {
-            var mojangLogin = Core_Engine.GetModule<MojangLogin>("MojangLogin")!;
-            if (mojangLogin._UserProfile != null)
+            var userProfile = Core_Engine
+                .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
+                ._userProfile;
+            if (userProfile != null)
             {
-                Console.WriteLine(
-                    "User Already Signed into Account " + mojangLogin._UserProfile.name
-                );
+                Console.WriteLine("User Already Signed into Account " + userProfile.name);
                 return;
             }
 
             Core_Engine.SignalInteractiveHold(Core_Engine.State.AccountLogin);
-            await mojangLogin.LoginAsync();
-            if (mojangLogin._UserProfile == null)
+            bool sucessfullSignIn = Core_Engine
+                .InvokeEvent<BoolResult>("MOJANGLOGIN_LoginAsync", null)!
+                ._result;
+            userProfile = Core_Engine
+                .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
+                ._userProfile;
+            if (!sucessfullSignIn)
             {
                 Logging.LogError("Failed to sign in");
             }
             else
             {
-                Logging.LogInfo("Signed in as " + mojangLogin._UserProfile!.name);
+                Logging.LogInfo("Signed in as " + userProfile!.name);
             }
         }
     }

@@ -3,9 +3,12 @@ using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.MojangLogin.Commands;
+using LotusCore.Modules.MojangLogin.Models;
+using LotusCore.Modules.MojangLogin.Types;
 using LotusCore.Modules.Networking.Packets;
 using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
 using LotusCore.Modules.Networking.Packets.ServerBound.Login;
+using LotusCore.Modules.Networking.Types;
 using LotusCore.Modules.ServerLogin.Commands;
 using LotusCore.Modules.ServerLogin.Internals;
 using LotusCore.Utils;
@@ -19,7 +22,7 @@ namespace LotusCore.Modules.ServerLogin
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("join", new JoinCommand());
+            RegisterCommand.Invoke("join", new JoinCommand(this));
             RegisterCommand.Invoke("listjoin", new ListJoinCommand());
         }
 
@@ -48,8 +51,8 @@ namespace LotusCore.Modules.ServerLogin
             try
             {
                 PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-                MinecraftServerPacket packet = eventArgs._Packet;
-                switch (packet._Protocol_ID)
+                MinecraftServerPacket packet = eventArgs._packet;
+                switch (packet._protocol_ID)
                 {
                     case 0x00:
                         internals.HandleLoginDisconnect(packet);
@@ -71,11 +74,13 @@ namespace LotusCore.Modules.ServerLogin
                         break;
                     default:
                         Logging.LogError(
-                            $"LoginHandler State 0x{packet._Protocol_ID:X} Not Implemented"
+                            $"LoginHandler State 0x{packet._protocol_ID:X} Not Implemented"
                         );
-                        Core_Engine
-                            .GetModule<Networking.Networking>("Networking")!
-                            .DisconnectFromServer(eventArgs._RemoteHost);
+
+                        Core_Engine.InvokeEvent(
+                            "NETWORKING_DisconnectFromServer",
+                            new GuidEngineArgs(eventArgs._remoteHostID)
+                        );
                         Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
@@ -93,12 +98,12 @@ namespace LotusCore.Modules.ServerLogin
 
         public void LoginToServer(string serverIp, bool isTransfer, ushort port = 25565)
         {
-            Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
+            /* Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
             )!;
             MojangLogin.MojangLogin mojangLogin = Core_Engine.GetModule<MojangLogin.MojangLogin>(
                 "MojangLogin"
-            )!;
+            )!; */
 
             IPAddress remoteHost;
 
@@ -117,7 +122,11 @@ namespace LotusCore.Modules.ServerLogin
                 port = (ushort)(srvPort ?? 25565);
             }
 
-            if (mojangLogin._UserProfile == null)
+            if (
+                Core_Engine
+                    .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
+                    ._userProfile == null
+            )
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
                 /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
@@ -130,45 +139,78 @@ namespace LotusCore.Modules.ServerLogin
             try
             {
                 Logging.LogDebug($"\tisTransfer:{isTransfer}");
-                if (networking.GetServerConnection(remoteHost) != null)
+                var conGuid = Core_Engine
+                    .InvokeEvent<GuidResult>(
+                        "NETWORKING_GetServerConnectionInState",
+                        new GetServerConnectionInStateArgs(
+                            remoteHost,
+                            [
+                                ConnectionState.PLAY,
+                                ConnectionState.CONFIGURATION,
+                                ConnectionState.LOGIN,
+                            ]
+                        )
+                    )!
+                    ._result;
+                if (conGuid != null)
                 {
                     //disconnect if already connected
-                    networking.DisconnectFromServer(remoteHost);
+                    Core_Engine.InvokeEvent(
+                        "NETWORKING_DisconnectFromServer",
+                        new GuidEngineArgs((Guid)conGuid)
+                    );
                 }
 
-                if (!networking.ConnectToServer(remoteHost.ToString(), port))
+                conGuid = Core_Engine
+                    .InvokeEvent<GuidResult>(
+                        "NETWORKING_ConnectToServer",
+                        new ConnectToServerArgs(remoteHost.ToString(), port)
+                    )!
+                    ._result;
+
+                if (conGuid == null)
                 {
                     Logging.LogInfo("Unable to connect to server");
                     Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                     return;
                 }
-                
-                networking.GetServerConnection(remoteHost)!._ConnectionState =
-                    ConnectionState.LOGIN;
-                networking.SendPacket(
-                    remoteHost,
-                    new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
-                    {
-                        _NextState = isTransfer
-                            ? (int)HandshakePacket.Intent.Transfer
-                            : (int)HandshakePacket.Intent.Login,
-                    }
+
+                Core_Engine
+                    .InvokeEvent<ServerConnectionResult>(
+                        "NETWORKING_GetServerConnection",
+                        new GuidEngineArgs((Guid)conGuid)
+                    )!
+                    ._serverConnection!._connectionState = ConnectionState.LOGIN;
+
+                Core_Engine.InvokeEvent(
+                    "NETWORKING_SendPacket",
+                    new SendPacketArgs(
+                        (Guid)conGuid,
+                        new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                        {
+                            _NextState = isTransfer
+                                ? (int)HandshakePacket.Intent.Transfer
+                                : (int)HandshakePacket.Intent.Login,
+                        }
+                    )
                 );
-                /* Logging.LogDebug(
-                    $"ServerLogin; LoginToServer; username:{mojangLogin.userProfile!.name}; uuid:{new Guid(mojangLogin.userProfile!.id)}"
-                ); */
-                networking.SendPacket(
-                    remoteHost,
-                    new LoginStartPacket(
-                        mojangLogin._UserProfile!.name,
-                        new Guid(mojangLogin._UserProfile!.id)
+
+                MinecraftProfile userProfile = Core_Engine
+                    .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
+                    ._userProfile!;
+
+                Core_Engine.InvokeEvent(
+                    "NETWORKING_SendPacket",
+                    new SendPacketArgs(
+                        (Guid)conGuid,
+                        new LoginStartPacket(userProfile.name, new Guid(userProfile.id))
                     )
                 );
             }
             catch (Exception e)
             {
                 Logging.LogError($"LoginToServer Failed: {e.ToString()}");
-                networking.DisconnectFromServer(remoteHost);
+                //networking.DisconnectFromServer(remoteHost);
                 Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }

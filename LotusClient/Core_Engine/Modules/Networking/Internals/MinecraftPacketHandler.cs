@@ -21,7 +21,7 @@ namespace LotusCore.Modules.Networking.Internals
         {
             if (!_IsCompressionEnabled || _CompresionThreshold < 0)
             {
-                byte[] packet_id = VarInt_VarLong.EncodeInt(data._Protocol_ID);
+                byte[] packet_id = VarInt_VarLong.EncodeInt(data._protocol_ID);
                 byte[] packet_data = data.GetBytes();
                 byte[] packet_length = VarInt_VarLong.EncodeInt(
                     packet_id.Length + packet_data.Length
@@ -29,13 +29,13 @@ namespace LotusCore.Modules.Networking.Internals
                 byte[] packetBytes = [.. packet_length, .. packet_id, .. packet_data];
                 if (_IsEncryptionEnabled)
                 {
-                    packetBytes = connection._Encryption.EncryptData(packetBytes);
+                    packetBytes = connection._encryption.EncryptData(packetBytes);
                 }
                 return packetBytes;
             }
             else
             {
-                byte[] packet_id = VarInt_VarLong.EncodeInt(data._Protocol_ID);
+                byte[] packet_id = VarInt_VarLong.EncodeInt(data._protocol_ID);
                 byte[] packet_data = data.GetBytes();
                 if (packet_id.Length + packet_data.Length < _CompresionThreshold)
                 {
@@ -54,7 +54,7 @@ namespace LotusCore.Modules.Networking.Internals
 
                     if (_IsEncryptionEnabled)
                     {
-                        packetBytes = connection._Encryption.EncryptData(packetBytes);
+                        packetBytes = connection._encryption.EncryptData(packetBytes);
                     }
                     return packetBytes;
                 }
@@ -75,7 +75,7 @@ namespace LotusCore.Modules.Networking.Internals
 
                     if (_IsEncryptionEnabled)
                     {
-                        packetBytes = connection._Encryption.EncryptData(packetBytes);
+                        packetBytes = connection._encryption.EncryptData(packetBytes);
                     }
                     return packetBytes;
                 }
@@ -83,23 +83,17 @@ namespace LotusCore.Modules.Networking.Internals
         }
 
         public (MinecraftServerPacket? firstpacket, byte[] remainingBytes) DecodePacket(
-            IPAddress remoteHost,
+            Guid remoteHostID,
             byte[] bytes
         )
         {
             if (_IsCompressionEnabled)
             {
-                //has packet length
-                //Logging.LogDebug("Decoding Compressed Packet");
-
                 int packetLengthnumBytes = 0;
                 int packetLength = VarInt_VarLong.DecodeVarInt(bytes, ref packetLengthnumBytes);
 
                 if (packetLength > (bytes.Length - packetLengthnumBytes))
                 {
-                    /* Logging.LogError(
-                        $"MinecraftPacketHandler CompressionEnabled 1; DecodePacket ERROR: Size Mismatch, PacketLength:{packetLength}, RemainingBytes:{bytes.Length}"
-                    ); */
                     return (null, bytes);
                 }
                 bytes = bytes[packetLengthnumBytes..];
@@ -127,7 +121,7 @@ namespace LotusCore.Modules.Networking.Internals
                 int packetIDNumBytes = 0;
                 int packetID = VarInt_VarLong.DecodeVarInt(packetBytes, ref packetIDNumBytes);
                 packetBytes = packetBytes[packetIDNumBytes..];
-                return (new MinecraftServerPacket(remoteHost, packetID, packetBytes), bytes);
+                return (new MinecraftServerPacket(remoteHostID, packetID, packetBytes), bytes);
             }
             else
             {
@@ -136,28 +130,9 @@ namespace LotusCore.Modules.Networking.Internals
                 int numDataBytes = 0;
                 int dataLength = VarInt_VarLong.DecodeVarInt(bytes, ref numDataBytes);
 
-                /* Logging.LogDebug(
-                    $"DECODE PACKET: Total Length:{totalLength} packetLength:{numDataBytes + dataLength}"
-                ); */
-
                 if (dataLength > bytes.Length)
                 {
-                    /* Logging.LogDebug(
-                        $"Received Packet Data Length mismatch with actual length; dataLength:{dataLength} bytes.Length:{bytes.Length}"
-                    ); */
-                    int packetIDNumBytes2 = 0;
-                    int packetID2 = VarInt_VarLong.DecodeVarInt(
-                        bytes[numDataBytes..],
-                        ref packetIDNumBytes2
-                    );
-                    //Logging.LogDebug($"DECODE PACKET INCOMPLETE PACKET: PacketID:{packetID2}");
                     return (null, bytes);
-                }
-                else
-                {
-                    /* Logging.LogDebug(
-                        $"Received Packet Data Length: {dataLength} Remaining Byte Length: {bytes.Length}"
-                    ); */
                 }
                 bytes = bytes[numDataBytes..];
 
@@ -168,7 +143,7 @@ namespace LotusCore.Modules.Networking.Internals
                 int packetID = VarInt_VarLong.DecodeVarInt(packetBytes, ref packetIDNumBytes);
                 packetBytes = packetBytes[packetIDNumBytes..];
 
-                return (new(remoteHost, packetID, packetBytes), bytes);
+                return (new(remoteHostID, packetID, packetBytes), bytes);
             }
         }
     }

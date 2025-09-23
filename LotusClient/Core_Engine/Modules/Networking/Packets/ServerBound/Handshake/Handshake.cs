@@ -1,4 +1,5 @@
 using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.Networking.Types;
 
 namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
 {
@@ -25,7 +26,10 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
             return
             [
                 .. VarInt_VarLong.EncodeInt(
-                    (int)Core_Engine.GetModule<Networking>("Networking")!._ProtocolVersion
+                    (int)
+                        Core_Engine
+                            .InvokeEvent<ProtocolVersionResult>("NETWORKING_Version", null)!
+                            ._version
                 ),
                 .. StringN.GetBytes(_ServerAddress),
                 .. BitConverter.GetBytes(_ServerPort),

@@ -9,7 +9,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public ConfigResourcePackResponse()
         {
-            _Protocol_ID = 0x06;
+            _protocol_ID = 0x06;
         }
 
         public override byte[] GetBytes()

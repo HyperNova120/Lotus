@@ -6,7 +6,7 @@ namespace LotusCore.EngineEventArgs;
 
 public class PluginMessageReceivedEventArgs : IEngineEventArgs
 {
-    public IPAddress _RemoteHost { get; private set; }
+    public Guid _RemoteHost { get; private set; }
 
     public ConnectionState _ConnectionState { get; private set; }
 
@@ -17,14 +17,14 @@ public class PluginMessageReceivedEventArgs : IEngineEventArgs
     public byte[] _Data { get; private set; }
 
     public PluginMessageReceivedEventArgs(
-        IPAddress remoteHost,
+        Guid remoteHostID,
         ConnectionState connectionState,
         Identifier channel,
         byte[] data,
         int? messageID = null
     )
     {
-        _RemoteHost = remoteHost;
+        _RemoteHost = remoteHostID;
         _ConnectionState = connectionState;
         _Channel = channel;
         _Data = data;

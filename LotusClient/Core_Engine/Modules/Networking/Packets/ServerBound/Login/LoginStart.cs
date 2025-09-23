@@ -10,7 +10,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Login
 
         public LoginStartPacket(string username, Guid uuid)
         {
-            _Protocol_ID = 0x00;
+            _protocol_ID = 0x00;
             this._Username = username;
             this._uuid = uuid;
         }

@@ -10,39 +10,62 @@ namespace LotusCore.Modules.Networking.Internals
 {
     public class ServerConnection
     {
-        public Socket? _TcpSocket;
-        public ConnectionState _ConnectionState;
-        public Encryption _Encryption;
-        public MinecraftPacketHandler _MinecraftPacketHandler;
+        public Socket? _tcpSocket;
 
-        public ServerConnectionSocketAsyncEventArgs _ServerConnectionSocketAsyncEventArgs;
+        public Guid _id;
 
-        public IPAddress _RemoteHost { get; private set; }
-        public int _RemotePort { get; private set; }
+        public ConnectionState _connectionState;
 
-        public byte[] _IncompletePacketBytesBuffer = [];
-        public List<byte> _DataToSendBuffer = new();
+        public Encryption _encryption;
 
-        public bool _ActiveBundleDelimiter = false;
+        public MinecraftPacketHandler _minecraftPacketHandler;
 
-        public Queue<MinecraftServerPacket> _BundledPackets = new();
+        public ServerConnectionSocketAsyncEventArgs _serverConnectionSocketAsyncEventArgs;
 
+        public ConnectionInfo _connectionInfo;
+
+        public PacketInfo _packetInfo;
+
+        public ServerListInfo _serverListInfo;
+
+        public ServerConnection(string serverIp, int port, Guid id)
+        {
+            _packetInfo = new();
+            _serverListInfo = new();
+            _connectionInfo = new();
+            _id = id;
+            _connectionInfo._remoteHost = IPAddress.Parse(serverIp);
+            _connectionInfo._remotePort = port;
+            _tcpSocket = null;
+            _connectionState = ConnectionState.NONE;
+            _encryption = new();
+            _minecraftPacketHandler = new();
+            _serverConnectionSocketAsyncEventArgs = new(_id);
+        }
+    }
+
+    public struct ConnectionInfo
+    {
+        public IPAddress _remoteHost { get; set; }
+        public int _remotePort { get; set; }
+    }
+
+    public class PacketInfo
+    {
+        public byte[] _incompletePacketBytesBuffer = [];
+        public List<byte> _dataToSendBuffer = new();
+
+        public bool _activeBundleDelimiter = false;
+
+        public Queue<MinecraftServerPacket> _bundledPackets = new();
+    }
+
+    public class ServerListInfo
+    {
         public DateTime _LastPingTime;
 
         public double _LastPingLength;
 
         public TAG_Compound _ServerListEntry;
-
-        public ServerConnection(string serverAddress, int port)
-        {
-            (string? serverIP, _) = ServerDNSLookup.GetServerDNSRecord(serverAddress);
-            _RemoteHost = IPAddress.Parse(serverIP!);
-            _RemotePort = port;
-            _TcpSocket = null;
-            _ConnectionState = ConnectionState.NONE;
-            _Encryption = new();
-            _MinecraftPacketHandler = new();
-            _ServerConnectionSocketAsyncEventArgs = new(_RemoteHost);
-        }
     }
 }

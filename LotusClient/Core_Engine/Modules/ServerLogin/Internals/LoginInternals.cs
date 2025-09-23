@@ -5,6 +5,9 @@ using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandlerModule;
+using LotusCore.Modules.GameStateHandlerModule.Types;
+using LotusCore.Modules.MojangLogin.Types;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Models;
 using LotusCore.Modules.Networking.Packets;
@@ -13,6 +16,7 @@ using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
 using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
 using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
 using LotusCore.Modules.Networking.Packets.ServerBound.Login;
+using LotusCore.Modules.Networking.Types;
 using LotusCore.Utils;
 using static LotusCore.Modules.Networking.Networking;
 
@@ -20,32 +24,26 @@ namespace LotusCore.Modules.ServerLogin.Internals
 {
     public class ServerLoginInternals
     {
-        private IGameStateHandler _GameStateHandler;
-        private Networking.Networking _NetworkingManager;
-
         private enum RegisteredEventIdentifiers
         {
             SERVERLOGIN_loginSuccessful,
             CONFIG_Start_Config_Process,
         }
 
-        public ServerLoginInternals()
-        {
-            _GameStateHandler = Core_Engine.GetModule<IGameStateHandler>("GameStateHandler")!;
-            _NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
-        }
+        public ServerLoginInternals() { }
 
         public void HandleLoginDisconnect(MinecraftServerPacket packet)
         {
             Logging.LogInfo(
-                $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet._Data)}"
+                $"Client disconnected during login, Reason:{Encoding.UTF8.GetString(packet._data)}"
             );
             NBT test = new(true);
-            test.ReadFromBytes(packet._Data, true);
+            test.ReadFromBytes(packet._data, true);
             Console.WriteLine(test.GetNBTAsString());
-            Core_Engine
-                .GetModule<Networking.Networking>("Networking")!
-                .DisconnectFromServer(packet._RemoteHost);
+            Core_Engine.InvokeEvent(
+                "NETWORKING_DisconnectFromServer",
+                new GuidEngineArgs(packet._remoteHostID)
+            );
             //Core_Engine.CurrentState = Core_Engine.State.Interactive;
             Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
         }
@@ -53,9 +51,9 @@ namespace LotusCore.Modules.ServerLogin.Internals
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
         {
             int offset = 0;
-            string serverID = StringN.DecodeBytes(packet._Data, ref offset);
+            string serverID = StringN.DecodeBytes(packet._data, ref offset);
 
-            byte[] remainingBytes = packet._Data[offset..];
+            byte[] remainingBytes = packet._data[offset..];
             (byte[] PublicKey, int PublicKeyBytes) = PrefixedArray.DecodeBytes(remainingBytes);
 
             remainingBytes = remainingBytes[PublicKeyBytes..];
@@ -67,9 +65,14 @@ namespace LotusCore.Modules.ServerLogin.Internals
             try
             {
                 string hash = Core_Engine
-                    .GetModule<Networking.Networking>("Networking")!
-                    .GetServerConnection(packet._RemoteHost)!
-                    ._Encryption.GenerateMinecraftAuthenticationHash(serverID, PublicKey);
+                    .InvokeEvent<ServerConnectionResult>(
+                        "NETWORKING_GetServerConnection",
+                        new GuidEngineArgs(packet._remoteHostID)
+                    )!
+                    ._serverConnection!._encryption.GenerateMinecraftAuthenticationHash(
+                        serverID,
+                        PublicKey
+                    );
                 if (ShouldAuth)
                 {
                     await AuthenticateWithMinecraftServer(hash);
@@ -84,22 +87,28 @@ namespace LotusCore.Modules.ServerLogin.Internals
                         new EncryptionResponsePacket(
                             rsa.Encrypt(
                                 Core_Engine
-                                    .GetModule<Networking.Networking>("Networking")!
-                                    .GetServerConnection(packet._RemoteHost)!
-                                    ._Encryption._SharedSecret,
+                                    .InvokeEvent<ServerConnectionResult>(
+                                        "NETWORKING_GetServerConnection",
+                                        new GuidEngineArgs(packet._remoteHostID)
+                                    )!
+                                    ._serverConnection!._encryption._SharedSecret,
                                 false
                             ),
                             rsa.Encrypt(VerifyToken, false)
                         );
-                    Core_Engine
-                        .GetModule<Networking.Networking>("Networking")!
-                        .SendPacket(packet._RemoteHost, encryptionResponsePacket);
+
+                    Core_Engine.InvokeEvent(
+                        "NETWORKING_SendPacket",
+                        new SendPacketArgs(packet._remoteHostID, encryptionResponsePacket)
+                    );
                 }
                 //Logging.LogDebug("Set Encryption True");
                 Core_Engine
-                    .GetModule<Networking.Networking>("Networking")!
-                    .GetServerConnection(packet._RemoteHost)!
-                    ._MinecraftPacketHandler._IsEncryptionEnabled = true;
+                    .InvokeEvent<ServerConnectionResult>(
+                        "NETWORKING_GetServerConnection",
+                        new GuidEngineArgs(packet._remoteHostID)
+                    )!
+                    ._serverConnection!._minecraftPacketHandler._IsEncryptionEnabled = true;
             }
             catch (Exception e)
             {
@@ -110,11 +119,13 @@ namespace LotusCore.Modules.ServerLogin.Internals
         private async Task<bool> AuthenticateWithMinecraftServer(string serverHash)
         {
             MinecraftServerAuthModel authModel = new MinecraftServerAuthModel();
-            MojangLogin.MojangLogin mojangLogin = Core_Engine.GetModule<MojangLogin.MojangLogin>(
-                "MojangLogin"
-            )!;
-            authModel.accessToken = mojangLogin._MinecraftAuth!.access_token;
-            authModel.selectedProfile = mojangLogin._UserProfile!.id.Replace("-", "");
+            authModel.accessToken = Core_Engine
+                .InvokeEvent<MinecraftAuthResult>("MOJANGLOGIN_GetMinecraftAuth", null)!
+                ._minecraftAuth!.access_token;
+
+            authModel.selectedProfile = Core_Engine
+                .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
+                ._userProfile!.id.Replace("-", "");
             authModel.serverId = serverHash;
 
             HttpRequestMessage msg = HttpHandler.CreateHttpRequestMessage(
@@ -149,36 +160,38 @@ namespace LotusCore.Modules.ServerLogin.Internals
         public void HandleSetCompression(MinecraftServerPacket packet)
         {
             int offset = 0;
-            int CompresionThreshold = VarInt_VarLong.DecodeVarInt(packet._Data, ref offset);
+            int CompresionThreshold = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
             //Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
             ServerConnection connection = Core_Engine
-                .GetModule<Networking.Networking>("Networking")!
-                .GetServerConnection(packet._RemoteHost)!;
-            connection._MinecraftPacketHandler._CompresionThreshold = CompresionThreshold;
-            connection._MinecraftPacketHandler._IsCompressionEnabled = true;
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(packet._remoteHostID)
+                )!
+                ._serverConnection!;
+            connection._minecraftPacketHandler._CompresionThreshold = CompresionThreshold;
+            connection._minecraftPacketHandler._IsCompressionEnabled = true;
         }
 
         public void HandleLoginSuccess(MinecraftServerPacket packet)
         {
             LoginSuccessPacket loginSuccessPacket = new();
-            loginSuccessPacket.DecodeFromBytes(packet._Data);
+            loginSuccessPacket.DecodeFromBytes(packet._data);
             /* Logging.LogInfo(
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
             Logging.LogInfo("Successfully Joined Server!");
-            Core_Engine
-                .GetModule<Networking.Networking>("Networking")!
-                ._IsClientConnectedToPrimaryServer = true;
+
+            Core_Engine.InvokeEvent(
+                "NETWORKING_SetIsClientConnectedToPrimaryServer",
+                new BoolEngineArgs(true)
+            );
             /* foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
                 Logging.LogDebug(
                     $"\tS1:{element.s1}; S2:{element.s2}; optional S3:{(element.optionalS3 ?? "")}"
                 );
             } */
-            Networking.Networking NetworkModuleCache = Core_Engine.GetModule<Networking.Networking>(
-                "Networking"
-            )!;
-            /* NetworkModuleCache.GetServerConnection(packet.remoteHost)!.connectionState =
+            /* NetworkModuleCache.GetServerConnection(packet.remoteHost)!.connectionStatF =
                 ConnectionState.CONFIGURATION; */
 
             Core_Engine.signalInteractiveHoldTransfer(
@@ -186,29 +199,32 @@ namespace LotusCore.Modules.ServerLogin.Internals
                 Core_Engine.State.Configuration
             );
 
-            NetworkModuleCache.SendPacket(packet._RemoteHost, new EmptyPacket(0x03));
+            Core_Engine.InvokeEvent(
+                "NETWORKING_SendPacket",
+                new SendPacketArgs(packet._remoteHostID, new EmptyPacket(0x03))
+            );
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
-                new ConnectionEventArgs(packet._RemoteHost)
+                new ConnectionEventArgs(packet._remoteHostID)
             );
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.CONFIG_Start_Config_Process),
-                new ConnectionEventArgs(packet._RemoteHost)
+                new ConnectionEventArgs(packet._remoteHostID)
             );
         }
 
         internal void HandlePluginRequest(MinecraftServerPacket packet)
         {
             int offset = 0;
-            int value = VarInt_VarLong.DecodeVarInt(packet._Data, ref offset);
+            int value = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
             Identifier channel = new();
-            channel.GetFromBytes(packet._Data, ref offset);
+            channel.GetFromBytes(packet._data, ref offset);
 
             PluginMessageReceivedEventArgs args = new(
-                packet._RemoteHost,
+                packet._remoteHostID,
                 ConnectionState.LOGIN,
                 channel,
-                packet._Data[offset..],
+                packet._data[offset..],
                 value
             );
 
@@ -217,20 +233,27 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
         internal void HandleCookieRequest(MinecraftServerPacket packet)
         {
-            Identifier Key = new();
+            Identifier key = new();
             int offset = 0;
-            Key.GetFromBytes(packet._Data, ref offset);
-
-            var cookie = _GameStateHandler.GetServerCookie(Key);
+            key.GetFromBytes(packet._data, ref offset);
+            var cookie = Core_Engine
+                .InvokeEvent<ServerCookieResult>(
+                    "GAMESTATE_GetServerCookie",
+                    new IdentifierEngineArgs(key)
+                )!
+                ._serverCookie;
 
             CookieResponsepacket cookieResponsepacket = new()
             {
-                _Protocol_ID = 0x04,
-                _Key = Key,
+                _protocol_ID = 0x04,
+                _Key = key,
                 _Payload = cookie?._Payload ?? [],
             };
 
-            _NetworkingManager.SendPacket(packet._RemoteHost, cookieResponsepacket);
+            Core_Engine.InvokeEvent(
+                "NETWORKING_SendPacket",
+                new SendPacketArgs(packet._remoteHostID, cookieResponsepacket)
+            );
         }
     }
 }

@@ -1,5 +1,7 @@
 using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandlerModule.Types;
 using LotusCore.Modules.MojangLogin;
+using LotusCore.Modules.MojangLogin.Models;
 
 namespace LotusCore.Commands.UserCommands
 {
@@ -17,10 +19,12 @@ namespace LotusCore.Commands.UserCommands
 
         public Task ProcessCommand(string[] commandArgs)
         {
-            MojangLogin mojangLoginModule = Core_Engine.GetModule<MojangLogin>("MojangLogin")!;
-            if (mojangLoginModule._UserProfile != null)
+            MinecraftProfile? userProfile = Core_Engine
+                .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
+                ._minecraftProfile;
+            if (userProfile != null)
             {
-                Console.WriteLine(mojangLoginModule._UserProfile.name);
+                Console.WriteLine(userProfile.name);
                 return Task.CompletedTask;
             }
             Console.WriteLine("You are not signed in");

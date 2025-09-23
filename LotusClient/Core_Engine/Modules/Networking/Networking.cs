@@ -6,18 +6,19 @@ using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
-using Microsoft.Identity.Client.NativeInterop;
-using Org.BouncyCastle.Asn1.Icao;
+using LotusCore.Modules.Networking.Types;
 
 namespace LotusCore.Modules.Networking
 {
     public class Networking : IModuleBase
     {
-        private Dictionary<IPAddress, ServerConnection> _Connections = new();
-        public bool _IsClientConnectedToPrimaryServer { get; set; } = false;
-        private IPAddress? _PrimaryClientServerConnection;
-        public readonly ProtocolVersionUtils.ProtocolVersion _ProtocolVersion = ProtocolVersionUtils
+        private Dictionary<Guid, ServerConnection> _connections = new();
+
+        public bool _isClientConnectedToPrimaryServer { get; set; } = false;
+
+        private Guid? _primaryClientServerConnection;
+
+        public readonly ProtocolVersionUtils.ProtocolVersion _protocolVersion = ProtocolVersionUtils
             .ProtocolVersion
             .V1_21_8;
 
@@ -30,6 +31,17 @@ namespace LotusCore.Modules.Networking
             RegisterEvent.Invoke("CONFIG_Packet_Received");
             RegisterEvent.Invoke("PLUGIN_Packet_Received");
             RegisterEvent.Invoke("PLAY_Packet_Received");
+
+            RegisterEvent.Invoke("NETWORKING_Version");
+            RegisterEvent.Invoke("NETWORKING_SendPacket");
+            RegisterEvent.Invoke("NETWORKING_SendPackets");
+            RegisterEvent.Invoke("NETWORKING_SendBufferedPackets");
+            RegisterEvent.Invoke("NETWORKING_ConnectToServer");
+            RegisterEvent.Invoke("NETWORKING_DisconnectFromServer");
+            RegisterEvent.Invoke("NETWORKING_GetServerConnection");
+            RegisterEvent.Invoke("NETWORKING_GetServerConnectionInState");
+            RegisterEvent.Invoke("NETWORKING_GetIsClientConnectedToPrimaryServer");
+            RegisterEvent.Invoke("NETWORKING_SetIsClientConnectedToPrimaryServer");
         }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
@@ -39,11 +51,125 @@ namespace LotusCore.Modules.Networking
                 new EngineEventHandler(
                     (sender, args) =>
                     {
-                        ConnectionEventArgs conArgs = (ConnectionEventArgs)args;
-                        GetServerConnection(conArgs._RemoteHost)!._ConnectionState =
+                        var connArgs = (ConnectionEventArgs)args!;
+                        GetServerConnection(connArgs._remoteHostID)!._connectionState =
                             ConnectionState.CONFIGURATION;
-                        _PrimaryClientServerConnection = conArgs._RemoteHost;
-                        _IsClientConnectedToPrimaryServer = true;
+                        _primaryClientServerConnection = connArgs._remoteHostID;
+                        _isClientConnectedToPrimaryServer = true;
+                        return null;
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_Version",
+                new EngineEventHandler(
+                    (sender, _) =>
+                    {
+                        return new ProtocolVersionResult(_protocolVersion);
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_SendPacket",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        SendPacketArgs Args = (SendPacketArgs)args!;
+                        return new IntResult(
+                            SendPacket(Args._remoteHostID, Args._packet, Args._holdPacketInBuffer)
+                        );
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_SendPackets",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        SendPacketsArgs Args = (SendPacketsArgs)args!;
+                        return new IntResult(
+                            SendPackets(Args._remoteHostID, Args._packets, Args._holdPacketInBuffer)
+                        );
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_SendBufferedPackets",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        GuidEngineArgs Args = (GuidEngineArgs)args!;
+                        return new IntResult(SendBufferedPackets(Args._value));
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_ConnectToServer",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        ConnectToServerArgs Args = (ConnectToServerArgs)args!;
+                        return new GuidResult(ConnectToServer(Args._ip, Args._port));
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_DisconnectFromServer",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        GuidEngineArgs Args = (GuidEngineArgs)args!;
+                        DisconnectFromServer(Args._value);
+                        return null;
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_GetServerConnection",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        GuidEngineArgs Args = (GuidEngineArgs)args!;
+                        return new ServerConnectionResult(GetServerConnection(Args._value));
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_GetServerConnectionInState",
+                new EngineEventHandler(
+                    (sender, args) =>
+                    {
+                        GetServerConnectionInStateArgs Args = (GetServerConnectionInStateArgs)args!;
+                        foreach (var con in _connections.Values)
+                        {
+                            if (
+                                con._connectionInfo._remoteHost == Args._remoteHost
+                                && Args._connectionStates.Contains(con._connectionState)
+                            )
+                            {
+                                return new GuidResult(con._id);
+                            }
+                        }
+                        return new GuidResult(null);
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_GetIsClientConnectedToPrimaryServer",
+                new EngineEventHandler(
+                    (_, _) =>
+                    {
+                        return new BoolResult(_isClientConnectedToPrimaryServer);
+                    }
+                )
+            );
+            SubscribeToEvent.Invoke(
+                "NETWORKING_SetIsClientConnectedToPrimaryServer",
+                new EngineEventHandler(
+                    (_, args) =>
+                    {
+                        BoolEngineArgs Args = (BoolEngineArgs)args!;
+                        _isClientConnectedToPrimaryServer = Args._value;
                         return null;
                     }
                 )
@@ -51,24 +177,24 @@ namespace LotusCore.Modules.Networking
         }
 
         public int SendPacket(
-            IPAddress RemoteHost,
+            Guid RemoteHostID,
             MinecraftPacket packet,
             bool HoldPacketInBuffer = false
         )
         {
-            ServerConnection? connection = GetServerConnection(RemoteHost);
+            ServerConnection? connection = GetServerConnection(RemoteHostID);
             if (connection == null)
             {
                 Logging.LogError("Attempting to send packet to null connection");
                 return -1;
             }
 
-            if (connection._TcpSocket == null)
+            if (connection._tcpSocket == null)
             {
                 return -1;
             }
-            connection._DataToSendBuffer.AddRange(
-                connection._MinecraftPacketHandler.CreatePacket(connection, packet)
+            connection._packetInfo._dataToSendBuffer.AddRange(
+                connection._minecraftPacketHandler.CreatePacket(connection, packet)
             );
 
             if (HoldPacketInBuffer)
@@ -79,28 +205,28 @@ namespace LotusCore.Modules.Networking
             return SendBufferedPackets(connection);
         }
 
-        public int SendPacket(
-            IPAddress RemoteHost,
+        public int SendPackets(
+            Guid RemoteHostId,
             IEnumerable<MinecraftPacket> packets,
             bool HoldPacketInBuffer = false
         )
         {
-            ServerConnection? connection = GetServerConnection(RemoteHost);
+            ServerConnection? connection = GetServerConnection(RemoteHostId);
             if (connection == null)
             {
                 Logging.LogError("Attempting to send packet to null connection");
                 return -1;
             }
 
-            if (connection._TcpSocket == null)
+            if (connection._tcpSocket == null)
             {
                 return -1;
             }
 
             foreach (MinecraftPacket minecraftPacket in packets)
             {
-                connection._DataToSendBuffer.AddRange(
-                    connection._MinecraftPacketHandler.CreatePacket(connection, minecraftPacket)
+                connection._packetInfo._dataToSendBuffer.AddRange(
+                    connection._minecraftPacketHandler.CreatePacket(connection, minecraftPacket)
                 );
             }
 
@@ -112,9 +238,9 @@ namespace LotusCore.Modules.Networking
             return SendBufferedPackets(connection);
         }
 
-        public int SendBufferedPackets(IPAddress RemoteHost)
+        public int SendBufferedPackets(Guid RemoteHostId)
         {
-            return SendBufferedPackets(GetServerConnection(RemoteHost));
+            return SendBufferedPackets(GetServerConnection(RemoteHostId));
         }
 
         public int SendBufferedPackets(ServerConnection? connection)
@@ -125,92 +251,86 @@ namespace LotusCore.Modules.Networking
                 return -1;
             }
 
-            if (connection._TcpSocket == null)
+            if (connection._tcpSocket == null)
             {
                 return -1;
             }
 
             int bytesSent = 0;
 
-            while (bytesSent < connection._DataToSendBuffer.Count)
+            while (bytesSent < connection._packetInfo._dataToSendBuffer.Count)
             {
-                bytesSent += connection._TcpSocket.Send(
-                    connection._DataToSendBuffer.ToArray(),
+                bytesSent += connection._tcpSocket.Send(
+                    connection._packetInfo._dataToSendBuffer.ToArray(),
                     bytesSent,
-                    connection._DataToSendBuffer.Count - bytesSent,
+                    connection._packetInfo._dataToSendBuffer.Count - bytesSent,
                     SocketFlags.None
                 );
             }
-            //Logging.LogDebug($"Sent {bytesSent} bytes");
-            connection._DataToSendBuffer.Clear();
+            connection._packetInfo._dataToSendBuffer.Clear();
             return bytesSent;
         }
 
-        public bool ConnectToServer(string ip, int port = 25565)
+        public Guid? ConnectToServer(string ip, int port = 25565)
         {
-            ServerConnection serverConnection = new(ip, port);
+            Guid id = Guid.CreateVersion7();
+            ServerConnection serverConnection = new(ip, port, id);
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
-            serverConnection._TcpSocket = new Socket(
+            serverConnection._tcpSocket = new Socket(
                 endPoint.AddressFamily,
                 SocketType.Stream,
                 ProtocolType.Tcp
             );
-            serverConnection._TcpSocket.NoDelay = true;
+            serverConnection._tcpSocket.NoDelay = true;
             try
             {
-                serverConnection._TcpSocket.Connect(endPoint);
+                serverConnection._tcpSocket.Connect(endPoint);
             }
             catch (Exception e)
             {
-                //Logging.LogError($"ConnectToServer:{e.ToString()}");
-                return false;
+                return null;
             }
-            _Connections[serverConnection._RemoteHost] = serverConnection;
+            _connections[serverConnection._id] = serverConnection;
 
-            ResetBuffer(serverConnection._ServerConnectionSocketAsyncEventArgs);
-            serverConnection._ServerConnectionSocketAsyncEventArgs.Completed += ReceiveCompleted;
+            ResetBuffer(serverConnection._serverConnectionSocketAsyncEventArgs);
+            serverConnection._serverConnectionSocketAsyncEventArgs.Completed += ReceiveCompleted;
 
-            StartReceiving(serverConnection._ServerConnectionSocketAsyncEventArgs);
+            StartReceiving(serverConnection._serverConnectionSocketAsyncEventArgs);
             Logging.LogDebug($"Successfully Connected to Server: {ip}:{port}");
-            return true;
+            return id;
         }
 
-        public void DisconnectFromServer(IPAddress remoteHost)
+        public void DisconnectFromServer(Guid remoteHostID)
         {
-            ServerConnection? connection = GetServerConnection(remoteHost);
+            ServerConnection? connection = GetServerConnection(remoteHostID);
             if (connection == null)
             {
                 return;
             }
-            Logging.LogInfo("Disconnected from Server:" + remoteHost);
+            Logging.LogInfo("Disconnected from Server:" + remoteHostID);
             if (
-                _IsClientConnectedToPrimaryServer
-                && connection._RemoteHost == _PrimaryClientServerConnection
+                _isClientConnectedToPrimaryServer
+                && connection._id == _primaryClientServerConnection
             )
             {
-                _IsClientConnectedToPrimaryServer = false;
-                _PrimaryClientServerConnection = null;
+                _isClientConnectedToPrimaryServer = false;
+                _primaryClientServerConnection = null;
             }
-            if (connection!._TcpSocket != null)
+            if (connection!._tcpSocket != null)
             {
-                connection!._TcpSocket!.Disconnect(false);
-                connection!._TcpSocket!.Close();
-                connection!._TcpSocket = null;
+                connection!._tcpSocket!.Disconnect(false);
+                connection!._tcpSocket!.Close();
+                connection!._tcpSocket = null;
             }
-            _Connections.Remove(remoteHost);
-
-            /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
-            {
-                Core_Engine.CurrentState = Core_Engine.State.Interactive;
-            } */
+            _connections.Remove(remoteHostID);
             return;
         }
 
-        public ServerConnection? GetServerConnection(IPAddress remoteHost)
+        public ServerConnection? GetServerConnection(Guid connectionID)
         {
-            if (_Connections.ContainsKey(remoteHost))
+            if (_connections.ContainsKey(connectionID))
             {
-                return _Connections[remoteHost];
+                return _connections[connectionID];
             }
             return null;
         }
@@ -219,13 +339,13 @@ namespace LotusCore.Modules.Networking
         {
             ServerConnectionSocketAsyncEventArgs eventArgs =
                 (ServerConnectionSocketAsyncEventArgs)e;
-            ServerConnection? connection = GetServerConnection(eventArgs._RemoteHost);
+            ServerConnection? connection = GetServerConnection(eventArgs._remoteHostID);
             if (connection == null)
             {
                 Logging.LogError("Server Connection Null");
                 return;
             }
-            if (!connection._TcpSocket!.ReceiveAsync(e))
+            if (!connection._tcpSocket!.ReceiveAsync(e))
             {
                 ReceiveCompleted(this, e);
             }
@@ -242,35 +362,29 @@ namespace LotusCore.Modules.Networking
             //Logging.LogDebug("ReceiveCompleted");
             ServerConnectionSocketAsyncEventArgs eventArgs =
                 (ServerConnectionSocketAsyncEventArgs)e;
-            ServerConnection connection = GetServerConnection(eventArgs._RemoteHost)!;
+            ServerConnection connection = GetServerConnection(eventArgs._remoteHostID)!;
             try
             {
                 if (ProcessReceive(e))
                 {
                     ResetBuffer(e);
-                    if (connection._TcpSocket != null)
+                    if (connection._tcpSocket != null)
                     {
-                        //Logging.LogDebug("Wait for next packet");
                         StartReceiving(e);
-                    }
-                    else
-                    {
-                        //Logging.LogDebug("TcpSocket null");
                     }
                 }
                 else
                 {
-                    //Logging.LogError($"Handle Packet Received ERROR");
                     Core_Engine.SignalInteractiveResetServerHolds();
                 }
             }
             catch (Exception exc)
             {
                 Logging.LogError($"Handle Packet Received ERROR: {exc}");
-                DisconnectFromServer(connection._RemoteHost);
+                DisconnectFromServer(connection._id);
                 if (
-                    _IsClientConnectedToPrimaryServer
-                    && _PrimaryClientServerConnection == eventArgs._RemoteHost
+                    _isClientConnectedToPrimaryServer
+                    && _primaryClientServerConnection == eventArgs._remoteHostID
                 )
                 {
                     Core_Engine.SignalInteractiveResetServerHolds();
@@ -286,7 +400,7 @@ namespace LotusCore.Modules.Networking
             {
                 try
                 {
-                    ServerConnection connection = GetServerConnection(eventArgs._RemoteHost)!;
+                    ServerConnection connection = GetServerConnection(eventArgs._remoteHostID)!;
                     //data received properly
                     byte[] tmpBuffer = e.Buffer![..e.BytesTransferred];
                     /* Logging.LogDebug(
@@ -295,23 +409,23 @@ namespace LotusCore.Modules.Networking
                     if (tmpBuffer.Length == 0)
                     {
                         Logging.LogInfo("Connection Closed by Remote Host");
-                        DisconnectFromServer(eventArgs._RemoteHost);
+                        DisconnectFromServer(eventArgs._remoteHostID);
                         return false;
                     }
-                    if (connection._MinecraftPacketHandler._IsEncryptionEnabled)
+                    if (connection._minecraftPacketHandler._IsEncryptionEnabled)
                     {
                         //Logging.LogDebug("Decrypting Packet");
-                        tmpBuffer = connection._Encryption.DecryptData(tmpBuffer);
+                        tmpBuffer = connection._encryption.DecryptData(tmpBuffer);
                     }
 
-                    connection._IncompletePacketBytesBuffer =
+                    connection._packetInfo._incompletePacketBytesBuffer =
                     [
-                        .. connection._IncompletePacketBytesBuffer,
+                        .. connection._packetInfo._incompletePacketBytesBuffer,
                         .. tmpBuffer,
                     ];
 
                     bool firstRun = true;
-                    while (connection._IncompletePacketBytesBuffer.Length > 0)
+                    while (connection._packetInfo._incompletePacketBytesBuffer.Length > 0)
                     {
                         if (!firstRun)
                         {
@@ -319,10 +433,10 @@ namespace LotusCore.Modules.Networking
                         }
                         (
                             MinecraftServerPacket? serverPacket,
-                            connection._IncompletePacketBytesBuffer
-                        ) = connection._MinecraftPacketHandler.DecodePacket(
-                            connection._RemoteHost,
-                            connection._IncompletePacketBytesBuffer
+                            connection._packetInfo._incompletePacketBytesBuffer
+                        ) = connection._minecraftPacketHandler.DecodePacket(
+                            connection._id,
+                            connection._packetInfo._incompletePacketBytesBuffer
                         );
                         if (serverPacket == null)
                         {
@@ -355,42 +469,42 @@ namespace LotusCore.Modules.Networking
             ); */
             try
             {
-                switch (connection._ConnectionState)
+                switch (connection._connectionState)
                 {
                     case ConnectionState.STATUS:
                         Core_Engine.InvokeEvent(
                             "STATUS_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                            new PacketReceivedEventArgs(packet, connection._id)
                         );
                         break;
                     case ConnectionState.LOGIN:
                         Core_Engine.InvokeEvent(
                             "LOGIN_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                            new PacketReceivedEventArgs(packet, connection._id)
                         );
                         break;
                     case ConnectionState.CONFIGURATION:
                         Core_Engine.InvokeEvent(
                             "CONFIG_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                            new PacketReceivedEventArgs(packet, connection._id)
                         );
                         break;
                     case ConnectionState.PLAY:
                         Core_Engine.InvokeEvent(
                             "PLAY_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._RemoteHost)
+                            new PacketReceivedEventArgs(packet, connection._id)
                         );
                         //DisconnectFromServer(connection._RemoteHost);
                         //Core_Engine.SignalInteractiveResetServerHolds();
                         break;
                     default:
                         Logging.LogError(
-                            $"ReceiveConnections State {connection._ConnectionState} Not Implemented"
+                            $"ReceiveConnections State {connection._connectionState} Not Implemented"
                         );
-                        DisconnectFromServer(connection._RemoteHost);
+                        DisconnectFromServer(connection._id);
                         if (
-                            _IsClientConnectedToPrimaryServer
-                            && _PrimaryClientServerConnection == connection._RemoteHost
+                            _isClientConnectedToPrimaryServer
+                            && _primaryClientServerConnection == connection._id
                         )
                         {
                             Core_Engine.SignalInteractiveResetServerHolds();
@@ -401,10 +515,10 @@ namespace LotusCore.Modules.Networking
             }
             catch
             {
-                DisconnectFromServer(connection._RemoteHost);
+                DisconnectFromServer(connection._id);
                 if (
-                    _IsClientConnectedToPrimaryServer
-                    && _PrimaryClientServerConnection == connection._RemoteHost
+                    _isClientConnectedToPrimaryServer
+                    && _primaryClientServerConnection == connection._id
                 )
                 {
                     Core_Engine.SignalInteractiveResetServerHolds();

@@ -3,19 +3,16 @@ using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Networking.Internals;
 using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.Networking.Types;
 using LotusCore.Modules.ServerPlay.Internals;
 
 namespace LotusCore.Modules.ServerPlay;
 
 public class ServerPlayHandler : IModuleBase
 {
-    private Networking.Networking _NetworkingManager;
     private readonly ServerPlayInternals _playInternals = new();
 
-    public ServerPlayHandler()
-    {
-        _NetworkingManager = Core_Engine.GetModule<Networking.Networking>("Networking")!;
-    }
+    public ServerPlayHandler() { }
 
     public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
@@ -40,7 +37,7 @@ public class ServerPlayHandler : IModuleBase
                 (sender, args) =>
                 {
                     _playInternals.ServerboundPlayerSession(
-                        ((ConnectionEventArgs)args)._RemoteHost
+                        ((ConnectionEventArgs)args)._remoteHostID
                     );
                     return null;
                 }
@@ -53,18 +50,21 @@ public class ServerPlayHandler : IModuleBase
         try
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-            MinecraftServerPacket packet = eventArgs._Packet;
-            ServerConnection serverConnection = _NetworkingManager.GetServerConnection(
-                packet._RemoteHost
-            )!;
-            if (packet._Protocol_ID == 0x00)
+            MinecraftServerPacket packet = eventArgs._packet;
+            ServerConnection serverConnection = Core_Engine
+                .InvokeEvent<ServerConnectionResult>(
+                    "NETWORKING_GetServerConnection",
+                    new GuidEngineArgs(packet._remoteHostID)
+                )!
+                ._serverConnection!;
+            if (packet._protocol_ID == 0x00)
             {
                 HandleBundleDelimiter(packet);
                 return;
             }
-            else if (serverConnection._ActiveBundleDelimiter)
+            else if (serverConnection._packetInfo._activeBundleDelimiter)
             {
-                serverConnection._BundledPackets.Enqueue(packet);
+                serverConnection._packetInfo._bundledPackets.Enqueue(packet);
                 return;
             }
             HandlePacketSwitch(packet);
@@ -80,7 +80,7 @@ public class ServerPlayHandler : IModuleBase
     {
         try
         {
-            switch (packet._Protocol_ID)
+            switch (packet._protocol_ID)
             {
                 case 0x3A:
                     Logging.LogDebug("HandlePlayerChatMessage");
@@ -103,19 +103,22 @@ public class ServerPlayHandler : IModuleBase
 
     private void HandleBundleDelimiter(MinecraftServerPacket packet)
     {
-        ServerConnection serverConnection = _NetworkingManager.GetServerConnection(
-            packet._RemoteHost
-        )!;
-        if (!serverConnection._ActiveBundleDelimiter)
+        ServerConnection serverConnection = Core_Engine
+            .InvokeEvent<ServerConnectionResult>(
+                "NETWORKING_GetServerConnection",
+                new GuidEngineArgs(packet._remoteHostID)
+            )!
+            ._serverConnection!;
+        if (!serverConnection._packetInfo._activeBundleDelimiter)
         {
-            serverConnection._ActiveBundleDelimiter = true;
+            serverConnection._packetInfo._activeBundleDelimiter = true;
         }
         else
         {
-            serverConnection._ActiveBundleDelimiter = false;
-            while (serverConnection._BundledPackets.Count != 0)
+            serverConnection._packetInfo._activeBundleDelimiter = false;
+            while (serverConnection._packetInfo._bundledPackets.Count != 0)
             {
-                var packetToProcess = serverConnection._BundledPackets.Dequeue();
+                var packetToProcess = serverConnection._packetInfo._bundledPackets.Dequeue();
                 HandlePacketSwitch(packetToProcess);
             }
         }

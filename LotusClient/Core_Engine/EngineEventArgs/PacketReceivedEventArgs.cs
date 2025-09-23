@@ -5,13 +5,13 @@ namespace LotusCore.EngineEventArgs
 {
     public class PacketReceivedEventArgs : IEngineEventArgs
     {
-        public MinecraftServerPacket _Packet { get; private set; }
-        public IPAddress _RemoteHost { get; private set; }
+        public MinecraftServerPacket _packet { get; private set; }
+        public Guid _remoteHostID { get; private set; }
 
-        public PacketReceivedEventArgs(MinecraftServerPacket packet, IPAddress remoteHost)
+        public PacketReceivedEventArgs(MinecraftServerPacket packet, Guid remoteHostID)
         {
-            this._Packet = packet;
-            this._RemoteHost = remoteHost;
+            this._packet = packet;
+            this._remoteHostID = remoteHostID;
         }
     }
 }

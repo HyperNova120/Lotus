@@ -19,7 +19,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Login
 
         public EncryptionResponsePacket(byte[] sharedSecret, byte[] verifyToken)
         {
-            _Protocol_ID = 0x01;
+            _protocol_ID = 0x01;
             _SharedSecret = sharedSecret;
             _VerifyToken = verifyToken;
         }
