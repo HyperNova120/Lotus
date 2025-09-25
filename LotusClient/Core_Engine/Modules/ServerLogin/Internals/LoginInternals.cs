@@ -179,6 +179,13 @@ namespace LotusCore.Modules.ServerLogin.Internals
             /* Logging.LogInfo(
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
+
+            Logging.LogDebug($"HandleLoginSuccess: test1:{loginSuccessPacket._uuid._UUID:X}");
+            MinecraftUUID test = new();
+            int offset = 0;
+            test.DecodeBytes(packet._data, ref offset);
+            Logging.LogDebug($"HandleLoginSuccess: test2:{test._UUID:X}");
+
             Logging.LogInfo("Successfully Joined Server!");
 
             Core_Engine.InvokeEvent(

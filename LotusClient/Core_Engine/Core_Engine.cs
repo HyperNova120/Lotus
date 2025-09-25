@@ -7,6 +7,7 @@ using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Exceptions;
 using LotusCore.Interfaces;
+using LotusCore.Modules.Chat;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.MojangLogin;
 using LotusCore.Modules.Networking;
@@ -139,6 +140,7 @@ public static class Core_Engine
         RegisterModule("ServerConfiguration", new ServerConfiguration());
         RegisterModule("ServerPlayHandler", new ServerPlayHandler());
         RegisterModule("VulkanGraphics", new VulkanGraphics());
+        RegisterModule("ServerChat", new ServerChat());
     }
 
     private static void InitCoreModuleEventSubscriptions()

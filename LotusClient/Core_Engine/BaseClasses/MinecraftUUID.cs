@@ -1,3 +1,6 @@
+using System.Buffers.Binary;
+using System.Security.Cryptography;
+
 namespace LotusCore.BaseClasses;
 
 public class MinecraftUUID
@@ -8,6 +11,7 @@ public class MinecraftUUID
 
     public MinecraftUUID(string uuidString)
     {
+        Logging.LogDebug($"MinecraftUUID: {uuidString}");
         uuidString = uuidString.Replace("-", "");
         if (uuidString.Length != 32)
             throw new ArgumentException("UUID string must be 32 characters long");
@@ -20,8 +24,8 @@ public class MinecraftUUID
         }
 
         // Convert to UInt128 (big-endian)
-        ulong msb = BitConverter.ToUInt64(bytes[0..8].Reverse().ToArray());
-        ulong lsb = BitConverter.ToUInt64(bytes[8..16].Reverse().ToArray());
+        ulong msb = BinaryPrimitives.ReadUInt64BigEndian(bytes.AsSpan(0, 8));
+        ulong lsb = BinaryPrimitives.ReadUInt64BigEndian(bytes.AsSpan(8, 8));
 
         _UUID = msb;
         _UUID <<= 64;
@@ -51,5 +55,12 @@ public class MinecraftUUID
         byte[] lsbBytes = BitConverter.GetBytes(lsb).Reverse().ToArray();
 
         return [.. msbBytes, .. lsbBytes];
+    }
+
+    public static MinecraftUUID CreateVersion4()
+    {
+        byte[] bytes = new byte[16];
+        RandomNumberGenerator.Fill(bytes);
+        return new MinecraftUUID() { _UUID = BitConverter.ToUInt128(bytes) };
     }
 }

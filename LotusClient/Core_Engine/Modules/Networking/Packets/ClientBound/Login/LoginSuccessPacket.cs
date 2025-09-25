@@ -1,3 +1,4 @@
+using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
 
@@ -5,7 +6,7 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
 {
     public class LoginSuccessPacket
     {
-        public Guid _uuid;
+        public MinecraftUUID _uuid;
         public string? _Username;
         public List<LoginSuccessPacketElement> _Elements = new();
 
@@ -16,10 +17,9 @@ namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
         /// <returns>number of bytes read</returns>
         public int DecodeFromBytes(byte[] data)
         {
-            (byte[] uuidBytes, _) = NetworkUUID.DecodeNetworkBytes(data[0..16]);
-            _uuid = new Guid(uuidBytes);
-            data = data[16..];
+            _uuid = new();
             int offset = 0;
+            _uuid.DecodeBytes(data, ref offset);
             _Username = StringN.DecodeBytes(data, ref offset);
             int arraySize = PrefixedArray.GetSizeOfArray(data, ref offset);
             data = data[offset..];

@@ -1,11 +1,12 @@
+using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 
 namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 {
     public class ConfigResourcePackResponse : MinecraftPacket
     {
-        public UInt128 _UUID;
-        public ConfigResourcePackResponseResult _Result;
+        public MinecraftUUID _UUID;
+        public ConfigResourcePackResponseResult _result;
 
         public ConfigResourcePackResponse()
         {
@@ -14,7 +15,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
 
         public override byte[] GetBytes()
         {
-            return [.. NetworkUUID.GetNetworkBytes(_UUID), .. VarInt_VarLong.EncodeInt((int)_Result)];
+            return [.. _UUID.GetBytes(), .. VarInt_VarLong.EncodeInt((int)_result)];
         }
 
         public enum ConfigResourcePackResponseResult

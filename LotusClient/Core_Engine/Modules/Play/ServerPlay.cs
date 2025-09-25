@@ -36,8 +36,9 @@ public class ServerPlayHandler : IModuleBase
             new EngineEventHandler(
                 (sender, args) =>
                 {
-                    _playInternals.ServerboundPlayerSession(
-                        ((ConnectionEventArgs)args)._remoteHostID
+                    Core_Engine.InvokeEvent(
+                        "CHAT_StartChatSession",
+                        new GuidEngineArgs(((ConnectionEventArgs)args!)._remoteHostID)
                     );
                     return null;
                 }

@@ -19,7 +19,7 @@ public class ServerPlayInternals
 
     //CLIENT TO SERVER
 
-    public void ServerboundPlayerSession(Guid remoteHostID)
+    /* public void ServerboundPlayerSession(Guid remoteHostID)
     {
         MojangKeyPair mojangKeyPair = Core_Engine
             .InvokeEvent<MojangKeyPairResult>("GAMESTATE_GetMojangKeyPair")!
@@ -41,7 +41,7 @@ public class ServerPlayInternals
             "NETWORKING_SendPacket",
             new SendPacketArgs(remoteHostID, playerSessionPacket)
         );
-    }
+    } */
 
     //SERVER TO CLIENT
 
