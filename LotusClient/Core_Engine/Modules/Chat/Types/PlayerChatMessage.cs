@@ -13,6 +13,14 @@ public class PlayerChatMessage
     public ChatMessageOther _other;
 
     public ChatMessageChatFormatting _chatFormatting;
+
+    public PlayerChatMessage()
+    {
+        _header = new();
+        _body = new();
+        _other = new();
+        _chatFormatting = new();
+    }
 }
 
 public class ChatMessageHeader
@@ -20,6 +28,8 @@ public class ChatMessageHeader
     public int _globalIndex;
 
     public MinecraftUUID _sender;
+
+    public int _index;
 
     public byte[]? _messageSignatureBytes;
 }

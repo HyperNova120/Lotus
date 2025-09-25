@@ -3,6 +3,7 @@ using System.Net;
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Interfaces;
+using LotusCore.Modules.Chat.Types;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.GameStateHandlerModule.Models;
 using LotusCore.Modules.GameStateHandlerModule.Types;
@@ -47,30 +48,34 @@ public class ServerPlayInternals
 
     public void HandlePlayerChatMessage(MinecraftServerPacket packet)
     {
+        PlayerChatMessage playerChatMessage = new();
         //Header
         int offset = 0;
-        int globalIndex = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
+        playerChatMessage._header._globalIndex = VarInt_VarLong.DecodeVarInt(
+            packet._data,
+            ref offset
+        );
 
         MinecraftUUID SenderUUID = new();
         SenderUUID.DecodeBytes(packet._data, ref offset);
+        playerChatMessage._header._sender = SenderUUID;
 
-        int index = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
+        playerChatMessage._header._index = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
 
         bool isPresent = PrefixedOptional.DecodeBytes(packet._data, ref offset);
-        byte[]? msgSig = null;
         if (isPresent)
         {
-            msgSig = packet._data[offset..(offset + 256)];
+            playerChatMessage._header._messageSignatureBytes = packet._data[offset..(offset + 256)];
             offset += 256;
         }
 
         //Body
-        string Message = StringN.DecodeBytes(packet._data, ref offset);
-        Logging.LogInfo($"<Unknown User> {Message}");
+        playerChatMessage._body._message = StringN.DecodeBytes(packet._data, ref offset);
+        //Logging.LogInfo($"<Unknown User> {Message}");
 
-        long timestamp = NetworkLong.DecodeBytes(packet._data, ref offset);
+        playerChatMessage._body._timestamp = NetworkLong.DecodeBytes(packet._data, ref offset);
 
-        long salt = NetworkLong.DecodeBytes(packet._data, ref offset);
+        playerChatMessage._body._salt = NetworkLong.DecodeBytes(packet._data, ref offset);
         int arraySize = PrefixedArray.GetSizeOfArray(packet._data, ref offset);
 
         for (int i = 0; i < arraySize; i++)
@@ -91,13 +96,55 @@ public class ServerPlayInternals
         {
             offset += UnsignedContent.ReadFromBytes(packet._data[offset..]);
         }
-        ChatFilterType FilterType = (ChatFilterType)
+        playerChatMessage._other._unsignedContent = UnsignedContent;
+
+        playerChatMessage._other._filterType = (ChatFilterType)
             VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
-        BitArray? FilterTypeBits = null;
-        if (FilterType == ChatFilterType.PARTIALLY_FILTERED)
+        if (playerChatMessage._other._filterType == ChatFilterType.PARTIALLY_FILTERED)
         {
-            FilterTypeBits = NetworkBitset.DecodeBytes(packet._data, ref offset);
+            playerChatMessage._other._filterTypeBits = NetworkBitset.DecodeBytes(
+                packet._data,
+                ref offset
+            );
         }
+
+        //Chat Formatting
+
+        int IDorChatType = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
+        if (IDorChatType != 0)
+        {
+            //ID
+            Logging.LogDebug($"ITS AN ID: {IDorChatType}");
+        }
+        else
+        {
+            throw new Exception("ITS NOT AN ID");
+            //use Chat type decoration for both Chat portion and Narration portion.
+        }
+
+        playerChatMessage._chatFormatting._senderName = new();
+
+        offset += playerChatMessage._chatFormatting._senderName.ReadFromBytes(
+            packet._data[offset..],
+            networkBytes: true
+        );
+
+        if (PrefixedOptional.DecodeBytes(packet._data, ref offset))
+        {
+            playerChatMessage._chatFormatting._targetName = new();
+
+            offset += playerChatMessage._chatFormatting._targetName.ReadFromBytes(
+                packet._data[offset..],
+                networkBytes: true
+            );
+        }
+        else
+        {
+            playerChatMessage._chatFormatting._targetName = null;
+        }
+
+        Logging.LogDebug(playerChatMessage._chatFormatting._senderName.ToString());
+        Logging.LogDebug($"MSG:" + playerChatMessage._body._message);
     }
 
     internal void HandleSystemChatMessage(MinecraftServerPacket packet)
@@ -108,12 +155,5 @@ public class ServerPlayInternals
         Console.WriteLine(
             $"SystemChatMessage: isOverlay:{isOverlay} MSG:{textComponent.ToString()}"
         );
-    }
-
-    public enum ChatFilterType
-    {
-        PASS_THROUGH,
-        FULLY_FILTERED,
-        PARTIALLY_FILTERED,
     }
 }

@@ -20,5 +20,5 @@ public class ServerChatSession
 
     public MojangKeyPair _mojangKeyPair;
 
-    public RSA? _rsa;
+    public RSA _rsa;
 }

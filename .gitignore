@@ -1,7 +1,5 @@
 appsettings.json
 bin/
 obj/
-*.sln
 config/
 vscode/
-*.csproj
