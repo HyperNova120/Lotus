@@ -1,4 +1,5 @@
 ﻿using LotusCore;
+using LotusCore.BaseClasses.Types;
 using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
 using Microsoft.Extensions.Configuration;
@@ -114,7 +115,14 @@ namespace LotusCore
             Core_Engine.InitCore();
             await Core_Engine.GoInteractiveMode();
 
-            
+            /* FixedBitSet test = new(20);
+            test[19] = true;
+            Console.WriteLine("After");
+            foreach (byte b in test.GetBytes())
+            {
+                string binaryString = Convert.ToString(b, 2).PadLeft(8, '0');
+                Console.Write(binaryString + " ");
+            } */
         }
     }
 }

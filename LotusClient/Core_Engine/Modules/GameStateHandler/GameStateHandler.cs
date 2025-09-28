@@ -205,7 +205,7 @@ namespace LotusCore.Modules.GameStateHandlerModule
         //===========
 
         Dictionary<Identifier, ServerCookie> _ServerCookies = new();
-        public Dictionary<Identifier, RegistryData> _ServerRegistryData = new();
+        Dictionary<Identifier, RegistryData> _ServerRegistryData = new();
         Dictionary<MinecraftUUID, ResourcePack> _ServerResourcePack = new();
         Dictionary<Identifier, List<ServerTag>> _ServerTags = new();
         HashSet<Identifier> _ServerFeatureFlags = new();
@@ -231,6 +231,14 @@ namespace LotusCore.Modules.GameStateHandlerModule
             bool replace = false
         )
         {
+            if (registryData._RegistryNameSpace == new Identifier("minecraft:chat_type"))
+            {
+                foreach (var e in registryData._Entries)
+                {
+                    Logging.LogDebug(e.ID.ToString());
+                    Logging.LogDebug("\n" + e.Data?.GetNBTAsString(1) ?? "\tNO DATA");
+                }
+            }
             //Logging.LogDebug($"UpdateServerRegistryData: {registryData._RegistryNameSpace}");
             if (!_ServerRegistryData.ContainsKey(registryData._RegistryNameSpace))
             {

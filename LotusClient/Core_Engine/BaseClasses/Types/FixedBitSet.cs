@@ -4,7 +4,7 @@ using Org.BouncyCastle.Math.EC.Rfc7748;
 namespace LotusCore.BaseClasses.Types;
 
 /// <summary>
-/// lower bits less significant, higher bits more significant
+/// index 0 = msb, index _maxSize-1 = lsb
 /// </summary>
 public class FixedBitSet
 {
@@ -74,14 +74,17 @@ public class FixedBitSet
         return true;
     } */
 
+    private void CalculateIndexValues(int index, out int byteIndex, out int bitIndex)
+    {
+        byteIndex = index / 8;
+        bitIndex = index % 8;
+    }
+
     private bool Get(int index)
     {
         if (index < 0 || index >= _maxSize)
             throw new IndexOutOfRangeException(nameof(index));
-
-        int byteIndex = index / 8;
-        int bitIndex = index % 8;
-
+        CalculateIndexValues(index, out int byteIndex, out int bitIndex);
         return (_data[byteIndex] & (1 << bitIndex)) != 0;
     }
 
@@ -90,8 +93,7 @@ public class FixedBitSet
         if (index < 0 || index >= _maxSize)
             throw new IndexOutOfRangeException(nameof(index));
 
-        int byteIndex = index / 8;
-        int bitIndex = index % 8;
+        CalculateIndexValues(index, out int byteIndex, out int bitIndex);
         byte mask = (byte)(1 << bitIndex);
 
         if (value)
@@ -105,6 +107,14 @@ public class FixedBitSet
     public byte[] GetBytes()
     {
         byte[] returner = new byte[_data.Length];
+        foreach (byte b in _data)
+        {
+            // Convert to binary string and pad with leading zeros
+            string binary = Convert.ToString(b, 2).PadLeft(8, '0');
+            Console.Write(binary + " ");
+        }
+        Console.WriteLine();
+
         Array.Copy(_data, returner, _data.Length);
         return returner;
     }

@@ -47,11 +47,6 @@ public class ChatMessage : MinecraftPacket
     private byte CreateChecksum(byte[] data)
     {
         int checksum = 0;
-        /* foreach (byte b in data)
-        {
-            checksum ^= b;
-        }
-        return checksum; */
 
         foreach (byte b in data)
         {

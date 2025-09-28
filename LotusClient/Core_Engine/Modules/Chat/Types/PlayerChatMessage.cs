@@ -64,6 +64,7 @@ public class ChatMessageChatFormatting
     public int? _id;
 
     //add chattype
+    public ChatType? _chatType;
 
     public NBT _senderName;
 
