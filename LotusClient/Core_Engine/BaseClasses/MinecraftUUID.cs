@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace LotusCore.BaseClasses;
 
-public class MinecraftUUID
+public class MinecraftUUID : IEquatable<MinecraftUUID>
 {
     public UInt128 _UUID;
 
@@ -62,5 +62,22 @@ public class MinecraftUUID
         byte[] bytes = new byte[16];
         RandomNumberGenerator.Fill(bytes);
         return new MinecraftUUID() { _UUID = BitConverter.ToUInt128(bytes) };
+    }
+
+    public bool Equals(MinecraftUUID? other)
+    {
+        if (other is MinecraftUUID obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            return _UUID == obj._UUID;
+        }
+        return false;
     }
 }

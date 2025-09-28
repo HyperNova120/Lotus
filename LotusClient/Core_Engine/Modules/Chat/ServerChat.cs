@@ -96,18 +96,18 @@ public class ServerChat : IModuleBase
 
     private ServerChatSession CreateServerChatSession(Guid remoteHostID)
     {
+        var minecraftProfile = Core_Engine
+            .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
+            ._minecraftProfile!;
         ServerChatSession returner = new()
         {
-            _userUUID = new MinecraftUUID(
-                Core_Engine
-                    .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
-                    ._minecraftProfile!.id
-            ),
+            _userUUID = new MinecraftUUID(minecraftProfile.id),
             _sessionUUID = MinecraftUUID.CreateVersion4(),
             _mojangKeyPair = Core_Engine
                 .InvokeEvent<MojangKeyPairResult>("GAMESTATE_GetMojangKeyPair")!
                 ._mojangKeyPair!,
             _remoteHostID = remoteHostID,
+            _username = minecraftProfile.name,
         };
         string pkcs8 = returner
             ._mojangKeyPair.keyPair.privateKey.Replace("\r\n", "")
@@ -141,7 +141,7 @@ public class ServerChat : IModuleBase
             _message = msg,
             _timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             _salt = BitConverter.ToInt64(saltBytes),
-            _messageCount = 0,
+            _messageCount = session._numberMessagesSeenSinceLastSentMessage,
             _acknowledged = acknowledgedFixedBitSet,
         };
 
@@ -225,9 +225,13 @@ public class ServerChat : IModuleBase
         );
 
         //update session signed messages
-        if (playerChatMessage._header._messageSignatureBytes != null)
+        var session = _serverChatSessions[args._remoteHostID];
+        if (
+            playerChatMessage._header._messageSignatureBytes != null
+            && !_serverChatSessions[args._remoteHostID]
+                ._userUUID.Equals(playerChatMessage._header._sender)
+        )
         {
-            var session = _serverChatSessions[args._remoteHostID];
             ++session._numberMessagesSeenSinceLastSentMessage;
             session._previousMessageSignatures.Enqueue(
                 playerChatMessage._header._messageSignatureBytes
@@ -235,12 +239,12 @@ public class ServerChat : IModuleBase
             if (session._previousMessageSignatures.Count > 20)
             {
                 session._previousMessageSignatures.Dequeue();
-                //send ack
+                /* //send ack
                 AcknowledgeMessagePacket acknowledgeMessagePacket = new(1);
                 Core_Engine.InvokeEvent(
                     "NETWORKING_SendPacket",
                     new SendPacketArgs(args._remoteHostID, acknowledgeMessagePacket)
-                );
+                ); */
             }
         }
     }

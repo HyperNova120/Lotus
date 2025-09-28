@@ -10,6 +10,8 @@ public class ServerChatSession
 
     public MinecraftUUID _userUUID;
 
+    public string _username;
+
     public MinecraftUUID _sessionUUID = MinecraftUUID.CreateVersion4();
 
     public Queue<byte[]> _previousMessageSignatures = new(); //head = oldest, end = newest
