@@ -20,7 +20,7 @@ using Silk.NET.OpenGL;
 
 namespace LotusCore.Modules.ServerList
 {
-    public class ServerList : IServerListModule
+    public class ServerList : IServerListModule, IModuleBase
     {
         private NBT _ServerListDat;
 

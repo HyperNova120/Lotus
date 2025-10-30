@@ -169,11 +169,11 @@ namespace LotusCore.Modules.ServerLogin.Internals
                 $"Login Success: {packet.data.Length} bytes; UUID:{loginSuccessPacket.uuid}; username:{loginSuccessPacket.Username}"
             ); */
 
-            Logging.LogDebug($"HandleLoginSuccess: test1:{loginSuccessPacket._uuid._UUID:X}");
+            //Logging.LogDebug($"HandleLoginSuccess: test1:{loginSuccessPacket._uuid._UUID:X}");
             MinecraftUUID test = new();
             int offset = 0;
             test.DecodeBytes(packet._data, ref offset);
-            Logging.LogDebug($"HandleLoginSuccess: test2:{test._UUID:X}");
+            //Logging.LogDebug($"HandleLoginSuccess: test2:{test._UUID:X}");
 
             Logging.LogInfo("Successfully Joined Server!");
 
@@ -193,10 +193,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
             );
 
             _networking.SendPacket(packet._remoteHostID, new EmptyPacket(0x03));
-            Core_Engine.InvokeEvent(
-                nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
-                new ConnectionEventArgs(packet._remoteHostID)
-            );
+            _networking.LoginSuccessful(packet._remoteHostID);
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.CONFIG_Start_Config_Process),
                 new ConnectionEventArgs(packet._remoteHostID)

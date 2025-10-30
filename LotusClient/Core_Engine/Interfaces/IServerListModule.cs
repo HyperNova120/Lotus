@@ -9,7 +9,7 @@ using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Interfaces
 {
-    public interface IServerListModule : IModuleBase
+    public interface IServerListModule
     {
         public (string ip, string port) ServerListIPRequest(string serverName);
     }

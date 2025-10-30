@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LotusCore.Modules.GameStateHandlerModule
 {
-    public class GameStateHandler : IGameStateHandlerModule
+    public class GameStateHandler : IGameStateHandlerModule, IModuleBase
     {
         private async Task HttpGetMojangKeyPair(MinecraftAuthResponseModel MinecraftAuth)
         {

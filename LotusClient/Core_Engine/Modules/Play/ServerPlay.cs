@@ -8,7 +8,7 @@ using LotusCore.Modules.ServerPlay.Internals;
 
 namespace LotusCore.Modules.ServerPlay;
 
-public class ServerPlayHandler : IServerPlayHandlerModule
+public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase
 {
     private ServerPlayInternals _playInternals;
 
@@ -89,7 +89,7 @@ public class ServerPlayHandler : IServerPlayHandlerModule
                     _playInternals.HandleSystemChatMessage(packet);
                     break;
                 default:
-                    //Logging.LogError($"Play Packet ID: 0x{packet._Protocol_ID:X} not implemented");
+                    //Logging.LogError($"Play Packet ID: 0x{packet._protocol_ID:X} not implemented");
                     break;
             }
         }

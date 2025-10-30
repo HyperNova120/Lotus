@@ -4,6 +4,8 @@ public static class ProtocolVersionUtils
 {
     public enum ProtocolVersion
     {
+        V1_21_10 = 773,
+        V1_21_9 = 773,
         V1_21_8 = 772,
         V1_21_7 = 772,
         V1_21_6 = 771,
@@ -66,6 +68,8 @@ public static class ProtocolVersionUtils
     {
         switch (version)
         {
+            case ProtocolVersion.V1_21_10:
+                return "1.21.10";
             case ProtocolVersion.V1_21_8:
                 return "1.21.8";
             case ProtocolVersion.V1_21_6:

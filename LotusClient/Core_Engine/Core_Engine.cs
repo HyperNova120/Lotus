@@ -161,7 +161,6 @@ public static class Core_Engine
     //========================
 
     public static T? GetModule<T>(string ModuleIdentifier)
-        where T : IModuleBase
     {
         if (!_Modules.ContainsKey(ModuleIdentifier))
         {

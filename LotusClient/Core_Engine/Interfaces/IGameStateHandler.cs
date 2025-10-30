@@ -6,7 +6,7 @@ using LotusCore.Modules.MojangLogin.Models;
 
 namespace LotusCore.Interfaces
 {
-    public interface IGameStateHandlerModule : IModuleBase
+    public interface IGameStateHandlerModule
     {
         public enum DisplayedSkinPartsFlags
         {

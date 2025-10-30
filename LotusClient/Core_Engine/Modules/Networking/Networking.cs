@@ -11,7 +11,7 @@ using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Modules.LotusNetty
 {
-    public class Networking : INetworkModule
+    public class Networking : INetworkModule, IModuleBase
     {
         private Dictionary<Guid, ServerConnection> _connections = new();
 
@@ -21,7 +21,7 @@ namespace LotusCore.Modules.LotusNetty
 
         public readonly ProtocolVersionUtils.ProtocolVersion _protocolVersion = ProtocolVersionUtils
             .ProtocolVersion
-            .V1_21_8;
+            .V1_21_10;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 

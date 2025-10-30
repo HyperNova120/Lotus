@@ -16,7 +16,7 @@ using Microsoft.Identity.Client.Broker;
 
 namespace LotusCore.Modules.MojangLogin
 {
-    public class MojangLogin : IMojangLoginModule
+    public class MojangLogin : IMojangLoginModule, IModuleBase
     {
         public MinecraftProfile? _userProfile { get; private set; } = null;
         public MinecraftAuthResponseModel? _minecraftAuth { get; private set; } = null;
