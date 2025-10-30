@@ -2,23 +2,28 @@ using System.Net;
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
+using LotusCore.Modules.LotusNetty;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Login;
+using LotusCore.Modules.LotusNetty.Types;
 using LotusCore.Modules.MojangLogin.Commands;
 using LotusCore.Modules.MojangLogin.Models;
 using LotusCore.Modules.MojangLogin.Types;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
-using LotusCore.Modules.Networking.Packets.ServerBound.Login;
-using LotusCore.Modules.Networking.Types;
 using LotusCore.Modules.ServerLogin.Commands;
 using LotusCore.Modules.ServerLogin.Internals;
 using LotusCore.Utils;
-using static LotusCore.Modules.Networking.Networking;
+using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.Modules.ServerLogin
 {
     public class LoginHandler : IModuleBase
     {
-        private readonly ServerLoginInternals internals = new();
+        private ServerLoginInternals _internals;
+
+        private INetworkModule _networkModule;
+
+        private IMojangLoginModule _mojangLoginModule;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
@@ -46,6 +51,17 @@ namespace LotusCore.Modules.ServerLogin
             );
         }
 
+        public void LinkModules()
+        {
+            _networkModule = Core_Engine.GetModule<INetworkModule>("Networking")!;
+            _mojangLoginModule = Core_Engine.GetModule<IMojangLoginModule>("MojangLogin")!;
+            _internals = new(
+                _networkModule,
+                _mojangLoginModule,
+                Core_Engine.GetModule<IGameStateHandlerModule>("GameStateHandler")!
+            );
+        }
+
         public async Task ProcessPacket(object? sender, IEngineEventArgs args)
         {
             try
@@ -55,32 +71,28 @@ namespace LotusCore.Modules.ServerLogin
                 switch (packet._protocol_ID)
                 {
                     case 0x00:
-                        internals.HandleLoginDisconnect(packet);
+                        _internals.HandleLoginDisconnect(packet);
                         break;
                     case 0x01:
-                        await internals.HandleEncryptionRequest(packet);
+                        await _internals.HandleEncryptionRequest(packet);
                         break;
                     case 0x02:
-                        internals.HandleLoginSuccess(packet);
+                        _internals.HandleLoginSuccess(packet);
                         break;
                     case 0x03:
-                        internals.HandleSetCompression(packet);
+                        _internals.HandleSetCompression(packet);
                         break;
                     case 0x04:
-                        internals.HandlePluginRequest(packet);
+                        _internals.HandlePluginRequest(packet);
                         break;
                     case 0x05:
-                        internals.HandleCookieRequest(packet);
+                        _internals.HandleCookieRequest(packet);
                         break;
                     default:
                         Logging.LogError(
                             $"LoginHandler State 0x{packet._protocol_ID:X} Not Implemented"
                         );
-
-                        Core_Engine.InvokeEvent(
-                            "NETWORKING_DisconnectFromServer",
-                            new GuidEngineArgs(eventArgs._remoteHostID)
-                        );
+                        _networkModule.DisconnectFromServer(eventArgs._remoteHostID);
                         Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
@@ -122,11 +134,7 @@ namespace LotusCore.Modules.ServerLogin
                 port = (ushort)(srvPort ?? 25565);
             }
 
-            if (
-                Core_Engine
-                    .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
-                    ._userProfile == null
-            )
+            if (_mojangLoginModule.GetUserProfile() == null)
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
                 /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
@@ -139,34 +147,17 @@ namespace LotusCore.Modules.ServerLogin
             try
             {
                 Logging.LogDebug($"\tisTransfer:{isTransfer}");
-                var conGuid = Core_Engine
-                    .InvokeEvent<GuidResult>(
-                        "NETWORKING_GetServerConnectionInState",
-                        new GetServerConnectionInStateArgs(
-                            remoteHost,
-                            [
-                                ConnectionState.PLAY,
-                                ConnectionState.CONFIGURATION,
-                                ConnectionState.LOGIN,
-                            ]
-                        )
-                    )!
-                    ._result;
+                Guid? conGuid = _networkModule.GetServerConnectionInState(
+                    remoteHost,
+                    [ConnectionState.PLAY, ConnectionState.CONFIGURATION, ConnectionState.LOGIN]
+                );
+
                 if (conGuid != null)
                 {
-                    //disconnect if already connected
-                    Core_Engine.InvokeEvent(
-                        "NETWORKING_DisconnectFromServer",
-                        new GuidEngineArgs((Guid)conGuid)
-                    );
+                    _networkModule.DisconnectFromServer((Guid)conGuid);
                 }
 
-                conGuid = Core_Engine
-                    .InvokeEvent<GuidResult>(
-                        "NETWORKING_ConnectToServer",
-                        new ConnectToServerArgs(remoteHost.ToString(), port)
-                    )!
-                    ._result;
+                conGuid = _networkModule.ConnectToServer(remoteHost.ToString(), port);
 
                 if (conGuid == null)
                 {
@@ -175,36 +166,24 @@ namespace LotusCore.Modules.ServerLogin
                     return;
                 }
 
-                Core_Engine
-                    .InvokeEvent<ServerConnectionResult>(
-                        "NETWORKING_GetServerConnection",
-                        new GuidEngineArgs((Guid)conGuid)
-                    )!
-                    ._serverConnection!._connectionState = ConnectionState.LOGIN;
+                _networkModule.GetServerConnection((Guid)conGuid)!._connectionState =
+                    ConnectionState.LOGIN;
 
-                Core_Engine.InvokeEvent(
-                    "NETWORKING_SendPacket",
-                    new SendPacketArgs(
-                        (Guid)conGuid,
-                        new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
-                        {
-                            _NextState = isTransfer
-                                ? (int)HandshakePacket.Intent.Transfer
-                                : (int)HandshakePacket.Intent.Login,
-                        }
-                    )
+                _networkModule.SendPacket(
+                    (Guid)conGuid,
+                    new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                    {
+                        _NextState = isTransfer
+                            ? (int)HandshakePacket.Intent.Transfer
+                            : (int)HandshakePacket.Intent.Login,
+                    }
                 );
 
-                MinecraftProfile userProfile = Core_Engine
-                    .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
-                    ._userProfile!;
+                MinecraftProfile userProfile = _mojangLoginModule.GetUserProfile()!;
 
-                Core_Engine.InvokeEvent(
-                    "NETWORKING_SendPacket",
-                    new SendPacketArgs(
-                        (Guid)conGuid,
-                        new LoginStartPacket(userProfile.name, new Guid(userProfile.id))
-                    )
+                _networkModule.SendPacket(
+                    (Guid)conGuid,
+                    new LoginStartPacket(userProfile.name, new Guid(userProfile.id))
                 );
             }
             catch (Exception e)

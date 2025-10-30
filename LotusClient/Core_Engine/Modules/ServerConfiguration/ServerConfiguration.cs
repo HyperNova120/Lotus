@@ -1,14 +1,14 @@
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
-using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Modules.ServerConfig.Internals;
 
 namespace LotusCore.Modules.ServerConfig
 {
     public class ServerConfiguration : IModuleBase
     {
-        private readonly ConfigurationInternals _ConfigurationInternals = new();
+        private ConfigurationInternals _ConfigurationInternals;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
@@ -47,6 +47,15 @@ namespace LotusCore.Modules.ServerConfig
                         return null;
                     }
                 )
+            );
+        }
+
+        public void LinkModules()
+        {
+            _ConfigurationInternals = new(
+                Core_Engine.GetModule<INetworkModule>("Networking")!,
+                Core_Engine.GetModule<IGameStateHandlerModule>("GameStateHandler")!,
+                Core_Engine.GetModule<IServerPlayHandlerModule>("ServerPlayHandler")!
             );
         }
 

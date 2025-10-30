@@ -1,12 +1,12 @@
 using System.Net;
 using System.Net.Sockets;
 using LotusCore.EngineEventArgs;
-using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
-using static LotusCore.Modules.Networking.Networking;
+using static LotusCore.Modules.LotusNetty.Networking;
 
-namespace LotusCore.Modules.Networking.Internals
+namespace LotusCore.Modules.LotusNetty.Internals
 {
     public class ServerConnection
     {

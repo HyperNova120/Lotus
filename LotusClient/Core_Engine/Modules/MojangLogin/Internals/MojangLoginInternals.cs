@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
 using LotusCore.Modules.MojangLogin.Models;
-using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.LotusNetty.Internals;
 using LotusCore.Utils;
 using LotusCore.Utils.CacheEncryption;
 using LotusCore.Utils.MinecraftPaths;

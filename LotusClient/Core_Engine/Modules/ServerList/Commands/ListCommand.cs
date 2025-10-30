@@ -1,6 +1,6 @@
 using System.Text.Json;
 using LotusCore.Interfaces;
-using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.LotusNetty.Internals;
 using LotusCore.Modules.ServerList.Models;
 using LotusCore.Utils;
 using LotusCore.Utils;

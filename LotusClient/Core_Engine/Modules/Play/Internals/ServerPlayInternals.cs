@@ -8,16 +8,21 @@ using LotusCore.Modules.Chat.Types;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.GameStateHandlerModule.Models;
 using LotusCore.Modules.GameStateHandlerModule.Types;
-using LotusCore.Modules.Networking.Internals;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ServerBound.Play;
+using LotusCore.Modules.LotusNetty.Internals;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
 using LotusCore.Utils;
 
 namespace LotusCore.Modules.ServerPlay.Internals;
 
 public class ServerPlayInternals
 {
-    public ServerPlayInternals() { }
+    private IServerChatModule _serverChat;
+
+    public ServerPlayInternals(IServerChatModule serverChat)
+    {
+        _serverChat = serverChat;
+    }
 
     //CLIENT TO SERVER
 
@@ -49,10 +54,7 @@ public class ServerPlayInternals
 
     public void HandlePlayerChatMessage(MinecraftServerPacket packet)
     {
-        Core_Engine.InvokeEvent(
-            "CHAT_DecodePlayerChatMessagePacket",
-            new PacketReceivedEventArgs(packet, packet._remoteHostID)
-        );
+        _serverChat.ReceivePlayerChatMessagePacket(packet, packet._remoteHostID);
     }
 
     internal void HandleSystemChatMessage(MinecraftServerPacket packet)

@@ -1,4 +1,4 @@
-namespace LotusCore.Modules.Networking.Internals;
+namespace LotusCore.Modules.LotusNetty.Internals;
 
 public static class ProtocolVersionUtils
 {

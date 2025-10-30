@@ -7,18 +7,19 @@ using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.GameStateHandlerModule.Types;
+using LotusCore.Modules.LotusNetty;
+using LotusCore.Modules.LotusNetty.Internals;
+using LotusCore.Modules.LotusNetty.Models;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Packets.ClientBound.Login;
+using LotusCore.Modules.LotusNetty.Packets.ClientBound.Login.Internals;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Login;
+using LotusCore.Modules.LotusNetty.Types;
 using LotusCore.Modules.MojangLogin.Types;
-using LotusCore.Modules.Networking.Internals;
-using LotusCore.Modules.Networking.Models;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ClientBound.Login;
-using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
-using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
-using LotusCore.Modules.Networking.Packets.ServerBound.Handshake;
-using LotusCore.Modules.Networking.Packets.ServerBound.Login;
-using LotusCore.Modules.Networking.Types;
 using LotusCore.Utils;
-using static LotusCore.Modules.Networking.Networking;
+using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.Modules.ServerLogin.Internals
 {
@@ -30,7 +31,22 @@ namespace LotusCore.Modules.ServerLogin.Internals
             CONFIG_Start_Config_Process,
         }
 
-        public ServerLoginInternals() { }
+        private INetworkModule _networking;
+
+        private IMojangLoginModule _mojangLogin;
+
+        private IGameStateHandlerModule _gameStateHandler;
+
+        public ServerLoginInternals(
+            INetworkModule networking,
+            IMojangLoginModule mojangLogin,
+            IGameStateHandlerModule gameStateHandler
+        )
+        {
+            _networking = networking;
+            _mojangLogin = mojangLogin;
+            _gameStateHandler = gameStateHandler;
+        }
 
         public void HandleLoginDisconnect(MinecraftServerPacket packet)
         {
@@ -40,10 +56,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
             NBT test = new(true);
             test.ReadFromBytes(packet._data, true);
             Console.WriteLine(test.GetNBTAsString());
-            Core_Engine.InvokeEvent(
-                "NETWORKING_DisconnectFromServer",
-                new GuidEngineArgs(packet._remoteHostID)
-            );
+            _networking.DisconnectFromServer(packet._remoteHostID);
             //Core_Engine.CurrentState = Core_Engine.State.Interactive;
             Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
         }
@@ -64,15 +77,9 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
             try
             {
-                string hash = Core_Engine
-                    .InvokeEvent<ServerConnectionResult>(
-                        "NETWORKING_GetServerConnection",
-                        new GuidEngineArgs(packet._remoteHostID)
-                    )!
-                    ._serverConnection!._encryption.GenerateMinecraftAuthenticationHash(
-                        serverID,
-                        PublicKey
-                    );
+                string hash = _networking
+                    .GetServerConnection(packet._remoteHostID)!
+                    ._encryption.GenerateMinecraftAuthenticationHash(serverID, PublicKey);
                 if (ShouldAuth)
                 {
                     await AuthenticateWithMinecraftServer(hash);
@@ -86,29 +93,20 @@ namespace LotusCore.Modules.ServerLogin.Internals
                     EncryptionResponsePacket encryptionResponsePacket =
                         new EncryptionResponsePacket(
                             rsa.Encrypt(
-                                Core_Engine
-                                    .InvokeEvent<ServerConnectionResult>(
-                                        "NETWORKING_GetServerConnection",
-                                        new GuidEngineArgs(packet._remoteHostID)
-                                    )!
-                                    ._serverConnection!._encryption._SharedSecret,
+                                _networking
+                                    .GetServerConnection(packet._remoteHostID)!
+                                    ._encryption._SharedSecret,
                                 false
                             ),
                             rsa.Encrypt(VerifyToken, false)
                         );
 
-                    Core_Engine.InvokeEvent(
-                        "NETWORKING_SendPacket",
-                        new SendPacketArgs(packet._remoteHostID, encryptionResponsePacket)
-                    );
+                    _networking.SendPacket(packet._remoteHostID, encryptionResponsePacket);
                 }
                 //Logging.LogDebug("Set Encryption True");
-                Core_Engine
-                    .InvokeEvent<ServerConnectionResult>(
-                        "NETWORKING_GetServerConnection",
-                        new GuidEngineArgs(packet._remoteHostID)
-                    )!
-                    ._serverConnection!._minecraftPacketHandler._IsEncryptionEnabled = true;
+                _networking
+                    .GetServerConnection(packet._remoteHostID)!
+                    ._minecraftPacketHandler._IsEncryptionEnabled = true;
             }
             catch (Exception e)
             {
@@ -119,13 +117,9 @@ namespace LotusCore.Modules.ServerLogin.Internals
         private async Task<bool> AuthenticateWithMinecraftServer(string serverHash)
         {
             MinecraftServerAuthModel authModel = new MinecraftServerAuthModel();
-            authModel.accessToken = Core_Engine
-                .InvokeEvent<MinecraftAuthResult>("MOJANGLOGIN_GetMinecraftAuth", null)!
-                ._minecraftAuth!.access_token;
+            authModel.accessToken = _mojangLogin.GetMinecraftAuth()!.access_token;
 
-            authModel.selectedProfile = Core_Engine
-                .InvokeEvent<UserProfileResult>("MOJANGLOGIN_GetUserProfile", null)!
-                ._userProfile!.id.Replace("-", "");
+            authModel.selectedProfile = _mojangLogin.GetUserProfile()!.id.Replace("-", "");
             authModel.serverId = serverHash;
 
             HttpRequestMessage msg = HttpHandler.CreateHttpRequestMessage(
@@ -162,12 +156,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
             int offset = 0;
             int CompresionThreshold = VarInt_VarLong.DecodeVarInt(packet._data, ref offset);
             //Logging.LogDebug("CompresionThreshold:" + CompresionThreshold);
-            ServerConnection connection = Core_Engine
-                .InvokeEvent<ServerConnectionResult>(
-                    "NETWORKING_GetServerConnection",
-                    new GuidEngineArgs(packet._remoteHostID)
-                )!
-                ._serverConnection!;
+            ServerConnection connection = _networking.GetServerConnection(packet._remoteHostID)!;
             connection._minecraftPacketHandler._CompresionThreshold = CompresionThreshold;
             connection._minecraftPacketHandler._IsCompressionEnabled = true;
         }
@@ -188,10 +177,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
             Logging.LogInfo("Successfully Joined Server!");
 
-            Core_Engine.InvokeEvent(
-                "NETWORKING_SetIsClientConnectedToPrimaryServer",
-                new BoolEngineArgs(true)
-            );
+            _networking.SetIsClientConnectedToPrimaryServer(true);
             /* foreach (LoginSuccessPacketElement element in loginSuccessPacket.elements)
             {
                 Logging.LogDebug(
@@ -206,10 +192,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
                 Core_Engine.State.Configuration
             );
 
-            Core_Engine.InvokeEvent(
-                "NETWORKING_SendPacket",
-                new SendPacketArgs(packet._remoteHostID, new EmptyPacket(0x03))
-            );
+            _networking.SendPacket(packet._remoteHostID, new EmptyPacket(0x03));
             Core_Engine.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.SERVERLOGIN_loginSuccessful),
                 new ConnectionEventArgs(packet._remoteHostID)
@@ -243,12 +226,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
             Identifier key = new();
             int offset = 0;
             key.GetFromBytes(packet._data, ref offset);
-            var cookie = Core_Engine
-                .InvokeEvent<ServerCookieResult>(
-                    "GAMESTATE_GetServerCookie",
-                    new IdentifierEngineArgs(key)
-                )!
-                ._serverCookie;
+            var cookie = _gameStateHandler.GetServerCookie(key);
 
             CookieResponsepacket cookieResponsepacket = new()
             {
@@ -257,10 +235,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
                 _Payload = cookie?._Payload ?? [],
             };
 
-            Core_Engine.InvokeEvent(
-                "NETWORKING_SendPacket",
-                new SendPacketArgs(packet._remoteHostID, cookieResponsepacket)
-            );
+            _networking.SendPacket(packet._remoteHostID, cookieResponsepacket);
         }
     }
 }

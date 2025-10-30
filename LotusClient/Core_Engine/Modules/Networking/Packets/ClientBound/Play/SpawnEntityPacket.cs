@@ -1,7 +1,7 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ClientBound.Play;
+namespace LotusCore.Modules.LotusNetty.Packets.ClientBound.Play;
 
 public class SpawnEntityPacket
 {

@@ -9,8 +9,8 @@ using LotusCore.Exceptions;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat;
 using LotusCore.Modules.GameStateHandlerModule;
+using LotusCore.Modules.LotusNetty;
 using LotusCore.Modules.MojangLogin;
-using LotusCore.Modules.Networking;
 using LotusCore.Modules.ServerConfig;
 using LotusCore.Modules.ServerList;
 using LotusCore.Modules.ServerLogin;
@@ -132,15 +132,20 @@ public static class Core_Engine
 
     private static void InitCoreModules()
     {
-        RegisterModule("MojangLogin", new MojangLogin());
-        RegisterModule("GameStateHandler", new GameStateHandler());
-        RegisterModule("Networking", new Networking());
-        RegisterModule("ServerList", new ServerList());
-        RegisterModule("LoginHandler", new LoginHandler());
-        RegisterModule("ServerConfiguration", new ServerConfiguration());
-        RegisterModule("ServerPlayHandler", new ServerPlayHandler());
-        RegisterModule("VulkanGraphics", new VulkanGraphics());
-        RegisterModule("ServerChat", new ServerChat());
+        RegisterCoreModule("MojangLogin", new MojangLogin());
+        RegisterCoreModule("GameStateHandler", new GameStateHandler());
+        RegisterCoreModule("Networking", new Networking());
+        RegisterCoreModule("ServerList", new ServerList());
+        RegisterCoreModule("LoginHandler", new LoginHandler());
+        RegisterCoreModule("ServerConfiguration", new ServerConfiguration());
+        RegisterCoreModule("ServerPlayHandler", new ServerPlayHandler());
+        RegisterCoreModule("VulkanGraphics", new VulkanGraphics());
+        RegisterCoreModule("ServerChat", new ServerChat());
+
+        foreach (var module in _Modules.Values)
+        {
+            module.LinkModules();
+        }
     }
 
     private static void InitCoreModuleEventSubscriptions()
@@ -155,7 +160,8 @@ public static class Core_Engine
     //Initiate Core Engine
     //========================
 
-    private static T? GetModule<T>(string ModuleIdentifier)
+    public static T? GetModule<T>(string ModuleIdentifier)
+        where T : IModuleBase
     {
         if (!_Modules.ContainsKey(ModuleIdentifier))
         {
@@ -236,7 +242,7 @@ public static class Core_Engine
         await _Commands[command].ProcessCommand(args);
     }
 
-    public static T? InvokeEvent<T>(string EventIdentifier, IEngineEventArgs? args)
+    private static T? InvokeEvent<T>(string EventIdentifier, IEngineEventArgs? args)
         where T : EngineEventResult
     {
         if (!_Events.ContainsKey(EventIdentifier))
@@ -262,7 +268,7 @@ public static class Core_Engine
         }
     }
 
-    public static T? InvokeEvent<T>(string EventIdentifier)
+    private static T? InvokeEvent<T>(string EventIdentifier)
         where T : EngineEventResult
     {
         return InvokeEvent<T>(EventIdentifier, null);
@@ -316,7 +322,7 @@ public static class Core_Engine
         return true;
     }
 
-    public static void RegisterModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
+    private static void RegisterCoreModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
     {
         if (_Modules.ContainsKey(ModuleIdentifier))
         {
@@ -331,6 +337,12 @@ public static class Core_Engine
         {
             _GraphicsModules.Add(ModuleIdentifier, graphicsModule);
         }
+    }
+
+    public static void RegisterModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
+    {
+        RegisterCoreModule(ModuleIdentifier, ModuleToRegister);
+        ModuleToRegister.LinkModules();
     }
 
     public static bool UnregisterModule(string ModuleIdentifier)
@@ -382,7 +394,7 @@ public static class Core_Engine
                 $"Event {EventIdentifier} Does Not Exist"
             );
         }
-        _Events[EventIdentifier] -= callback;
+        _Events[EventIdentifier!] -= callback;
     }
 
     //==========END===========

@@ -20,8 +20,9 @@ namespace LotusCore.Commands.UserCommands
         public Task ProcessCommand(string[] commandArgs)
         {
             MinecraftProfile? userProfile = Core_Engine
-                .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
-                ._minecraftProfile;
+                .GetModule<IGameStateHandlerModule>("GameStateHandler")!
+                .GetUserProfile();
+
             if (userProfile != null)
             {
                 Console.WriteLine(userProfile.name);

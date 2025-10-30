@@ -46,8 +46,8 @@ namespace LotusCore.Modules.ServerLogin.Commands
             )!; */
             if (
                 Core_Engine
-                    .InvokeEvent<GuidResult>("NETWORKING_GetServerConnectionInState", null)!
-                    ._result != null
+                    .GetModule<INetworkModule>("Networking")!
+                    .IsClientConnectedToPrimaryServer()
             )
             {
                 Console.WriteLine("you are already connected to a server");

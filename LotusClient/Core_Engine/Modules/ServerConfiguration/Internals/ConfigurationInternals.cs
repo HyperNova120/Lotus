@@ -7,20 +7,37 @@ using LotusCore.Interfaces;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 using LotusCore.Modules.GameStateHandlerModule.Types;
-using LotusCore.Modules.Networking.Internals;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
-using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
-using LotusCore.Modules.Networking.Packets.ServerBound.Status;
-using LotusCore.Modules.Networking.Types;
+using LotusCore.Modules.LotusNetty;
+using LotusCore.Modules.LotusNetty.Internals;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Packets.ClientBound.Configuration;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Status;
+using LotusCore.Modules.LotusNetty.Types;
 using LotusCore.Utils;
-using static LotusCore.Modules.Networking.Networking;
+using Microsoft.AspNetCore.Mvc;
+using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.Modules.ServerConfig.Internals;
 
 public class ConfigurationInternals
 {
-    public ConfigurationInternals() { }
+    private INetworkModule _networkModule;
+
+    private IGameStateHandlerModule _gamestateHandler;
+
+    private IServerPlayHandlerModule _serverPlayHandler;
+
+    public ConfigurationInternals(
+        INetworkModule networkModule,
+        IGameStateHandlerModule gamestateHandler,
+        IServerPlayHandlerModule serverPlayHandler
+    )
+    {
+        _networkModule = networkModule;
+        _gamestateHandler = gamestateHandler;
+        _serverPlayHandler = serverPlayHandler;
+    }
 
     public void HandleStoreCookie(MinecraftServerPacket minecraftPacket)
     {
@@ -29,10 +46,7 @@ public class ConfigurationInternals
             Logging.LogDebug("StoreCookie");
             StoreCookiePacket storeCookiePacket = new();
             storeCookiePacket.DecodeFromBytes(minecraftPacket._data);
-            Core_Engine.InvokeEvent(
-                "GAMESTATE_AddServerCookie",
-                new ServerCookieArg(storeCookiePacket._ServerCookie!)
-            );
+            _gamestateHandler.AddServerCookie(storeCookiePacket._ServerCookie!);
         }
         catch (Exception e)
         {
@@ -50,10 +64,7 @@ public class ConfigurationInternals
         }
 
         ServerboundKnownPacksPacket serverboundKnownPacksPacket = new();
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(packet._remoteHostID, serverboundKnownPacksPacket)
-        );
+        _networkModule.SendPacket(packet._remoteHostID, serverboundKnownPacksPacket);
     }
 
     internal void HandleRegistryData(MinecraftServerPacket packet)
@@ -104,10 +115,7 @@ public class ConfigurationInternals
         {
             Logging.LogError("REGISTRY DATA: " + e.ToString());
         }
-        Core_Engine.InvokeEvent(
-            "GAMESTATE_UpdateServerRegistryData",
-            new UpdateServerRegistryDataArgs(registry)
-        );
+        _gamestateHandler.UpdateServerRegistryData(registry);
     }
 
     internal void HandleTransfer(MinecraftServerPacket minecraftPacket)
@@ -122,10 +130,7 @@ public class ConfigurationInternals
                 Core_Engine.State.Configuration,
                 Core_Engine.State.JoiningServer
             );
-            Core_Engine.InvokeEvent(
-                "NETWORKING_DisconnectFromServer",
-                new GuidEngineArgs(minecraftPacket._remoteHostID)
-            );
+            _networkModule.DisconnectFromServer(minecraftPacket._remoteHostID);
             _ = Core_Engine.HandleCommand(
                 "join",
                 [configTransferPacket._Host, "-t", configTransferPacket._Port.ToString()]
@@ -145,10 +150,7 @@ public class ConfigurationInternals
             _Channel = new("minecraft:brand"),
             _Data = StringN.GetBytes("lotus"),
         };
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(remoteHostID, pluginMessagePacket)
-        );
+        _networkModule.SendPacket(remoteHostID, pluginMessagePacket);
     }
 
     public void SendServerboundClientInformation(Guid remoteHostID)
@@ -156,23 +158,20 @@ public class ConfigurationInternals
         Logging.LogDebug("Sending Client Information");
         ClientInformationPacket pluginMessagePacket = new()
         {
-            _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
-            _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
-            _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
-            _DisplayedSkinParts = IGameStateHandler
+            _AllowServerListings = IGameStateHandlerModule._Settings._AllowServerListings,
+            _ChatColors = IGameStateHandlerModule._Settings._ChatSettings._Colors,
+            _ChatMode = (int)IGameStateHandlerModule._Settings._ChatSettings._ChatShown,
+            _DisplayedSkinParts = IGameStateHandlerModule
                 ._Settings
                 ._SkinCustomization
                 ._DisplayedSkinParts,
             _EnableTextFiltering = false, //hardcoded for now, add setting later
             _Locale = "en_US", //hardcoded, chage if more locales added later
-            _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,
-            _ParticleStatus = (int)IGameStateHandler._Settings._VideoSettings._ParticleStatus,
-            _ViewDistance = IGameStateHandler._Settings._VideoSettings._RenderDistance,
+            _MainHand = (int)IGameStateHandlerModule._Settings._SkinCustomization._MainHand,
+            _ParticleStatus = (int)IGameStateHandlerModule._Settings._VideoSettings._ParticleStatus,
+            _ViewDistance = IGameStateHandlerModule._Settings._VideoSettings._RenderDistance,
         };
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(remoteHostID, pluginMessagePacket)
-        );
+        _networkModule.SendPacket(remoteHostID, pluginMessagePacket);
     }
 
     public void SendConfigBrandAndClientInfo(Guid remoteHostID)
@@ -185,22 +184,22 @@ public class ConfigurationInternals
         };
         ClientInformationPacket pluginInfoMessagePacket = new()
         {
-            _AllowServerListings = IGameStateHandler._Settings._AllowServerListings,
-            _ChatColors = IGameStateHandler._Settings._ChatSettings._Colors,
-            _ChatMode = (int)IGameStateHandler._Settings._ChatSettings._ChatShown,
-            _DisplayedSkinParts = IGameStateHandler
+            _AllowServerListings = IGameStateHandlerModule._Settings._AllowServerListings,
+            _ChatColors = IGameStateHandlerModule._Settings._ChatSettings._Colors,
+            _ChatMode = (int)IGameStateHandlerModule._Settings._ChatSettings._ChatShown,
+            _DisplayedSkinParts = IGameStateHandlerModule
                 ._Settings
                 ._SkinCustomization
                 ._DisplayedSkinParts,
             _EnableTextFiltering = false, //hardcoded for now, add setting later
             _Locale = "en_US", //hardcoded, chage if more locales added later
-            _MainHand = (int)IGameStateHandler._Settings._SkinCustomization._MainHand,
-            _ParticleStatus = (int)IGameStateHandler._Settings._VideoSettings._ParticleStatus,
-            _ViewDistance = IGameStateHandler._Settings._VideoSettings._RenderDistance,
+            _MainHand = (int)IGameStateHandlerModule._Settings._SkinCustomization._MainHand,
+            _ParticleStatus = (int)IGameStateHandlerModule._Settings._VideoSettings._ParticleStatus,
+            _ViewDistance = IGameStateHandlerModule._Settings._VideoSettings._RenderDistance,
         };
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPackets",
-            new SendPacketsArgs(remoteHostID, [pluginBrandMessagePacket, pluginInfoMessagePacket])
+        _networkModule.SendPackets(
+            remoteHostID,
+            [pluginBrandMessagePacket, pluginInfoMessagePacket]
         );
     }
 
@@ -210,9 +209,7 @@ public class ConfigurationInternals
         int offset = 0;
         Key.GetFromBytes(packet._data, ref offset);
 
-        var cookie = Core_Engine
-            .InvokeEvent<ServerCookieResult>("GAMESTATE_GetServerCookie", null)!
-            ._serverCookie;
+        var cookie = _gamestateHandler.GetServerCookie(Key);
 
         CookieResponsepacket cookieResponsepacket = new()
         {
@@ -221,10 +218,7 @@ public class ConfigurationInternals
             _Payload = cookie?._Payload ?? [],
         };
 
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(packet._remoteHostID, cookieResponsepacket)
-        );
+        _networkModule.SendPacket(packet._remoteHostID, cookieResponsepacket);
     }
 
     internal void HandlePluginMessage(MinecraftServerPacket packet)
@@ -261,10 +255,7 @@ public class ConfigurationInternals
             throw;
         }
 
-        Core_Engine.InvokeEvent(
-            "NETWORKING_DisconnectFromServer",
-            new GuidEngineArgs(packet._remoteHostID)
-        );
+        _networkModule.DisconnectFromServer(packet._remoteHostID);
         //Core_Engine.CurrentState = Core_Engine.State.Interactive;
         Core_Engine.SignalInteractiveFree(Core_Engine.State.Configuration);
     }
@@ -276,17 +267,11 @@ public class ConfigurationInternals
             Core_Engine.State.Configuration,
             Core_Engine.State.Play
         );
-        Core_Engine
-            .InvokeEvent<ServerConnectionResult>(
-                "NETWORKING_GetServerConnection",
-                new GuidEngineArgs(packet._remoteHostID)
-            )!
-            ._serverConnection!._connectionState = ConnectionState.PLAY;
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(packet._remoteHostID, new EmptyPacket(0x03))
-        );
-        Core_Engine.InvokeEvent("CONFIG_Complete", new ConnectionEventArgs(packet._remoteHostID));
+        _networkModule.GetServerConnection(packet._remoteHostID)!._connectionState =
+            ConnectionState.PLAY;
+
+        _networkModule.SendPacket(packet._remoteHostID, new EmptyPacket(0x03));
+        _serverPlayHandler.InitPlaySession(packet._remoteHostID);
     }
 
     internal void HandleKeepAlive(MinecraftServerPacket packet)
@@ -296,34 +281,23 @@ public class ConfigurationInternals
             0x04,
             NetworkLong.DecodeBytes(packet._data, ref offset)
         );
-        Core_Engine.InvokeEvent(
-            "GAMESTATE_SetLastKeepAliveTime",
-            new DateTimeEngineArgs(DateTime.Now)
-        );
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(packet._remoteHostID, keepAlivePacket)
-        );
+
+        _gamestateHandler.SetLastKeepAliveTime(DateTime.Now);
+        _networkModule.SendPacket(packet._remoteHostID, keepAlivePacket);
     }
 
     internal void HandlePing(MinecraftServerPacket packet)
     {
         int offset = 0;
         PongPacket pongPacket = new(0x05, NetworkInt.DecodeBytes(packet._data, ref offset));
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(packet._remoteHostID, pongPacket)
-        );
+        _networkModule.SendPacket(packet._remoteHostID, pongPacket);
     }
 
     internal void HandleAddResourcePack(MinecraftServerPacket packet)
     {
         ResourcePack resourcePack = new();
         resourcePack.DecodeBytes(packet._data);
-        Core_Engine.InvokeEvent(
-            "GAMESTATE_AddServerResourcePack",
-            new ServerResourcePackArg(resourcePack)
-        );
+        _gamestateHandler.AddServerResourcePack(resourcePack);
     }
 
     internal void HandleRemoveResourcePack(MinecraftServerPacket packet)
@@ -369,10 +343,8 @@ public class ConfigurationInternals
                     values.Add(value);
                     //Logging.LogDebug($"\t\t\tTag_Value: {value}");
                 }
-                Core_Engine.InvokeEvent(
-                    "GAMESTATE_AddServerTag",
-                    new AddServerTagArgs(Registry, TagName, values)
-                );
+
+                _gamestateHandler.AddServerTag(Registry, TagName, values);
             }
         }
     }

@@ -1,9 +1,12 @@
 using LotusCore.BaseClasses;
 using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
+using LotusCore.Modules.GameStateHandlerModule.Models;
+using LotusCore.Modules.GameStateHandlerModule.Types;
+using LotusCore.Modules.MojangLogin.Models;
 
 namespace LotusCore.Interfaces
 {
-    public interface IGameStateHandler
+    public interface IGameStateHandlerModule : IModuleBase
     {
         public enum DisplayedSkinPartsFlags
         {
@@ -189,6 +192,10 @@ namespace LotusCore.Interfaces
         public void SetLastKeepAliveTime(DateTime lastPacketTime);
 
         public DateTime GetLastKeepAliveTime();
+
+        public MojangKeyPair GetMojangKeyPair();
+
+        public MinecraftProfile GetUserProfile();
 
         //==========================================
         //===============PLAY METHODS===============

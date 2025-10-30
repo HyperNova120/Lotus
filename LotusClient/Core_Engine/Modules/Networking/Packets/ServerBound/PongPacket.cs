@@ -1,6 +1,6 @@
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets
+namespace LotusCore.Modules.LotusNetty.Packets
 {
     public class PongPacket : MinecraftPacket
     {

@@ -1,8 +1,8 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
-using LotusCore.Modules.Networking.Packets.ClientBound.Login.Internals;
+using LotusCore.Modules.LotusNetty.Packets.ClientBound.Login.Internals;
 
-namespace LotusCore.Modules.Networking.Packets.ClientBound.Login
+namespace LotusCore.Modules.LotusNetty.Packets.ClientBound.Login
 {
     public class LoginSuccessPacket
     {

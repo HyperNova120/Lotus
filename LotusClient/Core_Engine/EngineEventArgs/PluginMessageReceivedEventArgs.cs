@@ -1,6 +1,7 @@
 using System.Net;
 using LotusCore.BaseClasses;
-using static LotusCore.Modules.Networking.Networking;
+using LotusCore.Modules.LotusNetty;
+using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.EngineEventArgs;
 

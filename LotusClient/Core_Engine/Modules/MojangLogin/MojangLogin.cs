@@ -16,7 +16,7 @@ using Microsoft.Identity.Client.Broker;
 
 namespace LotusCore.Modules.MojangLogin
 {
-    public class MojangLogin : IModuleBase
+    public class MojangLogin : IMojangLoginModule
     {
         public MinecraftProfile? _userProfile { get; private set; } = null;
         public MinecraftAuthResponseModel? _minecraftAuth { get; private set; } = null;
@@ -26,44 +26,16 @@ namespace LotusCore.Modules.MojangLogin
         public void RegisterEvents(Action<string> RegisterEvent)
         {
             RegisterEvent.Invoke("MOJANGLOGIN_loginSuccessful");
-            RegisterEvent.Invoke("MOJANGLOGIN_GetUserProfile");
-            RegisterEvent.Invoke("MOJANGLOGIN_GetMinecraftAuth");
-            RegisterEvent.Invoke("MOJANGLOGIN_LoginAsync");
         }
 
-        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
-        {
-            SubscribeToEvent.Invoke(
-                "MOJANGLOGIN_GetUserProfile",
-                new EngineEventHandler(
-                    (sender, _) =>
-                    {
-                        return new UserProfileResult(_userProfile);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "MOJANGLOGIN_GetMinecraftAuth",
-                new EngineEventHandler(
-                    (sender, _) =>
-                    {
-                        return new MinecraftAuthResult(_minecraftAuth);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "MOJANGLOGIN_LoginAsync",
-                (sender, _) =>
-                {
-                    return new BoolResult(LoginAsync().Result);
-                }
-            );
-        }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
-            RegisterCommand.Invoke("login", new LoginCommand());
+            RegisterCommand.Invoke("login", new LoginCommand(this));
         }
+
+        public void LinkModules() { }
 
         public async Task<bool> LoginAsync()
         {
@@ -142,6 +114,16 @@ namespace LotusCore.Modules.MojangLogin
                 Logging.LogError(e.ToString());
                 return false;
             }
+        }
+
+        public MinecraftProfile? GetUserProfile()
+        {
+            return _userProfile;
+        }
+
+        public MinecraftAuthResponseModel? GetMinecraftAuth()
+        {
+            return _minecraftAuth;
         }
     }
 }

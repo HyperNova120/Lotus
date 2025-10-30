@@ -4,13 +4,14 @@ using System.Net.Sockets;
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
-using LotusCore.Modules.Networking.Internals;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Types;
+using LotusCore.Modules.LotusNetty.Internals;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Types;
+using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
-namespace LotusCore.Modules.Networking
+namespace LotusCore.Modules.LotusNetty
 {
-    public class Networking : IModuleBase
+    public class Networking : INetworkModule
     {
         private Dictionary<Guid, ServerConnection> _connections = new();
 
@@ -31,149 +32,17 @@ namespace LotusCore.Modules.Networking
             RegisterEvent.Invoke("CONFIG_Packet_Received");
             RegisterEvent.Invoke("PLUGIN_Packet_Received");
             RegisterEvent.Invoke("PLAY_Packet_Received");
-
-            RegisterEvent.Invoke("NETWORKING_Version");
-            RegisterEvent.Invoke("NETWORKING_SendPacket");
-            RegisterEvent.Invoke("NETWORKING_SendPackets");
-            RegisterEvent.Invoke("NETWORKING_SendBufferedPackets");
-            RegisterEvent.Invoke("NETWORKING_ConnectToServer");
-            RegisterEvent.Invoke("NETWORKING_DisconnectFromServer");
-            RegisterEvent.Invoke("NETWORKING_GetServerConnection");
-            RegisterEvent.Invoke("NETWORKING_GetServerConnectionInState");
-            RegisterEvent.Invoke("NETWORKING_GetIsClientConnectedToPrimaryServer");
-            RegisterEvent.Invoke("NETWORKING_SetIsClientConnectedToPrimaryServer");
         }
 
-        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
+
+        public void LinkModules() { }
+
+        public void LoginSuccessful(Guid remoteHostID)
         {
-            SubscribeToEvent.Invoke(
-                "SERVERLOGIN_loginSuccessful",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        var connArgs = (ConnectionEventArgs)args!;
-                        GetServerConnection(connArgs._remoteHostID)!._connectionState =
-                            ConnectionState.CONFIGURATION;
-                        _primaryClientServerConnection = connArgs._remoteHostID;
-                        _isClientConnectedToPrimaryServer = true;
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_Version",
-                new EngineEventHandler(
-                    (sender, _) =>
-                    {
-                        return new ProtocolVersionResult(_protocolVersion);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_SendPacket",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        SendPacketArgs Args = (SendPacketArgs)args!;
-                        return new IntResult(
-                            SendPacket(Args._remoteHostID, Args._packet, Args._holdPacketInBuffer)
-                        );
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_SendPackets",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        SendPacketsArgs Args = (SendPacketsArgs)args!;
-                        return new IntResult(
-                            SendPackets(Args._remoteHostID, Args._packets, Args._holdPacketInBuffer)
-                        );
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_SendBufferedPackets",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        GuidEngineArgs Args = (GuidEngineArgs)args!;
-                        return new IntResult(SendBufferedPackets(Args._value));
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_ConnectToServer",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        ConnectToServerArgs Args = (ConnectToServerArgs)args!;
-                        return new GuidResult(ConnectToServer(Args._ip, Args._port));
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_DisconnectFromServer",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        GuidEngineArgs Args = (GuidEngineArgs)args!;
-                        DisconnectFromServer(Args._value);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_GetServerConnection",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        GuidEngineArgs Args = (GuidEngineArgs)args!;
-                        return new ServerConnectionResult(GetServerConnection(Args._value));
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_GetServerConnectionInState",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        GetServerConnectionInStateArgs Args = (GetServerConnectionInStateArgs)args!;
-                        foreach (var con in _connections.Values)
-                        {
-                            if (
-                                con._connectionInfo._remoteHost == Args._remoteHost
-                                && Args._connectionStates.Contains(con._connectionState)
-                            )
-                            {
-                                return new GuidResult(con._id);
-                            }
-                        }
-                        return new GuidResult(null);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_GetIsClientConnectedToPrimaryServer",
-                new EngineEventHandler(
-                    (_, _) =>
-                    {
-                        return new BoolResult(_isClientConnectedToPrimaryServer);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "NETWORKING_SetIsClientConnectedToPrimaryServer",
-                new EngineEventHandler(
-                    (_, args) =>
-                    {
-                        BoolEngineArgs Args = (BoolEngineArgs)args!;
-                        _isClientConnectedToPrimaryServer = Args._value;
-                        return null;
-                    }
-                )
-            );
+            GetServerConnection(remoteHostID)!._connectionState = ConnectionState.CONFIGURATION;
+            SetIsClientConnectedToPrimaryServer(true);
+            _primaryClientServerConnection = remoteHostID;
         }
 
         public int SendPacket(
@@ -527,13 +396,46 @@ namespace LotusCore.Modules.Networking
             }
         }
 
-        public enum ConnectionState
+        public ProtocolVersion GetProtocolVersion()
         {
-            STATUS,
-            LOGIN,
-            CONFIGURATION,
-            PLAY,
-            NONE,
+            return _protocolVersion;
         }
+
+        public bool IsClientConnectedToPrimaryServer()
+        {
+            return _isClientConnectedToPrimaryServer;
+        }
+
+        public void SetIsClientConnectedToPrimaryServer(bool value)
+        {
+            _isClientConnectedToPrimaryServer = value;
+        }
+
+        public Guid? GetServerConnectionInState(
+            IPAddress connectionID,
+            IEnumerable<ConnectionState> connectionStates
+        )
+        {
+            foreach (var con in _connections.Values)
+            {
+                if (
+                    con._connectionInfo._remoteHost == connectionID
+                    && connectionStates.Contains(con._connectionState)
+                )
+                {
+                    return con._id;
+                }
+            }
+            return null;
+        }
+    }
+
+    public enum ConnectionState
+    {
+        STATUS,
+        LOGIN,
+        CONFIGURATION,
+        PLAY,
+        NONE,
     }
 }

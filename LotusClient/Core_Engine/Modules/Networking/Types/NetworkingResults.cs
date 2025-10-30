@@ -1,7 +1,7 @@
 using LotusCore.EngineEvents;
-using LotusCore.Modules.Networking.Internals;
+using LotusCore.Modules.LotusNetty.Internals;
 
-namespace LotusCore.Modules.Networking.Types;
+namespace LotusCore.Modules.LotusNetty.Types;
 
 public class ProtocolVersionResult : EngineEventResult
 {

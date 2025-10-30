@@ -1,7 +1,7 @@
 using LotusCore.BaseClasses.Types;
 using Microsoft.Identity.Client;
 
-namespace LotusCore.Modules.Networking.Packets
+namespace LotusCore.Modules.LotusNetty.Packets
 {
     public class KeepAlivePacket : MinecraftPacket
     {

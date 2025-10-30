@@ -1,6 +1,6 @@
 using System.Collections;
 using LotusCore.BaseClasses.Types;
-using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.LotusNetty.Packets;
 
 namespace LotusCore.Modules.Chat.Types;
 

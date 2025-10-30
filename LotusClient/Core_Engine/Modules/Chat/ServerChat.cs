@@ -9,10 +9,10 @@ using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat.Types;
 using LotusCore.Modules.GameStateHandlerModule.Types;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play.Chat;
 using LotusCore.Modules.MojangLogin.Models;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Packets.ServerBound.Play;
-using LotusCore.Modules.Networking.Packets.ServerBound.Play.Chat;
 using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
 using Microsoft.Identity.Client.NativeInterop;
@@ -26,40 +26,44 @@ using Org.BouncyCastle.Security;
 
 namespace LotusCore.Modules.Chat;
 
-public class ServerChat : IModuleBase
+public class ServerChat : IServerChatModule
 {
+    private INetworkModule _networking;
+    private IGameStateHandlerModule _gamestate;
     Dictionary<Guid, ServerChatSession> _serverChatSessions = new();
 
     public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
-    public void RegisterEvents(Action<string> RegisterEvent)
+    public void RegisterEvents(Action<string> RegisterEvent) { }
+
+    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
+
+    public void StartChatSession(Guid remoteHostID)
     {
-        RegisterEvent.Invoke("CHAT_StartChatSession");
-        RegisterEvent.Invoke("CHAT_DecodePlayerChatMessagePacket");
+        ServerChatSession session = CreateServerChatSession(remoteHostID);
+        _serverChatSessions[remoteHostID] = session;
+
+        PlayerSessionPacket playerSessionPacket = new()
+        {
+            _PublicKey = Convert.FromBase64String(
+                session
+                    ._mojangKeyPair.keyPair.publicKey.Replace("-----BEGIN RSA PUBLIC KEY-----", "")
+                    .Replace("-----END RSA PUBLIC KEY-----", "")
+            ),
+            _Signature = Convert.FromBase64String(session._mojangKeyPair.publicKeySignatureV2),
+            _ExpiresAt = DateTimeOffset
+                .Parse(session._mojangKeyPair.expiresAt)
+                .ToUnixTimeMilliseconds(),
+            _UUID = session._sessionUUID,
+        };
+
+        _networking.SendPacket(remoteHostID, playerSessionPacket);
     }
 
-    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
+    public void LinkModules()
     {
-        SubscribeToEvent.Invoke(
-            "CHAT_StartChatSession",
-            new EngineEventHandler(
-                (sender, args) =>
-                {
-                    StartServerChatSessionAsync(((GuidEngineArgs)args!)._value);
-                    return null;
-                }
-            )
-        );
-        SubscribeToEvent.Invoke(
-            "CHAT_DecodePlayerChatMessagePacket",
-            new EngineEventHandler(
-                (sender, args) =>
-                {
-                    ReceivePlayerChatMessagePacket((PacketReceivedEventArgs)args!);
-                    return null;
-                }
-            )
-        );
+        _networking = Core_Engine.GetModule<INetworkModule>("Networking")!;
+        _gamestate = Core_Engine.GetModule<IGameStateHandlerModule>("GameStateHandler")!;
     }
 
     public async Task StartServerChatSessionAsync(Guid remoteHostID)
@@ -81,31 +85,25 @@ public class ServerChat : IModuleBase
             _UUID = session._sessionUUID,
         };
 
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(remoteHostID, playerSessionPacket)
-        );
+        _networking.SendPacket(remoteHostID, playerSessionPacket);
 
         await Task.Delay(1000);
         ChatMessage msg = GenerateSignedChatMessage(remoteHostID, "Hello World!")!;
-        Core_Engine.InvokeEvent("NETWORKING_SendPacket", new SendPacketArgs(remoteHostID, msg));
+        _networking.SendPacket(remoteHostID, msg);
+
         await Task.Delay(5000);
         msg = GenerateSignedChatMessage(remoteHostID, "Hello World 2!")!;
-        Core_Engine.InvokeEvent("NETWORKING_SendPacket", new SendPacketArgs(remoteHostID, msg));
+        _networking.SendPacket(remoteHostID, msg);
     }
 
     private ServerChatSession CreateServerChatSession(Guid remoteHostID)
     {
-        var minecraftProfile = Core_Engine
-            .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
-            ._minecraftProfile!;
+        var minecraftProfile = _gamestate.GetUserProfile();
         ServerChatSession returner = new()
         {
             _userUUID = new MinecraftUUID(minecraftProfile.id),
             _sessionUUID = MinecraftUUID.CreateVersion4(),
-            _mojangKeyPair = Core_Engine
-                .InvokeEvent<MojangKeyPairResult>("GAMESTATE_GetMojangKeyPair")!
-                ._mojangKeyPair!,
+            _mojangKeyPair = _gamestate.GetMojangKeyPair(),
             _remoteHostID = remoteHostID,
             _username = minecraftProfile.name,
         };
@@ -203,21 +201,21 @@ public class ServerChat : IModuleBase
         return rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
     }
 
-    public void ReceivePlayerChatMessagePacket(PacketReceivedEventArgs args)
+    public void ReceivePlayerChatMessagePacket(MinecraftServerPacket packet, Guid remoteHostID)
     {
         PlayerChatMessage playerChatMessage = new();
         int offset = 0;
         //Header
-        DecodePlayerChatMessageHeader(playerChatMessage, args._packet, ref offset);
+        DecodePlayerChatMessageHeader(playerChatMessage, packet, ref offset);
 
         //Body
-        DecodePlayerChatMessageBody(playerChatMessage, args._packet, ref offset);
+        DecodePlayerChatMessageBody(playerChatMessage, packet, ref offset);
 
         //Other
-        DecodePlayerChatMessageOther(playerChatMessage, args._packet, ref offset);
+        DecodePlayerChatMessageOther(playerChatMessage, packet, ref offset);
 
         //Chat Formatting
-        DecodePlayerChatMessageChatFormatting(playerChatMessage, args._packet, ref offset);
+        DecodePlayerChatMessageChatFormatting(playerChatMessage, packet, ref offset);
 
         Logging.LogDebug(playerChatMessage._chatFormatting._senderName.ToString());
         Logging.LogInfo(
@@ -225,10 +223,10 @@ public class ServerChat : IModuleBase
         );
 
         //update session signed messages
-        var session = _serverChatSessions[args._remoteHostID];
+        var session = _serverChatSessions[remoteHostID];
         if (
             playerChatMessage._header._messageSignatureBytes != null
-            && !_serverChatSessions[args._remoteHostID]
+            && !_serverChatSessions[remoteHostID]
                 ._userUUID.Equals(playerChatMessage._header._sender)
         )
         {

@@ -1,10 +1,7 @@
-using System.Data;
 using System.Net;
 using LotusCore.EngineEventArgs;
-using LotusCore.EngineEvents;
-using LotusCore.Modules.Networking;
-using LotusCore.Modules.Networking.Packets;
-using Microsoft.AspNetCore.Authentication.OAuth;
+using LotusCore.Modules.LotusNetty;
+using LotusCore.Modules.LotusNetty.Packets;
 
 public class SendPacketArgs : IEngineEventArgs
 {
@@ -63,11 +60,11 @@ public class GetServerConnectionInStateArgs : IEngineEventArgs
 {
     public IPAddress _remoteHost;
 
-    public IEnumerable<Networking.ConnectionState> _connectionStates;
+    public IEnumerable<ConnectionState> _connectionStates;
 
     public GetServerConnectionInStateArgs(
         IPAddress remoteHost,
-        IEnumerable<Networking.ConnectionState> connectionStates
+        IEnumerable<ConnectionState> connectionStates
     )
     {
         _remoteHost = remoteHost;

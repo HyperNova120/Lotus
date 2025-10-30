@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 
-namespace LotusCore.Modules.Networking.Internals
+namespace LotusCore.Modules.LotusNetty.Internals
 {
     public static class ZlibCompressionHandler
     {

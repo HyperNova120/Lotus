@@ -1,18 +1,20 @@
 using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
-using LotusCore.Modules.Networking.Internals;
-using LotusCore.Modules.Networking.Packets;
-using LotusCore.Modules.Networking.Types;
+using LotusCore.Modules.LotusNetty.Internals;
+using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.LotusNetty.Types;
 using LotusCore.Modules.ServerPlay.Internals;
 
 namespace LotusCore.Modules.ServerPlay;
 
-public class ServerPlayHandler : IModuleBase
+public class ServerPlayHandler : IServerPlayHandlerModule
 {
-    private readonly ServerPlayInternals _playInternals = new();
+    private ServerPlayInternals _playInternals;
 
-    public ServerPlayHandler() { }
+    private INetworkModule _networkingModule;
+
+    private IServerChatModule _serverChat;
 
     public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
@@ -30,20 +32,18 @@ public class ServerPlayHandler : IModuleBase
                 }
             )
         );
+    }
 
-        SubscribeToEvent.Invoke(
-            "CONFIG_Complete",
-            new EngineEventHandler(
-                (sender, args) =>
-                {
-                    Core_Engine.InvokeEvent(
-                        "CHAT_StartChatSession",
-                        new GuidEngineArgs(((ConnectionEventArgs)args!)._remoteHostID)
-                    );
-                    return null;
-                }
-            )
-        );
+    public void LinkModules()
+    {
+        _networkingModule = Core_Engine.GetModule<INetworkModule>("Networking")!;
+        _serverChat = Core_Engine.GetModule<IServerChatModule>("ServerChat")!;
+        _playInternals = new(_serverChat);
+    }
+
+    public void InitPlaySession(Guid remoteHostID)
+    {
+        _serverChat.StartChatSession(remoteHostID);
     }
 
     public async Task ProcessPacket(object? sender, IEngineEventArgs args)
@@ -52,12 +52,9 @@ public class ServerPlayHandler : IModuleBase
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
             MinecraftServerPacket packet = eventArgs._packet;
-            ServerConnection serverConnection = Core_Engine
-                .InvokeEvent<ServerConnectionResult>(
-                    "NETWORKING_GetServerConnection",
-                    new GuidEngineArgs(packet._remoteHostID)
-                )!
-                ._serverConnection!;
+            ServerConnection serverConnection = _networkingModule.GetServerConnection(
+                packet._remoteHostID
+            )!;
             if (packet._protocol_ID == 0x00)
             {
                 HandleBundleDelimiter(packet);
@@ -104,12 +101,10 @@ public class ServerPlayHandler : IModuleBase
 
     private void HandleBundleDelimiter(MinecraftServerPacket packet)
     {
-        ServerConnection serverConnection = Core_Engine
-            .InvokeEvent<ServerConnectionResult>(
-                "NETWORKING_GetServerConnection",
-                new GuidEngineArgs(packet._remoteHostID)
-            )!
-            ._serverConnection!;
+        ServerConnection serverConnection = _networkingModule.GetServerConnection(
+            packet._remoteHostID
+        )!;
+
         if (!serverConnection._packetInfo._activeBundleDelimiter)
         {
             serverConnection._packetInfo._activeBundleDelimiter = true;

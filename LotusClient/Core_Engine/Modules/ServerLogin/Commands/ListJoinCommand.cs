@@ -28,23 +28,22 @@ namespace LotusCore.Modules.ServerLogin.Commands
             {
                 serverListName += (serverListName == "") ? s : $" {s}";
             }
-            ServerListServerIPResult result = Core_Engine.InvokeEvent<ServerListServerIPResult>(
-                "ServerListIP_Request",
-                new ServerListIPRequestEventArgs(serverListName)
-            )!;
-            if (result == null || (result != null && result._ip == ""))
+            (string ip, string port) = Core_Engine
+                .GetModule<IServerListModule>("ServerList")!
+                .ServerListIPRequest(serverListName);
+            if (ip == "")
             {
                 Console.WriteLine("Server not found in server list");
                 return;
             }
 
-            if (result._port == "")
+            if (port == "")
             {
-                await Core_Engine.HandleCommand("join", [result._ip]);
+                await Core_Engine.HandleCommand("join", [ip]);
             }
             else
             {
-                await Core_Engine.HandleCommand("join", [result._ip, result._port]);
+                await Core_Engine.HandleCommand("join", [ip, port]);
             }
 
             /* string resultString = (result == null) ? "NULL" : $"{result._ip}:{result._port}";

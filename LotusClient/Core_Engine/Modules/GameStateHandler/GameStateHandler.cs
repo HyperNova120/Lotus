@@ -9,19 +9,17 @@ using LotusCore.Interfaces;
 using LotusCore.Modules.GameStateHandlerModule.BaseClasses;
 using LotusCore.Modules.GameStateHandlerModule.Models;
 using LotusCore.Modules.GameStateHandlerModule.Types;
+using LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration;
 using LotusCore.Modules.MojangLogin.MinecraftAuthModels;
 using LotusCore.Modules.MojangLogin.Models;
-using LotusCore.Modules.Networking.Packets.ServerBound.Configuration;
 using LotusCore.Utils;
 using LotusCore.Utils.MinecraftPaths;
 using Microsoft.AspNetCore.Identity;
 
 namespace LotusCore.Modules.GameStateHandlerModule
 {
-    public class GameStateHandler : IModuleBase, IGameStateHandler
+    public class GameStateHandler : IGameStateHandlerModule
     {
-        public GameStateHandler() { }
-
         private async Task HttpGetMojangKeyPair(MinecraftAuthResponseModel MinecraftAuth)
         {
             try
@@ -200,6 +198,8 @@ namespace LotusCore.Modules.GameStateHandlerModule
             );
         }
 
+        public void LinkModules() { }
+
         //===========
         //IGameStateHandler
         //===========
@@ -357,6 +357,16 @@ namespace LotusCore.Modules.GameStateHandlerModule
         public DateTime GetLastKeepAliveTime()
         {
             return _LastKeepAlivePacketTime;
+        }
+
+        public MojangKeyPair GetMojangKeyPair()
+        {
+            return _MojangKeyPair;
+        }
+
+        public MinecraftProfile GetUserProfile()
+        {
+            return _UserProfile;
         }
     }
 }

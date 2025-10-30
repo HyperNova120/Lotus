@@ -17,5 +17,7 @@ namespace LotusCore.Interfaces
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent);
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand);
+
+        public void LinkModules();
     }
 }

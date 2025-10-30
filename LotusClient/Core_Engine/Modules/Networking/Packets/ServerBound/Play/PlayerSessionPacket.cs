@@ -1,7 +1,7 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ServerBound.Play;
+namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
 
 public class PlayerSessionPacket : MinecraftPacket
 {

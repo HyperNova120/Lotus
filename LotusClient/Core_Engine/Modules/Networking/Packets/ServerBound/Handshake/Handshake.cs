@@ -1,7 +1,8 @@
 using LotusCore.BaseClasses.Types;
-using LotusCore.Modules.Networking.Types;
+using LotusCore.Interfaces;
+using LotusCore.Modules.LotusNetty.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
+namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake
 {
     public class HandshakePacket : MinecraftPacket
     {
@@ -26,10 +27,7 @@ namespace LotusCore.Modules.Networking.Packets.ServerBound.Handshake
             return
             [
                 .. VarInt_VarLong.EncodeInt(
-                    (int)
-                        Core_Engine
-                            .InvokeEvent<ProtocolVersionResult>("NETWORKING_Version", null)!
-                            ._version
+                    (int)Core_Engine.GetModule<INetworkModule>("Networking")!.GetProtocolVersion()
                 ),
                 .. StringN.GetBytes(_ServerAddress),
                 .. BitConverter.GetBytes(_ServerPort),

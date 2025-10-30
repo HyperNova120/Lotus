@@ -1,6 +1,6 @@
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ClientBound.Configuration;
+namespace LotusCore.Modules.LotusNetty.Packets.ClientBound.Configuration;
 
 public class ConfigClientboundKnownPacks
 {

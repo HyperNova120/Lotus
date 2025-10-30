@@ -1,5 +1,5 @@
 using System.Net;
-using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.LotusNetty.Packets;
 
 namespace LotusCore.EngineEventArgs
 {

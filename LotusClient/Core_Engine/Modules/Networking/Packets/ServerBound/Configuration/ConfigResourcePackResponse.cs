@@ -1,7 +1,7 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ServerBound.Configuration
+namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration
 {
     public class ConfigResourcePackResponse : MinecraftPacket
     {

@@ -119,5 +119,7 @@ namespace Graphics_Engine
             Marshal.FreeHGlobal((IntPtr)appInfo.PApplicationName);
             Marshal.FreeHGlobal((IntPtr)appInfo.PEngineName);
         }
+
+        public void LinkModules() { }
     }
 }

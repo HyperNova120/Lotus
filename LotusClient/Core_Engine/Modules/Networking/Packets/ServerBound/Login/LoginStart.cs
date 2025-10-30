@@ -1,7 +1,7 @@
-using LotusCore.Modules.Networking.Packets;
+using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ServerBound.Login
+namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Login
 {
     public class LoginStartPacket : MinecraftPacket
     {

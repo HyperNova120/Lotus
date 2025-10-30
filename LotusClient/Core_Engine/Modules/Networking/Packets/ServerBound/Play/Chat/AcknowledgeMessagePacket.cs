@@ -1,6 +1,6 @@
 using LotusCore.BaseClasses.Types;
 
-namespace LotusCore.Modules.Networking.Packets.ServerBound.Play.Chat;
+namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Play.Chat;
 
 public class AcknowledgeMessagePacket : MinecraftPacket
 {
