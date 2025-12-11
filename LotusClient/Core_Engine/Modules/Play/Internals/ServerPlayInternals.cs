@@ -19,42 +19,27 @@ public class ServerPlayInternals
 {
     private IServerChatModule _serverChat;
 
-    public ServerPlayInternals(IServerChatModule serverChat)
+    private INetworkModule _networking;
+
+    public ServerPlayInternals(IServerChatModule serverChat, INetworkModule networking)
     {
         _serverChat = serverChat;
+        _networking = networking;
     }
-
-    //CLIENT TO SERVER
-
-    /* public void ServerboundPlayerSession(Guid remoteHostID)
-    {
-        MojangKeyPair mojangKeyPair = Core_Engine
-            .InvokeEvent<MojangKeyPairResult>("GAMESTATE_GetMojangKeyPair")!
-            ._mojangKeyPair!;
-        PlayerSessionPacket playerSessionPacket = new()
-        {
-            _PublicKey = MinecraftKeyFormatter.ConvertPemToX509Bytes(
-                mojangKeyPair.keyPair.publicKey
-            ),
-            _Signature = Convert.FromBase64String(mojangKeyPair.publicKeySignatureV2),
-            _ExpiresAt = DateTimeOffset.Parse(mojangKeyPair.expiresAt).ToUnixTimeMilliseconds(),
-            _UUID = new MinecraftUUID(
-                Core_Engine
-                    .InvokeEvent<MinecraftProfileResult>("GAMESTATE_GetUserProfile")!
-                    ._minecraftProfile!.id
-            ),
-        };
-        Core_Engine.InvokeEvent(
-            "NETWORKING_SendPacket",
-            new SendPacketArgs(remoteHostID, playerSessionPacket)
-        );
-    } */
-
-    //SERVER TO CLIENT
 
     public void HandlePlayerChatMessage(MinecraftServerPacket packet)
     {
         _serverChat.ReceivePlayerChatMessagePacket(packet, packet._remoteHostID);
+    }
+
+    internal void HandleKeepAlive(MinecraftServerPacket packet)
+    {
+        Logging.LogDebug(
+            $"\tKeepAlive:0x{string.Concat(packet._data.Select(b => b.ToString("X2")))}"
+        );
+        int offset = 0;
+        KeepAlivePacket KAP = new(0x1B, NetworkLong.DecodeBytes(packet._data, ref offset));
+        _networking.SendPacket(packet._remoteHostID, KAP);
     }
 
     internal void HandleSystemChatMessage(MinecraftServerPacket packet)

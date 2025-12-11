@@ -17,7 +17,7 @@ using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.Modules.ServerLogin
 {
-    public class LoginHandler : IModuleBase
+    public class LoginHandler : IModuleBase, IPacketHandler
     {
         private ServerLoginInternals _internals;
 
@@ -37,19 +37,7 @@ namespace LotusCore.Modules.ServerLogin
             RegisterEvent.Invoke("CONFIG_Start_Config_Process");
         }
 
-        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
-        {
-            SubscribeToEvent.Invoke(
-                "LOGIN_Packet_Received",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        _ = ProcessPacket(sender, args);
-                        return null;
-                    }
-                )
-            );
-        }
+        public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
         public void LinkModules()
         {
@@ -62,12 +50,10 @@ namespace LotusCore.Modules.ServerLogin
             );
         }
 
-        public async Task ProcessPacket(object? sender, IEngineEventArgs args)
+        public async Task ProcessPacket(MinecraftServerPacket packet)
         {
             try
             {
-                PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-                MinecraftServerPacket packet = eventArgs._packet;
                 switch (packet._protocol_ID)
                 {
                     case 0x00:
@@ -92,7 +78,7 @@ namespace LotusCore.Modules.ServerLogin
                         Logging.LogError(
                             $"LoginHandler State 0x{packet._protocol_ID:X} Not Implemented"
                         );
-                        _networkModule.DisconnectFromServer(eventArgs._remoteHostID);
+                        _networkModule.DisconnectFromServer(packet._remoteHostID);
                         Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
@@ -100,10 +86,6 @@ namespace LotusCore.Modules.ServerLogin
             catch (Exception e)
             {
                 Logging.LogError($"LoginHandler; ProcessPacket ERROR: {e}");
-                /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
-                {
-                    Core_Engine.CurrentState = Core_Engine.State.Interactive;
-                } */
                 Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }

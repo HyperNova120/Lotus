@@ -307,14 +307,14 @@ public class ConfigurationInternals
 
     internal void HandleFeatureFlags(MinecraftServerPacket packet)
     {
-        Logging.LogDebug("HandleFeatureFlags");
+        //Logging.LogDebug("HandleFeatureFlags");
         int offset = 0;
         int arraySize = PrefixedArray.GetSizeOfArray(packet._data, ref offset);
         for (int i = 0; i < arraySize; i++)
         {
             Identifier tmp = new();
             tmp.GetFromBytes(packet._data, ref offset);
-            Logging.LogDebug("\t" + tmp.GetString());
+            //Logging.LogDebug("\t" + tmp.GetString());
         }
     }
 

@@ -19,6 +19,10 @@ namespace LotusCore.Modules.LotusNetty
 
         private Guid? _primaryClientServerConnection;
 
+        private IPacketHandler _loginPacketHandler;
+        private IPacketHandler _configPacketHandler;
+        private IPacketHandler _playPacketHandler;
+
         public readonly ProtocolVersionUtils.ProtocolVersion _protocolVersion = ProtocolVersionUtils
             .ProtocolVersion
             .V1_21_10;
@@ -36,7 +40,12 @@ namespace LotusCore.Modules.LotusNetty
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
-        public void LinkModules() { }
+        public void LinkModules()
+        {
+            _loginPacketHandler = Core_Engine.GetModule<IPacketHandler>("LoginHandler")!;
+            _configPacketHandler = Core_Engine.GetModule<IPacketHandler>("ServerConfiguration")!;
+            _playPacketHandler = Core_Engine.GetModule<IPacketHandler>("ServerPlayHandler")!;
+        }
 
         public void LoginSuccessful(Guid remoteHostID)
         {
@@ -347,24 +356,13 @@ namespace LotusCore.Modules.LotusNetty
                         );
                         break;
                     case ConnectionState.LOGIN:
-                        Core_Engine.InvokeEvent(
-                            "LOGIN_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._id)
-                        );
+                        _loginPacketHandler.ProcessPacket(packet);
                         break;
                     case ConnectionState.CONFIGURATION:
-                        Core_Engine.InvokeEvent(
-                            "CONFIG_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._id)
-                        );
+                        _configPacketHandler.ProcessPacket(packet);
                         break;
                     case ConnectionState.PLAY:
-                        Core_Engine.InvokeEvent(
-                            "PLAY_Packet_Received",
-                            new PacketReceivedEventArgs(packet, connection._id)
-                        );
-                        //DisconnectFromServer(connection._RemoteHost);
-                        //Core_Engine.SignalInteractiveResetServerHolds();
+                        _playPacketHandler.ProcessPacket(packet);
                         break;
                     default:
                         Logging.LogError(

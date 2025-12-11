@@ -8,7 +8,7 @@ using LotusCore.Modules.ServerPlay.Internals;
 
 namespace LotusCore.Modules.ServerPlay;
 
-public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase
+public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase, IPacketHandler
 {
     private ServerPlayInternals _playInternals;
 
@@ -20,25 +20,13 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase
 
     public void RegisterEvents(Action<string> RegisterEvent) { }
 
-    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
-    {
-        SubscribeToEvent.Invoke(
-            "PLAY_Packet_Received",
-            new EngineEventHandler(
-                (sender, args) =>
-                {
-                    _ = ProcessPacket(sender, args);
-                    return null;
-                }
-            )
-        );
-    }
+    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
     public void LinkModules()
     {
         _networkingModule = Core_Engine.GetModule<INetworkModule>("Networking")!;
         _serverChat = Core_Engine.GetModule<IServerChatModule>("ServerChat")!;
-        _playInternals = new(_serverChat);
+        _playInternals = new(_serverChat, _networkingModule);
     }
 
     public void InitPlaySession(Guid remoteHostID)
@@ -46,12 +34,10 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase
         _serverChat.StartChatSession(remoteHostID);
     }
 
-    public async Task ProcessPacket(object? sender, IEngineEventArgs args)
+    public async Task ProcessPacket(MinecraftServerPacket packet)
     {
         try
         {
-            PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-            MinecraftServerPacket packet = eventArgs._packet;
             ServerConnection serverConnection = _networkingModule.GetServerConnection(
                 packet._remoteHostID
             )!;
@@ -80,6 +66,11 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase
         {
             switch (packet._protocol_ID)
             {
+                case 0x26:
+                    //keep alive
+                    Logging.LogDebug("PLAY Keep Alive");
+                    _playInternals.HandleKeepAlive(packet);
+                    break;
                 case 0x3A:
                     Logging.LogDebug("HandlePlayerChatMessage");
                     _playInternals.HandlePlayerChatMessage(packet);

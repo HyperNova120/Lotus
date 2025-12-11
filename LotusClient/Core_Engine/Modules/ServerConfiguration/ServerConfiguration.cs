@@ -6,7 +6,7 @@ using LotusCore.Modules.ServerConfig.Internals;
 
 namespace LotusCore.Modules.ServerConfig
 {
-    public class ServerConfiguration : IModuleBase
+    public class ServerConfiguration : IModuleBase, IPacketHandler
     {
         private ConfigurationInternals _ConfigurationInternals;
 
@@ -20,27 +20,11 @@ namespace LotusCore.Modules.ServerConfig
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
             SubscribeToEvent.Invoke(
-                "CONFIG_Packet_Received",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        _ = ProcessPacket(sender, args);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
                 "CONFIG_Start_Config_Process",
                 new EngineEventHandler(
                     (sender, args) =>
                     {
                         ConnectionEventArgs connectionEventArgs = (ConnectionEventArgs)args!;
-                        /* configurationInternals.SendServerboundPluginMessage(
-                            connectionEventArgs.remoteHost
-                        );
-                        configurationInternals.SendServerboundClientInformation(
-                            connectionEventArgs.remoteHost
-                        ); */
                         _ConfigurationInternals.SendConfigBrandAndClientInfo(
                             connectionEventArgs._remoteHostID
                         );
@@ -59,12 +43,10 @@ namespace LotusCore.Modules.ServerConfig
             );
         }
 
-        public async Task ProcessPacket(object? sender, IEngineEventArgs args)
+        public async Task ProcessPacket(MinecraftServerPacket packet)
         {
             try
             {
-                PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
-                MinecraftServerPacket packet = eventArgs._packet;
                 switch (packet._protocol_ID)
                 {
                     case 0x00:
@@ -116,21 +98,12 @@ namespace LotusCore.Modules.ServerConfig
                         Logging.LogError(
                             $"ServerConfiguration State 0x{packet._protocol_ID:X} Not Implemented"
                         );
-                        /* Core_Engine
-                            .GetModule<Networking.Networking>("Networking")!
-                            .DisconnectFromServer(packetArgs.remoteHost);
-                        Core_Engine.SignalInteractiveResetServerHolds(); */
-
                         break;
                 }
             }
             catch (Exception e)
             {
                 Logging.LogError($"ServerConfiguration; ProcessPacket ERROR: {e}");
-                /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
-                {
-                    Core_Engine.CurrentState = Core_Engine.State.Interactive;
-                } */
             }
         }
     }

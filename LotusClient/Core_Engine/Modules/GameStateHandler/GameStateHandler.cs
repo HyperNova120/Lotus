@@ -62,18 +62,7 @@ namespace LotusCore.Modules.GameStateHandlerModule
         //===========
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
-        public void RegisterEvents(Action<string> RegisterEvent)
-        {
-            RegisterEvent.Invoke("GAMESTATE_GetServerCookie");
-            RegisterEvent.Invoke("GAMESTATE_UpdateServerRegistryData");
-            RegisterEvent.Invoke("GAMESTATE_ProcessTransfer");
-            RegisterEvent.Invoke("GAMESTATE_SetLastKeepAliveTime");
-            RegisterEvent.Invoke("GAMESTATE_AddServerResourcePack");
-            RegisterEvent.Invoke("GAMESTATE_AddServerTag");
-            RegisterEvent.Invoke("GAMESTATE_AddServerCookie");
-            RegisterEvent.Invoke("GAMESTATE_GetUserProfile");
-            RegisterEvent.Invoke("GAMESTATE_GetMojangKeyPair");
-        }
+        public void RegisterEvents(Action<string> RegisterEvent) { }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
@@ -86,113 +75,6 @@ namespace LotusCore.Modules.GameStateHandlerModule
                         _ = HttpGetMojangKeyPair(EventArgs._AuthModel);
                         _UserProfile = EventArgs._UserProfile;
                         return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_GetServerCookie",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        IdentifierEngineArgs Args = (IdentifierEngineArgs)args!;
-                        return new ServerCookieResult(GetServerCookie(Args._value));
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_GetServerCookie",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        IdentifierEngineArgs Args = (IdentifierEngineArgs)args!;
-                        return new ServerCookieResult(GetServerCookie(Args._value));
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_AddServerCookie",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        ServerCookieArg Args = (ServerCookieArg)args!;
-                        AddServerCookie(Args._serverCookie);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_ProcessTransfer",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        ProcessTransfer();
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_UpdateServerRegistryData",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        UpdateServerRegistryDataArgs Args = (UpdateServerRegistryDataArgs)args!;
-                        UpdateServerRegistryData(
-                            Args._registryData,
-                            Args._overwrite,
-                            Args._replace
-                        );
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_SetLastKeepAliveTime",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        DateTimeEngineArgs Args = (DateTimeEngineArgs)args!;
-                        SetLastKeepAliveTime(Args._value);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_AddServerResourcePack",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        ServerResourcePackArg Args = (ServerResourcePackArg)args!;
-                        AddServerResourcePack(Args._resourcePack);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_AddServerTag",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        AddServerTagArgs Args = (AddServerTagArgs)args!;
-                        AddServerTag(Args._registry, Args._tagName, Args._entries);
-                        return null;
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_GetUserProfile",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        return new MinecraftProfileResult(_UserProfile);
-                    }
-                )
-            );
-            SubscribeToEvent.Invoke(
-                "GAMESTATE_GetMojangKeyPair",
-                new EngineEventHandler(
-                    (sender, args) =>
-                    {
-                        return new MojangKeyPairResult(_MojangKeyPair);
                     }
                 )
             );
@@ -231,14 +113,14 @@ namespace LotusCore.Modules.GameStateHandlerModule
             bool replace = false
         )
         {
-            if (registryData._RegistryNameSpace == new Identifier("minecraft:chat_type"))
+            /* if (registryData._RegistryNameSpace == new Identifier("minecraft:chat_type"))
             {
                 foreach (var e in registryData._Entries)
                 {
                     Logging.LogDebug(e.ID.ToString());
                     Logging.LogDebug("\n" + e.Data?.GetNBTAsString(1) ?? "\tNO DATA");
                 }
-            }
+            } */
             //Logging.LogDebug($"UpdateServerRegistryData: {registryData._RegistryNameSpace}");
             if (!_ServerRegistryData.ContainsKey(registryData._RegistryNameSpace))
             {
