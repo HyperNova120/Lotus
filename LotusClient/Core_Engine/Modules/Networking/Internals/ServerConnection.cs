@@ -52,7 +52,7 @@ namespace LotusCore.Modules.LotusNetty.Internals
 
     public class PacketInfo
     {
-        public byte[] _incompletePacketBytesBuffer = [];
+        public List<byte> _incompletePacketBytesBuffer = [];
         public List<byte> _dataToSendBuffer = new();
 
         public bool _activeBundleDelimiter = false;

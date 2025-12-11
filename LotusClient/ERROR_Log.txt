@@ -1,0 +1,35 @@
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10061): No connection could be made because the target machine actively refused it. [::1]:25565
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10060): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. 192.168.1.55:25565
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10060): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. 192.168.1.55:25565
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10060): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. 173.10.85.105:25565
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10061): No connection could be made because the target machine actively refused it. 73.53.5.157:25568
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10060): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. 73.53.5.157:25566
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
+[ERROR] ConnectToServer:
+System.Net.Sockets.SocketException (10060): A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond. 73.53.5.157:25567
+   at System.Net.Sockets.Socket.DoConnect(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Connect(EndPoint remoteEP)
+   at LotusCore.Modules.LotusNetty.Internals.ConnectionHandler.ConnectToServer(String ip, Int32 port) in F:\coding_projects\Lotus_Client\cs_code\LotusClient\Core_Engine\Modules\Networking\Internals\ConnectionHandler.cs:line 101
