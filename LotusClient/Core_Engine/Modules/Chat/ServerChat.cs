@@ -118,7 +118,7 @@ public class ServerChat : IServerChatModule
         var session = _serverChatSessions[remoteHostID];
         if (
             playerChatMessage._header._messageSignatureBytes != null
-        && !_serverChatSessions[remoteHostID]
+            && !_serverChatSessions[remoteHostID]
                 ._userUUID.Equals(playerChatMessage._header._sender)
         )
         {
@@ -129,12 +129,9 @@ public class ServerChat : IServerChatModule
             if (session._previousMessageSignatures.Count > 20)
             {
                 session._previousMessageSignatures.Dequeue();
-                /* //send ack
+                //send ack
                 AcknowledgeMessagePacket acknowledgeMessagePacket = new(1);
-                Core_Engine.InvokeEvent(
-                    "NETWORKING_SendPacket",
-                    new SendPacketArgs(args._remoteHostID, acknowledgeMessagePacket)
-                ); */
+                _networking.SendPacket(remoteHostID, acknowledgeMessagePacket);
             }
         }
     }
