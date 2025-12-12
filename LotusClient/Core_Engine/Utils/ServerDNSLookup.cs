@@ -37,6 +37,7 @@ public static class ServerDNSLookup
     {
         if (string.IsNullOrWhiteSpace(dnsQuery))
         {
+            Logging.LogDebug($"DNS RESULT NULL");
             return (null, null);
         }
 
@@ -51,6 +52,10 @@ public static class ServerDNSLookup
             }
             string? remoteHostIP;
             remoteHostIP = DNSGetHostAddresses(parts[0]);
+
+            Logging.LogDebug(
+                $"DNS RESULT 1 for dnsQuery:{dnsQuery}: remoteHostIP:{remoteHostIP} PORT:{PortResult}"
+            );
             return (remoteHostIP, (remoteHostIP != null) ? PortResult : null);
         }
 
@@ -62,9 +67,11 @@ public static class ServerDNSLookup
         if (srvRecord != null)
         {
             dnsResult = DNSGetHostAddresses(srvRecord.Target.Value.TrimEnd('.'));
+            Logging.LogDebug($"DNS RESULT 2 for dnsQuery:{dnsQuery}: srvRecord:{srvRecord.Port}");
             return (dnsResult, (dnsResult != null) ? srvRecord.Port : null);
         }
         dnsResult = DNSGetHostAddresses(dnsQuery);
+        Logging.LogDebug($"DNS RESULT 3 for dnsQuery:{dnsQuery}: dnsResult:{dnsResult}");
         return (dnsResult, (dnsResult != null) ? 25565 : null);
     }
 

@@ -62,6 +62,7 @@ namespace LotusCore.Modules.LotusNetty
             if (connection == null)
             {
                 Logging.LogError("Attempting to send packet to null connection");
+                DisconnectFromServer(RemoteHostID);
                 return -1;
             }
 
@@ -91,6 +92,7 @@ namespace LotusCore.Modules.LotusNetty
             if (connection == null)
             {
                 Logging.LogError("Attempting to send packet to null connection");
+                DisconnectFromServer(RemoteHostId);
                 return -1;
             }
 

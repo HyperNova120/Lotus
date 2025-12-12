@@ -4,12 +4,14 @@ using System.Reflection.Metadata;
 using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
 using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.MojangLogin.Commands;
 
 namespace LotusCore.Modules.LotusNetty.Internals;
 
 public class ConnectionHandler
 {
     private const int MEGABYTE = 1048576;
+    private const int GIGABYTE = 1073741824;
     public IPacketHandler? _loginPacketHandler;
     public IPacketHandler? _configPacketHandler;
     public IPacketHandler? _playPacketHandler;
@@ -44,20 +46,28 @@ public class ConnectionHandler
         {
             _isClientConnectedToPrimaryServer = false;
             _primaryClientServerConnection = null;
+            Logging.LogDebug($"Primary Connection: NULL");
             return;
         }
         _isClientConnectedToPrimaryServer = true;
         _primaryClientServerConnection = connectionID;
+        Logging.LogDebug($"Primary Connection: {connectionID}");
     }
 
     public void AddServerConnection(Guid id, ServerConnection connection)
     {
-        _connections[id] = connection;
+        lock (_connections)
+        {
+            _connections[new Guid(id.ToByteArray())] = connection;
+        }
     }
 
     public void RemoveServerConnection(Guid id)
     {
-        _connections.Remove(id);
+        lock (_connections)
+        {
+            _connections.Remove(id);
+        }
     }
 
     public bool IsClientConnectedToPrimaryServer()
@@ -70,15 +80,22 @@ public class ConnectionHandler
         IEnumerable<ConnectionState> connectionStates
     )
     {
-        foreach (var con in _connections.Values)
+        try
         {
-            if (
-                con._connectionInfo._remoteHost == connectionHost
-                && connectionStates.Contains(con._connectionState)
-            )
+            foreach (var con in _connections.Values)
             {
-                return con._id;
+                if (
+                    con._connectionInfo._remoteHost == connectionHost
+                    && connectionStates.Contains(con._connectionState)
+                )
+                {
+                    return con._id;
+                }
             }
+        }
+        catch (Exception e)
+        {
+            bool breaker = true;
         }
         return null;
     }
@@ -102,9 +119,9 @@ public class ConnectionHandler
         {
             serverConnection._tcpSocket.Connect(endPoint);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            //Logging.LogError($"ConnectToServer:\n{e}");
+            Logging.LogError($"ConnectToServer: endPoint:{endPoint.Address}:{endPoint.Port} \n{e}");
             return null;
         }
         AddServerConnection(id, serverConnection);
@@ -123,6 +140,7 @@ public class ConnectionHandler
         Logging.LogInfo("Disconnected from Server:" + remoteHostID);
         if (IsConnectionPrimary(remoteHostID))
         {
+            Core_Engine.SignalInteractiveResetServerHolds();
             SetPrimaryConnection(null);
         }
         if (connection!._tcpSocket != null)
@@ -144,6 +162,7 @@ public class ConnectionHandler
             readN = await socket.ReceiveAsync(buffer);
             if (!ProcessReceive(serverConnection, buffer, readN))
             {
+                //DisconnectFromServer(serverConnection._id);
                 if (IsConnectionPrimary(serverConnection._id))
                 {
                     Core_Engine.SignalInteractiveResetServerHolds();
@@ -154,6 +173,10 @@ public class ConnectionHandler
         }
 
         DisconnectFromServer(serverConnection._id);
+        if (IsConnectionPrimary(serverConnection._id))
+        {
+            Core_Engine.SignalInteractiveResetServerHolds();
+        }
     }
 
     private bool ProcessReceive(ServerConnection serverConnection, byte[] buffer, int readN)

@@ -3,9 +3,6 @@ using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace LotusCore.BaseClasses.Types;
 
-/// <summary>
-/// index 0 = msb, index _maxSize-1 = lsb
-/// </summary>
 public class FixedBitSet
 {
     private int _maxSize;

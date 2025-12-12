@@ -23,7 +23,7 @@ public class ChatMessageCreator
         byte[] saltBytes = new byte[8];
         rng.GetBytes(saltBytes);
         FixedBitSet acknowledgedFixedBitSet = new(20);
-        for (int i = 0; i < session._numberMessagesSeenSinceLastSentMessage; i++)
+        for (int i = 0; i < session._previousMessageSignatures.Count; i++)
         {
             acknowledgedFixedBitSet[i] = true;
         }
@@ -47,6 +47,10 @@ public class ChatMessageCreator
             session._previousMessageSignatures.Count,
             session._previousMessageSignatures,
             session._rsa
+        );
+
+        Console.WriteLine(
+            $"_previousMessageSignatures.Count:{session._previousMessageSignatures.Count} _numberMessagesSeenSinceLastSentMessage:{session._numberMessagesSeenSinceLastSentMessage}"
         );
 
         ++session._currentSentMessageIndex;
@@ -81,12 +85,14 @@ public class ChatMessageCreator
             .. msgBytes,
             .. BitConverter.GetBytes(previousMessageSignaturesCount).Reverse(),
         ];
+        Console.WriteLine($"previousMessageSignaturesCount:{previousMessageSignaturesCount}");
         foreach (byte[] previousMessageSignature in previousMessageSignatures)
         {
             if (previousMessageSignature.Length != 256)
             {
                 throw new Exception("PANIC: previousMessageSignature.Length NOT 256");
             }
+            Console.WriteLine("Added previousMessageSignature");
             sigBytes.AddRange(previousMessageSignature);
         }
 

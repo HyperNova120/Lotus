@@ -1,29 +1,13 @@
-using System.Diagnostics.Eventing.Reader;
-using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
-using System.Text;
 using LotusCore.BaseClasses;
-using LotusCore.BaseClasses.Types;
-using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat.Internals;
 using LotusCore.Modules.Chat.Types;
-using LotusCore.Modules.GameStateHandlerModule.Types;
 using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play.Chat;
-using LotusCore.Modules.MojangLogin.Models;
-using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
-using Microsoft.Identity.Client.NativeInterop;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.OpenSsl;
-using Org.BouncyCastle.Security;
 
 namespace LotusCore.Modules.Chat;
 
@@ -134,7 +118,7 @@ public class ServerChat : IServerChatModule
         var session = _serverChatSessions[remoteHostID];
         if (
             playerChatMessage._header._messageSignatureBytes != null
-            && !_serverChatSessions[remoteHostID]
+        && !_serverChatSessions[remoteHostID]
                 ._userUUID.Equals(playerChatMessage._header._sender)
         )
         {

@@ -112,6 +112,13 @@ namespace LotusCore
             Test1.ReadFromBytes(Test1.GetBytes(), true);
             Console.WriteLine(Test1.GetNBTAsString()); */
 
+            /* for (int i = 0; i < 19; i++)
+            {
+                FixedBitSet test = new(20);
+                test[i] = true;
+                test.GetBytes();
+            }
+            return; */
             Core_Engine.InitCore();
             await Core_Engine.GoInteractiveMode();
 
