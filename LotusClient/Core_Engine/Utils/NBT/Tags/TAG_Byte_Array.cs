@@ -63,7 +63,7 @@ public class TAG_Byte_Array : TAG_Base
     {
         string returner =
             new string('\t', tabSpace)
-            + $"TAG_Byte_Array({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
+            + $"TAG_Byte_Array({((_Name?.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
         foreach (sbyte cur in Values)
         {
             returner += " " + ((byte)cur).ToString("X2");

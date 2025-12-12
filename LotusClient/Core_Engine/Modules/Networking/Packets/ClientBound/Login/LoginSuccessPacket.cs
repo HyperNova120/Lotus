@@ -6,7 +6,7 @@ namespace LotusCore.Modules.LotusNetty.Packets.ClientBound.Login
 {
     public class LoginSuccessPacket
     {
-        public MinecraftUUID _uuid;
+        public MinecraftUUID? _uuid;
         public string? _Username;
         public List<LoginSuccessPacketElement> _Elements = new();
 

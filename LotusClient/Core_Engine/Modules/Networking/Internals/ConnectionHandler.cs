@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata;
 using LotusCore.EngineEventArgs;
 using LotusCore.Interfaces;
 using LotusCore.Modules.LotusNetty.Packets;
@@ -8,6 +9,7 @@ namespace LotusCore.Modules.LotusNetty.Internals;
 
 public class ConnectionHandler
 {
+    private const int MEGABYTE = 1048576;
     public IPacketHandler? _loginPacketHandler;
     public IPacketHandler? _configPacketHandler;
     public IPacketHandler? _playPacketHandler;
@@ -100,7 +102,7 @@ public class ConnectionHandler
         {
             serverConnection._tcpSocket.Connect(endPoint);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             //Logging.LogError($"ConnectToServer:\n{e}");
             return null;
@@ -135,7 +137,7 @@ public class ConnectionHandler
 
     private async Task HandleConnection(ServerConnection serverConnection, Socket socket)
     {
-        byte[] buffer = new byte[2048];
+        byte[] buffer = new byte[MEGABYTE];
         int readN = 0;
         while (socket.Connected)
         {

@@ -40,6 +40,6 @@ public class TAG_Byte : TAG_Base
     public override string ToString(int tabSpace = 0)
     {
         return new string('\t', tabSpace)
-            + $"TAG_Byte({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}): {Value}";
+            + $"TAG_Byte({((_Name?.Length == 0) ? "None" : "\'" + _Name + "\'")}): {Value}";
     }
 }

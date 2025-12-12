@@ -66,6 +66,6 @@ namespace LotusCore.Modules.LotusNetty.Internals
 
         public double _LastPingLength;
 
-        public TAG_Compound _ServerListEntry;
+        public TAG_Compound? _ServerListEntry;
     }
 }
