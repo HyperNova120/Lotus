@@ -75,6 +75,10 @@ public class FixedBitSet
     {
         byteIndex = index / 8;
         bitIndex = index % 8;
+
+        /* // Mojang's FixedBitSet is big-endian: index 0 is MSB of last byte
+        byteIndex = (index / 8) - 1;
+        bitIndex = 7 - (index % 8); */
     }
 
     private bool Get(int index)

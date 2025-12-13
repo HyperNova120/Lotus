@@ -172,14 +172,19 @@ public static class Core_Engine
         return (T?)moduleBase;
     }
 
-    public static async Task GoInteractiveMode()
+    public static async Task GoInteractiveMode(IEnumerable<string> initialCmds = null)
     {
+        initialCmds ??= [];
+        int initCmdIndex = 0;
         _CurrentState = State.Interactive;
         bool shouldRun = true;
         _InteractiveHold.Set();
         while (_CurrentState == State.Interactive)
         {
-            string userResponse = ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
+            string userResponse =
+                (initCmdIndex < initialCmds.Count())
+                    ? initialCmds.ElementAt(initCmdIndex++)
+                    : ConsoleUtils.AskUserLineResponseQuestion("Core Engine");
             string[] tokens = userResponse.Split(" ");
             string command = tokens[0].ToLower();
 

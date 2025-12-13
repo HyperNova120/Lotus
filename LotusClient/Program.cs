@@ -120,7 +120,7 @@ namespace LotusCore
             }
             return; */
             Core_Engine.InitCore();
-            await Core_Engine.GoInteractiveMode();
+            await Core_Engine.GoInteractiveMode(["login", "listjoin VanillaServer", "exit"]);
 
             /* FixedBitSet test = new(20);
             test[19] = true;

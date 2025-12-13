@@ -121,7 +121,7 @@ public class ConnectionHandler
         }
         catch (Exception e)
         {
-            Logging.LogError($"ConnectToServer: endPoint:{endPoint.Address}:{endPoint.Port} \n{e}");
+            //Logging.LogError($"ConnectToServer: endPoint:{endPoint.Address}:{endPoint.Port} \n{e}");
             return null;
         }
         AddServerConnection(id, serverConnection);

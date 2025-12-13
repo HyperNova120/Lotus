@@ -23,9 +23,13 @@ public class ChatMessageCreator
         byte[] saltBytes = new byte[8];
         rng.GetBytes(saltBytes);
         FixedBitSet acknowledgedFixedBitSet = new(20);
-        for (int i = 0; i < session._previousMessageSignatures.Count; i++)
+        for (int i = 0; i < session._rollingWindow.Count; i++)
         {
-            acknowledgedFixedBitSet[i] = true;
+            acknowledgedFixedBitSet[19 - i] = session._rollingWindow.ElementAt(i)._ack;
+            /* if (acknowledgedFixedBitSet[i])
+            {
+                session._rollingWindow.ElementAt(i).SetAckFalse();
+            } */
         }
 
         ChatMessage chatMessage = new()
@@ -35,6 +39,7 @@ public class ChatMessageCreator
             _salt = BitConverter.ToInt64(saltBytes),
             _messageCount = session._numberMessagesSeenSinceLastSentMessage,
             _acknowledged = acknowledgedFixedBitSet,
+            _rollingWindow = session._rollingWindow.ToArray(),
         };
 
         chatMessage._signature = GenerateChatMessageSignature(
@@ -44,13 +49,12 @@ public class ChatMessageCreator
             chatMessage._salt,
             chatMessage._timestamp / 1000,
             msg,
-            session._previousMessageSignatures.Count,
-            session._previousMessageSignatures,
+            session._rollingWindow,
             session._rsa
         );
 
         Console.WriteLine(
-            $"_previousMessageSignatures.Count:{session._previousMessageSignatures.Count} _numberMessagesSeenSinceLastSentMessage:{session._numberMessagesSeenSinceLastSentMessage}"
+            $"_rollingWindow.Count:{session._rollingWindow.Count} _numberMessagesSeenSinceLastSentMessage:{session._numberMessagesSeenSinceLastSentMessage}"
         );
 
         ++session._currentSentMessageIndex;
@@ -66,8 +70,7 @@ public class ChatMessageCreator
         long salt,
         long timestamp, //as seconds since unix epoch
         string msg,
-        int previousMessageSignaturesCount,
-        IEnumerable<byte[]> previousMessageSignatures,
+        IEnumerable<RollingWindowEntry> previousMessageSignatures,
         RSA rsa
     )
     {
@@ -83,17 +86,17 @@ public class ChatMessageCreator
             .. BitConverter.GetBytes(timestamp).Reverse(),
             .. BitConverter.GetBytes(msgBytes.Length).Reverse(),
             .. msgBytes,
-            .. BitConverter.GetBytes(previousMessageSignaturesCount).Reverse(),
+            .. BitConverter.GetBytes(previousMessageSignatures.Count()).Reverse(),
         ];
-        Console.WriteLine($"previousMessageSignaturesCount:{previousMessageSignaturesCount}");
-        foreach (byte[] previousMessageSignature in previousMessageSignatures)
+        Console.WriteLine($"previousMessageSignaturesCount:{previousMessageSignatures.Count()}");
+        foreach (RollingWindowEntry previousMessageSignature in previousMessageSignatures)
         {
-            if (previousMessageSignature.Length != 256)
+            if (previousMessageSignature._sig.Length != 256)
             {
                 throw new Exception("PANIC: previousMessageSignature.Length NOT 256");
             }
             Console.WriteLine("Added previousMessageSignature");
-            sigBytes.AddRange(previousMessageSignature);
+            sigBytes.AddRange(previousMessageSignature._sig);
         }
 
         byte[] hash = SHA256.HashData(sigBytes.ToArray());

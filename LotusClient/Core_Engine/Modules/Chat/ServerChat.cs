@@ -115,20 +115,22 @@ public class ServerChat : IServerChatModule
         );
 
         //update session signed messages
-        var session = _serverChatSessions[remoteHostID];
-        if (
-            playerChatMessage._header._messageSignatureBytes != null
-            && !_serverChatSessions[remoteHostID]
-                ._userUUID.Equals(playerChatMessage._header._sender)
-        )
+        if (playerChatMessage._header._messageSignatureBytes != null)
         {
-            ++session._numberMessagesSeenSinceLastSentMessage;
-            session._previousMessageSignatures.Enqueue(
-                playerChatMessage._header._messageSignatureBytes
+            var session = _serverChatSessions[remoteHostID];
+            bool isEcho = playerChatMessage._header._sender.Equals(session._userUUID);
+            Logging.LogDebug("Add msg to Rolling Window");
+            session._rollingWindow.Enqueue(
+                new RollingWindowEntry(
+                    true,
+                    isEcho,
+                    playerChatMessage._header._messageSignatureBytes
+                )
             );
-            if (session._previousMessageSignatures.Count > 20)
+            ++session._numberMessagesSeenSinceLastSentMessage;
+            if (session._rollingWindow.Count > 20)
             {
-                session._previousMessageSignatures.Dequeue();
+                session._rollingWindow.Dequeue();
                 //send ack
                 AcknowledgeMessagePacket acknowledgeMessagePacket = new(1);
                 _networking.SendPacket(remoteHostID, acknowledgeMessagePacket);
