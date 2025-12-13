@@ -13,8 +13,8 @@ namespace LotusCore.Modules.Chat;
 
 public class ServerChat : IServerChatModule
 {
-    private INetworkModule _networking;
-    private IGameStateHandlerModule _gamestate;
+    private INetworkModule? _networking;
+    private IGameStateHandlerModule? _gamestate;
 
     private ChatMessageCreator _chatMessageCreator = new();
     private ChatMessageDecoder _chatMessageDecoder = new();
@@ -36,7 +36,7 @@ public class ServerChat : IServerChatModule
         {
             _PublicKey = Convert.FromBase64String(
                 session
-                    ._mojangKeyPair.keyPair.publicKey.Replace("-----BEGIN RSA PUBLIC KEY-----", "")
+                    ._mojangKeyPair!.keyPair.publicKey.Replace("-----BEGIN RSA PUBLIC KEY-----", "")
                     .Replace("-----END RSA PUBLIC KEY-----", "")
             ),
             _Signature = Convert.FromBase64String(session._mojangKeyPair.publicKeySignatureV2),
@@ -46,7 +46,7 @@ public class ServerChat : IServerChatModule
             _UUID = session._sessionUUID,
         };
 
-        _networking.SendPacket(remoteHostID, playerSessionPacket);
+        _networking!.SendPacket(remoteHostID, playerSessionPacket);
         _ = SendTestMessages(remoteHostID);
     }
 
@@ -66,11 +66,14 @@ public class ServerChat : IServerChatModule
 
         await Task.Delay(10000);
         SendChatMessage(remoteHostID, "Hello World 3!");
+
+        await Task.Delay(15000);
+        SendChatMessage(remoteHostID, "Hello World 4!");
     }
 
     private ServerChatSession CreateServerChatSession(Guid remoteHostID)
     {
-        var minecraftProfile = _gamestate.GetUserProfile();
+        var minecraftProfile = _gamestate!.GetUserProfile();
         ServerChatSession returner = new()
         {
             _userUUID = new MinecraftUUID(minecraftProfile.id),
@@ -109,36 +112,7 @@ public class ServerChat : IServerChatModule
             ref offset
         );
 
-        Logging.LogDebug(playerChatMessage._chatFormatting._senderName.ToString());
-        Logging.LogInfo(
-            $"<{playerChatMessage._chatFormatting._senderName.TryGetTag<TAG_String>("text")!.Value}> {playerChatMessage._body._message}"
-        );
-
-        //update session signed messages
-        if (playerChatMessage._header._messageSignatureBytes != null)
-        {
-            var session = _serverChatSessions[remoteHostID];
-            bool isEcho = playerChatMessage._header._sender.Equals(session._userUUID);
-            Logging.LogDebug("Add msg to Rolling Window");
-            session._rollingWindow.Enqueue(
-                new RollingWindowEntry(
-                    true,
-                    isEcho,
-                    playerChatMessage._header._messageSignatureBytes
-                )
-            );
-            if (session._rollingWindow.Count > 20)
-            {
-                session._rollingWindow.Dequeue();
-                //send ack
-                AcknowledgeMessagePacket acknowledgeMessagePacket = new(1);
-                _networking.SendPacket(remoteHostID, acknowledgeMessagePacket);
-            }
-            else
-            {
-                ++session._numberMessagesSeenSinceLastSentMessage;
-            }
-        }
+        ProcessChatMessage(playerChatMessage, remoteHostID);
     }
 
     public void SendChatMessage(Guid remoteHostID, string msgConent)
@@ -153,11 +127,72 @@ public class ServerChat : IServerChatModule
             return;
         }
 
-        _networking.SendPacket(remoteHostID, msg);
+        _networking!.SendPacket(remoteHostID, msg);
     }
 
     public void SendChatCommand(Guid remoteHostID, string msg)
     {
         throw new NotImplementedException();
+    }
+
+    private void ProcessChatMessage(PlayerChatMessage playerChatMessage, Guid remoteHostID)
+    {
+        Logging.LogDebug(playerChatMessage._chatFormatting._senderName.ToString());
+        Logging.LogInfo(
+            $"<{playerChatMessage._chatFormatting._senderName.TryGetTag<TAG_String>("text")!.Value}> {playerChatMessage._body._message}"
+        );
+
+        ServerChatSession session = _serverChatSessions[remoteHostID];
+
+        AddToCachedMessages(playerChatMessage, session);
+
+        //update session signed messages
+        if (playerChatMessage._header._messageSignatureBytes != null)
+        {
+            AddToRollingWindow(playerChatMessage, remoteHostID, session);
+        }
+    }
+
+    private void AddToCachedMessages(PlayerChatMessage playerChatMessage, ServerChatSession session)
+    {
+        session._previousMessages.Enqueue(playerChatMessage);
+        if (session._previousMessages.Count > ServerChatSession.MAX_STORED_MESSAGES)
+        {
+            session._previousMessages.Dequeue();
+        }
+    }
+
+    private void AddToRollingWindow(
+        PlayerChatMessage playerChatMessage,
+        Guid remoteHostID,
+        ServerChatSession session
+    )
+    {
+        bool isEcho = playerChatMessage._header._sender.Equals(session._userUUID);
+        Logging.LogDebug("Add msg to Rolling Window");
+        session._rollingWindow.Enqueue(
+            new RollingWindowEntry(true, isEcho, playerChatMessage._header._messageSignatureBytes!)
+        );
+
+        ++session._numberMessagesSeenSinceLastSentMessage;
+        if (session._rollingWindow.Count > ServerChatSession.MAX_ROLLING_WINDOW_SIZE)
+        {
+            //keep rolling window at max size
+            session._rollingWindow.Dequeue();
+        }
+
+        if (
+            session._numberMessagesSeenSinceLastSentMessage
+            > ServerChatSession.MAX_UNACKED_ROLLING_WINDOW_SIZE
+        )
+        {
+            //send ack to clear excess server cache
+            int numToAck =
+                session._numberMessagesSeenSinceLastSentMessage
+                - ServerChatSession.MAX_ROLLING_WINDOW_SIZE;
+            AcknowledgeMessagePacket acknowledgeMessagePacket = new(numToAck);
+            _networking!.SendPacket(remoteHostID, acknowledgeMessagePacket);
+            session._numberMessagesSeenSinceLastSentMessage -= numToAck;
+        }
     }
 }

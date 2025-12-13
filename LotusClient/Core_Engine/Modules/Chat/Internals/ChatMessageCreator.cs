@@ -22,10 +22,12 @@ public class ChatMessageCreator
         var rng = RandomNumberGenerator.Create();
         byte[] saltBytes = new byte[8];
         rng.GetBytes(saltBytes);
-        FixedBitSet acknowledgedFixedBitSet = new(20);
+        FixedBitSet acknowledgedFixedBitSet = new(ServerChatSession.MAX_ROLLING_WINDOW_SIZE);
         for (int i = 0; i < session._rollingWindow.Count; i++)
         {
-            acknowledgedFixedBitSet[19 - i] = session._rollingWindow.ElementAt(i)._ack;
+            acknowledgedFixedBitSet[ServerChatSession.MAX_ROLLING_WINDOW_SIZE - 1 - i] = session
+                ._rollingWindow.ElementAt(i)
+                ._ack;
             /* if (acknowledgedFixedBitSet[i])
             {
                 session._rollingWindow.ElementAt(i).SetAckFalse();
@@ -43,14 +45,14 @@ public class ChatMessageCreator
         };
 
         chatMessage._signature = GenerateChatMessageSignature(
-            session._userUUID,
+            session._userUUID!,
             session._sessionUUID,
             session._currentSentMessageIndex,
             chatMessage._salt,
             chatMessage._timestamp / 1000,
             msg,
             session._rollingWindow,
-            session._rsa
+            session._rsa!
         );
 
         Console.WriteLine(

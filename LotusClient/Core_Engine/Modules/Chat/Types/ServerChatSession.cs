@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using LotusCore.BaseClasses;
 using LotusCore.Modules.GameStateHandlerModule.Models;
@@ -6,23 +7,30 @@ namespace LotusCore.Modules.Chat.Types;
 
 public class ServerChatSession
 {
+    public const int MAX_STORED_MESSAGES = 64;
+
+    public const int MAX_ROLLING_WINDOW_SIZE = 20;
+    public const int MAX_UNACKED_ROLLING_WINDOW_SIZE = 32;
+
     public Guid _remoteHostID;
 
-    public MinecraftUUID _userUUID;
+    public MinecraftUUID? _userUUID;
 
-    public string _username;
+    public string? _username;
 
     public MinecraftUUID _sessionUUID = MinecraftUUID.CreateVersion4();
 
     public Queue<RollingWindowEntry> _rollingWindow = new(); //head = oldest, end = newest
 
+    public Queue<PlayerChatMessage> _previousMessages = new();
+
     public int _currentSentMessageIndex = 0;
 
     public int _numberMessagesSeenSinceLastSentMessage = 0;
 
-    public MojangKeyPair _mojangKeyPair;
+    public MojangKeyPair? _mojangKeyPair;
 
-    public RSA _rsa;
+    public RSA? _rsa;
 }
 
 public struct RollingWindowEntry
