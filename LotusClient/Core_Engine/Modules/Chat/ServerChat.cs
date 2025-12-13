@@ -127,13 +127,16 @@ public class ServerChat : IServerChatModule
                     playerChatMessage._header._messageSignatureBytes
                 )
             );
-            ++session._numberMessagesSeenSinceLastSentMessage;
             if (session._rollingWindow.Count > 20)
             {
                 session._rollingWindow.Dequeue();
                 //send ack
                 AcknowledgeMessagePacket acknowledgeMessagePacket = new(1);
                 _networking.SendPacket(remoteHostID, acknowledgeMessagePacket);
+            }
+            else
+            {
+                ++session._numberMessagesSeenSinceLastSentMessage;
             }
         }
     }
