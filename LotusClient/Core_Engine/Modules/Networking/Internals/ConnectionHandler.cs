@@ -10,11 +10,13 @@ namespace LotusCore.Modules.LotusNetty.Internals;
 
 public class ConnectionHandler
 {
+    private const int KILOBYTE = 1024;
     private const int MEGABYTE = 1048576;
     private const int GIGABYTE = 1073741824;
     public IPacketHandler? _loginPacketHandler;
     public IPacketHandler? _configPacketHandler;
     public IPacketHandler? _playPacketHandler;
+    public IPacketHandler? _statusPacketHandler;
 
     //==========================================
     //            Connection States
@@ -155,11 +157,12 @@ public class ConnectionHandler
 
     private async Task HandleConnection(ServerConnection serverConnection, Socket socket)
     {
-        byte[] buffer = new byte[MEGABYTE];
+        byte[] buffer = new byte[KILOBYTE * 16];
         int readN = 0;
         while (socket.Connected)
         {
             readN = await socket.ReceiveAsync(buffer);
+            //Console.WriteLine($"TCP readN: {readN}");
             if (!ProcessReceive(serverConnection, buffer, readN))
             {
                 //DisconnectFromServer(serverConnection._id);
@@ -239,10 +242,11 @@ public class ConnectionHandler
             switch (connection._connectionState)
             {
                 case ConnectionState.STATUS:
-                    Core_Engine.InvokeEvent(
+                    /* Core_Engine.InvokeEvent(
                         "STATUS_Packet_Received",
                         new PacketReceivedEventArgs(packet, connection._id)
-                    );
+                    ); */
+                    _statusPacketHandler!.ProcessPacket(packet);
                     break;
                 case ConnectionState.LOGIN:
                     _loginPacketHandler!.ProcessPacket(packet);

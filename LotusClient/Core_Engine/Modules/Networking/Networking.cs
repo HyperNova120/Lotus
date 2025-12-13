@@ -43,6 +43,9 @@ namespace LotusCore.Modules.LotusNetty
             _connectionHandler._playPacketHandler = Core_Engine.GetModule<IPacketHandler>(
                 "ServerPlayHandler"
             )!;
+            _connectionHandler._statusPacketHandler = Core_Engine.GetModule<IPacketHandler>(
+                "ServerList"
+            )!;
         }
 
         public void LoginSuccessful(Guid remoteHostID)

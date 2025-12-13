@@ -14,7 +14,7 @@ using LotusCore.Utils.NBTInternals.Tags;
 
 namespace LotusCore.Modules.ServerList
 {
-    public class ServerList : IServerListModule, IModuleBase
+    public class ServerList : IServerListModule, IModuleBase, IPacketHandler
     {
         private NBT _ServerListDat;
 
@@ -35,15 +35,15 @@ namespace LotusCore.Modules.ServerList
 
         public void RegisterEvents(Action<string> RegisterEvent)
         {
-            RegisterEvent.Invoke("ServerListIP_Request");
+            //RegisterEvent.Invoke("ServerListIP_Request");
         }
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
         {
-            SubscribeToEvent.Invoke(
+            /* SubscribeToEvent.Invoke(
                 "STATUS_Packet_Received",
                 new EngineEventHandler(ProcessPacket)
-            );
+            ); */
         }
 
         public (string ip, string port) ServerListIPRequest(string serverName)
@@ -135,6 +135,7 @@ namespace LotusCore.Modules.ServerList
             return true;
         }
 
+        [Obsolete]
         public EngineEventResult? ProcessPacket(object? sender, IEngineEventArgs args)
         {
             PacketReceivedEventArgs eventArgs = (PacketReceivedEventArgs)args;
@@ -154,6 +155,29 @@ namespace LotusCore.Modules.ServerList
                     );
 
                     _networking.DisconnectFromServer(eventArgs._remoteHostID);
+
+                    break;
+            }
+            return null;
+        }
+
+        public Task ProcessPacket(MinecraftServerPacket packet)
+        {
+            //Logging.LogDebug($"StatusHandler State 0x{packet._Protocol_ID:X}");
+            switch (packet._protocol_ID)
+            {
+                case 0x00:
+                    HandleStatusResponse(packet);
+                    break;
+                case 0x01:
+                    HandlePingResponse(packet);
+                    break;
+                default:
+                    Logging.LogError(
+                        $"StatusHandler State 0x{packet._protocol_ID:X} Not Implemented"
+                    );
+
+                    _networking.DisconnectFromServer(packet._remoteHostID);
 
                     break;
             }

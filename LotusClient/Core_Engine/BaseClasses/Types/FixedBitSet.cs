@@ -108,13 +108,13 @@ public class FixedBitSet
     public byte[] GetBytes()
     {
         byte[] returner = new byte[_data.Length];
-        foreach (byte b in _data)
+        /* foreach (byte b in _data)
         {
             // Convert to binary string and pad with leading zeros
             string binary = Convert.ToString(b, 2).PadLeft(8, '0');
-            Console.Write(binary + " ");
+            //Console.Write(binary + " ");
         }
-        Console.WriteLine();
+        //Console.WriteLine(); */
 
         Array.Copy(_data, returner, _data.Length);
         return returner;

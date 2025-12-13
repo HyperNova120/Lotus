@@ -169,7 +169,7 @@ public class ServerChat : IServerChatModule
     )
     {
         bool isEcho = playerChatMessage._header._sender!.Equals(session._userUUID);
-        Logging.LogDebug("Add msg to Rolling Window");
+        //Logging.LogDebug("Add msg to Rolling Window");
         session._rollingWindow.Enqueue(
             new RollingWindowEntry(true, isEcho, playerChatMessage._header._messageSignatureBytes!)
         );

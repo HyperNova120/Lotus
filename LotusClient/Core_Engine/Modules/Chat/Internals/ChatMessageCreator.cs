@@ -55,9 +55,9 @@ public class ChatMessageCreator
             session._rsa!
         );
 
-        Console.WriteLine(
+        /* Console.WriteLine(
             $"_rollingWindow.Count:{session._rollingWindow.Count} _numberMessagesSeenSinceLastSentMessage:{session._numberMessagesSeenSinceLastSentMessage}"
-        );
+        ); */
 
         ++session._currentSentMessageIndex;
         session._numberMessagesSeenSinceLastSentMessage = 0;
@@ -90,14 +90,14 @@ public class ChatMessageCreator
             .. msgBytes,
             .. BitConverter.GetBytes(previousMessageSignatures.Count()).Reverse(),
         ];
-        Console.WriteLine($"previousMessageSignaturesCount:{previousMessageSignatures.Count()}");
+        //Console.WriteLine($"previousMessageSignaturesCount:{previousMessageSignatures.Count()}");
         foreach (RollingWindowEntry previousMessageSignature in previousMessageSignatures)
         {
             if (previousMessageSignature._sig.Length != 256)
             {
                 throw new Exception("PANIC: previousMessageSignature.Length NOT 256");
             }
-            Console.WriteLine("Added previousMessageSignature");
+            //Console.WriteLine("Added previousMessageSignature");
             sigBytes.AddRange(previousMessageSignature._sig);
         }
 
