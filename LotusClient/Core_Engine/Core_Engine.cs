@@ -172,7 +172,7 @@ public static class Core_Engine
         return (T?)moduleBase;
     }
 
-    public static async Task GoInteractiveMode(IEnumerable<string> initialCmds = null)
+    public static async Task GoInteractiveMode(IEnumerable<string>? initialCmds = null)
     {
         initialCmds ??= [];
         int initCmdIndex = 0;
@@ -398,7 +398,7 @@ public static class Core_Engine
                 $"Event {EventIdentifier} Does Not Exist"
             );
         }
-        _Events[EventIdentifier!] -= callback;
+        _Events[EventIdentifier] -= callback;
     }
 
     //==========END===========

@@ -22,13 +22,22 @@ public static class CacheEncryption
 
     private static byte[] DeriveLinuxKey(byte[] salt, int keySize = 32)
     {
+        /* OBSOLETE
         using var pbkdf2 = new Rfc2898DeriveBytes(
             File.ReadAllText("/etc/machine-id").Trim(),
             salt,
             100_000,
             HashAlgorithmName.SHA256
         );
-        return pbkdf2.GetBytes(keySize);
+        
+        return pbkdf2.GetBytes(keySize); */
+        return Rfc2898DeriveBytes.Pbkdf2(
+            File.ReadAllText("/etc/machine-id").Trim(),
+            salt,
+            100_000,
+            HashAlgorithmName.SHA256,
+            keySize
+        );
     }
 
     private static byte[] GetSalt()

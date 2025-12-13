@@ -27,7 +27,7 @@ public class ChatMessageHeader
 {
     public int _globalIndex;
 
-    public MinecraftUUID _sender;
+    public MinecraftUUID? _sender;
 
     public int _index;
 
@@ -36,7 +36,7 @@ public class ChatMessageHeader
 
 public class ChatMessageBody
 {
-    public string _message; //maxlenght is 256
+    public string? _message; //maxlenght is 256
 
     public long _timestamp;
 
@@ -66,7 +66,7 @@ public class ChatMessageChatFormatting
     //add chattype
     public ChatType? _chatType;
 
-    public NBT _senderName;
+    public NBT? _senderName;
 
     public NBT? _targetName;
 }

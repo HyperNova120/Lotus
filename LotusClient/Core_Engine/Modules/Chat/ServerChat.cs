@@ -137,7 +137,7 @@ public class ServerChat : IServerChatModule
 
     private void ProcessChatMessage(PlayerChatMessage playerChatMessage, Guid remoteHostID)
     {
-        Logging.LogDebug(playerChatMessage._chatFormatting._senderName.ToString());
+        Logging.LogDebug(playerChatMessage._chatFormatting._senderName!.ToString());
         Logging.LogInfo(
             $"<{playerChatMessage._chatFormatting._senderName.TryGetTag<TAG_String>("text")!.Value}> {playerChatMessage._body._message}"
         );
@@ -168,7 +168,7 @@ public class ServerChat : IServerChatModule
         ServerChatSession session
     )
     {
-        bool isEcho = playerChatMessage._header._sender.Equals(session._userUUID);
+        bool isEcho = playerChatMessage._header._sender!.Equals(session._userUUID);
         Logging.LogDebug("Add msg to Rolling Window");
         session._rollingWindow.Enqueue(
             new RollingWindowEntry(true, isEcho, playerChatMessage._header._messageSignatureBytes!)

@@ -10,22 +10,22 @@ public class PlayerSessionPacket : MinecraftPacket
         _protocol_ID = 0x09;
     }
 
-    public MinecraftUUID _UUID;
+    public MinecraftUUID? _UUID;
 
     public long _ExpiresAt;
 
-    public byte[] _PublicKey;
+    public byte[]? _PublicKey;
 
-    public byte[] _Signature;
+    public byte[]? _Signature;
 
     public override byte[] GetBytes()
     {
         return
         [
-            .. _UUID.GetBytes(),
+            .. _UUID!.GetBytes(),
             .. NetworkLong.GetBytes(_ExpiresAt),
-            .. PrefixedArray.GetBytes(_PublicKey),
-            .. PrefixedArray.GetBytes(_Signature),
+            .. PrefixedArray.GetBytes(_PublicKey!),
+            .. PrefixedArray.GetBytes(_Signature!),
         ];
     }
 }

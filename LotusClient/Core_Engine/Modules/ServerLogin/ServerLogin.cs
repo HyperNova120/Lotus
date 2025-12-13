@@ -19,11 +19,11 @@ namespace LotusCore.Modules.ServerLogin
 {
     public class LoginHandler : IModuleBase, IPacketHandler
     {
-        private ServerLoginInternals _internals;
+        private ServerLoginInternals? _internals;
 
-        private INetworkModule _networkModule;
+        private INetworkModule? _networkModule;
 
-        private IMojangLoginModule _mojangLoginModule;
+        private IMojangLoginModule? _mojangLoginModule;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
@@ -57,28 +57,28 @@ namespace LotusCore.Modules.ServerLogin
                 switch (packet._protocol_ID)
                 {
                     case 0x00:
-                        _internals.HandleLoginDisconnect(packet);
+                        _internals!.HandleLoginDisconnect(packet);
                         break;
                     case 0x01:
-                        await _internals.HandleEncryptionRequest(packet);
+                        await _internals!.HandleEncryptionRequest(packet);
                         break;
                     case 0x02:
-                        _internals.HandleLoginSuccess(packet);
+                        _internals!.HandleLoginSuccess(packet);
                         break;
                     case 0x03:
-                        _internals.HandleSetCompression(packet);
+                        _internals!.HandleSetCompression(packet);
                         break;
                     case 0x04:
-                        _internals.HandlePluginRequest(packet);
+                        _internals!.HandlePluginRequest(packet);
                         break;
                     case 0x05:
-                        _internals.HandleCookieRequest(packet);
+                        _internals!.HandleCookieRequest(packet);
                         break;
                     default:
                         Logging.LogError(
                             $"LoginHandler State 0x{packet._protocol_ID:X} Not Implemented"
                         );
-                        _networkModule.DisconnectFromServer(packet._remoteHostID);
+                        _networkModule!.DisconnectFromServer(packet._remoteHostID);
                         Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
@@ -116,7 +116,7 @@ namespace LotusCore.Modules.ServerLogin
                 port = (ushort)(srvPort ?? 25565);
             }
 
-            if (_mojangLoginModule.GetUserProfile() == null)
+            if (_mojangLoginModule!.GetUserProfile() == null)
             {
                 Console.WriteLine("You are not signed into a Minecraft account");
                 /* if (Core_Engine.CurrentState == Core_Engine.State.Waiting)
@@ -129,7 +129,7 @@ namespace LotusCore.Modules.ServerLogin
             try
             {
                 Logging.LogDebug($"\tisTransfer:{isTransfer}");
-                Guid? conGuid = _networkModule.GetServerConnectionInState(
+                Guid? conGuid = _networkModule!.GetServerConnectionInState(
                     remoteHost,
                     [ConnectionState.PLAY, ConnectionState.CONFIGURATION, ConnectionState.LOGIN]
                 );

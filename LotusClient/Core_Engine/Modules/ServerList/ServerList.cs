@@ -1,7 +1,5 @@
-using System.Net;
 using LotusCore.BaseClasses.Types;
 using LotusCore.EngineEventArgs;
-using LotusCore.EngineEvents;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.LotusNetty;
@@ -9,14 +7,10 @@ using LotusCore.Modules.LotusNetty.Internals;
 using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Status;
-using LotusCore.Modules.LotusNetty.Types;
 using LotusCore.Modules.ServerList.Commands;
-using LotusCore.Utils;
 using LotusCore.Utils;
 using LotusCore.Utils.MinecraftPaths;
 using LotusCore.Utils.NBTInternals.Tags;
-using Microsoft.Identity.Client.NativeInterop;
-using Silk.NET.OpenGL;
 
 namespace LotusCore.Modules.ServerList
 {

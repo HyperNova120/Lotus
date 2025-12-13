@@ -5,7 +5,7 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration
 {
     public class ConfigResourcePackResponse : MinecraftPacket
     {
-        public MinecraftUUID _UUID;
+        public MinecraftUUID? _UUID;
         public ConfigResourcePackResponseResult _result;
 
         public ConfigResourcePackResponse()
@@ -15,7 +15,7 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Configuration
 
         public override byte[] GetBytes()
         {
-            return [.. _UUID.GetBytes(), .. VarInt_VarLong.EncodeInt((int)_result)];
+            return [.. _UUID!.GetBytes(), .. VarInt_VarLong.EncodeInt((int)_result)];
         }
 
         public enum ConfigResourcePackResponseResult

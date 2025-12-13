@@ -166,7 +166,7 @@ public class TAG_List : TAG_Base, TAG_Collection
     {
         string returner =
             new string('\t', tabSpace)
-            + $"TAG_List({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}): {_Contained_Tags.Count} entries";
+            + $"TAG_List({((_Name!.Length == 0) ? "None" : "\'" + _Name + "\'")}): {_Contained_Tags.Count} entries";
 
         returner += "\n" + new string('\t', tabSpace) + "{";
 

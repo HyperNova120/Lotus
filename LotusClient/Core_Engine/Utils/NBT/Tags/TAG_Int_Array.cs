@@ -90,7 +90,7 @@ public class TAG_Int_Array : TAG_Base
     {
         string returner =
             new string('\t', tabSpace)
-            + $"TAG_Int_Array({((_Name.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
+            + $"TAG_Int_Array({((_Name!.Length == 0) ? "None" : "\'" + _Name + "\'")}):";
         foreach (int cur in Values)
         {
             returner += " " + cur.ToString();

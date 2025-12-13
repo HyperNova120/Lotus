@@ -350,7 +350,7 @@ public class NBT
     internal NBT Clone()
     {
         NBT ret = new();
-        ret._Base_Tag = (_Base_Tag == null)? null : (TAG_Compound?)_Base_Tag.Clone();
+        ret._Base_Tag = (_Base_Tag == null) ? null : (TAG_Compound?)_Base_Tag.Clone();
         return ret;
     }
 }
