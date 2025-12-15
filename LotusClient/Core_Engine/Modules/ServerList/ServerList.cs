@@ -95,18 +95,18 @@ namespace LotusCore.Modules.ServerList
         private async Task<bool> HandshakeServer(TAG_Compound tmp)
         {
             TAG_String? ip = (TAG_String?)tmp.TryGetTag("ip");
-            ip.Value = ip.Value.ToLower();
-            TAG_String? serverName = (TAG_String?)tmp.TryGetTag("name");
             if (ip == null)
             {
                 return false;
             }
+            ip.Value = ip.Value.ToLower();
             (string? serverIP, int? port) = await ServerDNSLookup.GetServerDNSRecordAsync(ip.Value);
             if (serverIP == null)
             {
                 //no such host
                 return false;
             }
+            TAG_String? serverName = (TAG_String?)tmp.TryGetTag("name");
 
             //Guid? remoteHostID = _networkingModule.ConnectToServer(serverIP, port ?? 25565);
 
@@ -161,7 +161,7 @@ namespace LotusCore.Modules.ServerList
             return null;
         }
 
-        public Task ProcessPacket(MinecraftServerPacket packet)
+        public async Task ProcessPacket(MinecraftServerPacket packet)
         {
             //Logging.LogDebug($"StatusHandler State 0x{packet._Protocol_ID:X}");
             switch (packet._protocol_ID)
@@ -181,7 +181,7 @@ namespace LotusCore.Modules.ServerList
 
                     break;
             }
-            return null;
+            return;
         }
 
         private void HandlePingResponse(MinecraftServerPacket packet)
@@ -197,7 +197,7 @@ namespace LotusCore.Modules.ServerList
                     DateTime.UtcNow - connection._serverListInfo._LastPingTime
                 ).TotalMilliseconds;
 
-                connection._serverListInfo._ServerListEntry.WriteTag<TAG_Double>(
+                connection._serverListInfo._ServerListEntry!.WriteTag<TAG_Double>(
                     new TAG_Double()
                     {
                         _Name = "ping",
@@ -223,7 +223,7 @@ namespace LotusCore.Modules.ServerList
             //Logging.LogDebug($"Response Size: {size}\n{value.Replace("\r", "").Replace("\n", "")}");
 
             ServerConnection connection = _networking.GetServerConnection(packet._remoteHostID)!;
-            connection._serverListInfo._ServerListEntry.WriteTag(
+            connection._serverListInfo._ServerListEntry!.WriteTag(
                 new TAG_String()
                 {
                     _Name = "serverlist_info",

@@ -3,9 +3,7 @@ using LotusCore.Interfaces;
 using LotusCore.Modules.LotusNetty.Internals;
 using LotusCore.Modules.ServerList.Models;
 using LotusCore.Utils;
-using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LotusCore.Modules.ServerList.Commands
 {
@@ -83,7 +81,7 @@ namespace LotusCore.Modules.ServerList.Commands
                         );
 
                 string playersOnlineText =
-                    (statusInfo != null) ? $"{players.online}/{players.max}" : "N/A";
+                    (statusInfo != null) ? $"{players!.online}/{players.max}" : "N/A";
 
                 rows.Add(
                     [
