@@ -1,6 +1,7 @@
 using System.Collections;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Modules.LotusNetty.Packets;
+using LotusCore.Modules.ServerPlay;
 
 namespace LotusCore.Modules.Chat.Types;
 
@@ -8,7 +9,7 @@ public class ChatMessage : MinecraftPacket
 {
     public ChatMessage()
     {
-        _protocol_ID = 0x08;
+        _protocol_ID = (int)PlayPacketsClientbound.PLAYER_CHAT_MESSAGE;
     }
 
     public string? _message;

@@ -66,16 +66,16 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase, IPacketH
         {
             switch (packet._protocol_ID)
             {
-                case 0x2B:
+                case (int)PlayPacketsClientbound.KEEP_ALIVE:
                     //keep alive
                     Logging.LogDebug("PLAY Keep Alive");
                     _playInternals!.HandleKeepAlive(packet);
                     break;
-                case 0x3F:
+                case (int)PlayPacketsClientbound.PLAYER_CHAT_MESSAGE:
                     Logging.LogDebug("HandlePlayerChatMessage");
                     _playInternals!.HandlePlayerChatMessage(packet);
                     break;
-                case 0x77:
+                case (int)PlayPacketsClientbound.SYSTEM_CHAT_MESSAGE:
                     Logging.LogDebug("HandleSystemChatMessage");
                     _playInternals!.HandleSystemChatMessage(packet);
                     break;

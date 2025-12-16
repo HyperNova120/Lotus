@@ -1,4 +1,5 @@
 using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.ServerPlay;
 
 namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Play.Chat;
 
@@ -8,7 +9,7 @@ public class AcknowledgeMessagePacket : MinecraftPacket
 
     public AcknowledgeMessagePacket(int messageCount)
     {
-        _protocol_ID = 0x05;
+        _protocol_ID = (int)PlayPacketsServerbound.ACKNOWLEDGE_MESSAGE;
         _messageCount = messageCount;
     }
 

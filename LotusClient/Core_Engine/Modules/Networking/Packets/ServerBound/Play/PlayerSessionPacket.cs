@@ -1,5 +1,6 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
+using LotusCore.Modules.ServerPlay;
 
 namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
 
@@ -7,7 +8,7 @@ public class PlayerSessionPacket : MinecraftPacket
 {
     public PlayerSessionPacket()
     {
-        _protocol_ID = 0x09;
+        _protocol_ID = (int)PlayPacketsServerbound.PLAYER_SESSION;
     }
 
     public MinecraftUUID? _UUID;
