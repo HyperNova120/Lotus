@@ -1,4 +1,5 @@
 ﻿using LotusCore;
+using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Utils;
 using LotusCore.Utils.NBTInternals.Tags;
@@ -119,6 +120,7 @@ namespace LotusCore
                 test.GetBytes();
             }
             return; */
+
             Core_Engine.InitCore();
             await Core_Engine.GoInteractiveMode(["login", "listjoin VanillaServer"]);
 

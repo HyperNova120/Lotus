@@ -1,4 +1,4 @@
-namespace LotusCore.BaseClasses.World;
+namespace LotusCore.BaseClasses.World.Entities;
 
 public enum EntityTypeEnum
 {

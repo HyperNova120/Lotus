@@ -1,7 +1,7 @@
 using System.Security;
 using LotusCore.BaseClasses.World.Interfaces;
 
-namespace LotusCore.BaseClasses.World;
+namespace LotusCore.BaseClasses.World.Entities;
 
 public class LivingEntity : Entity, IAttackable
 {

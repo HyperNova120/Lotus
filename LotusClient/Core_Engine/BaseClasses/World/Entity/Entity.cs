@@ -1,7 +1,7 @@
 using LotusCore.BaseClasses.Types;
 using LotusCore.Utils;
 
-namespace LotusCore.BaseClasses.World;
+namespace LotusCore.BaseClasses.World.Entities;
 
 public class Entity
 {
@@ -21,13 +21,13 @@ public class Entity
 
     //Entity Data
     public int _EntityID;
-    public MinecraftUUID _EntityUUID;
-    public Position _Position;
-    public Angle _Pitch;
-    public Angle _Yaw;
-    public Angle _HeadPitch;
-    public Angle _HeadYaw;
-    public Velocity _Velocity;
+    public MinecraftUUID? _EntityUUID;
+    public Position? _Position;
+    public Angle? _Pitch;
+    public Angle? _Yaw;
+    public Angle? _HeadPitch;
+    public Angle? _HeadYaw;
+    public Velocity? _Velocity;
     public int _Data;
 }
 

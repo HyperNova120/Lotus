@@ -49,15 +49,17 @@ public class SpawnEntityPacket
 
         _Pitch = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
+        _VelocityX = NetworkShort.DecodeBytes(inputBytes, ref offset);
+
+        _VelocityY = NetworkShort.DecodeBytes(inputBytes, ref offset);
+
+        _VelocityZ = NetworkShort.DecodeBytes(inputBytes, ref offset);
+
         _Yaw = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
         _HeadYaw = MinecraftAngle.DecodeBytes(inputBytes, ref offset);
 
         _Data = VarInt_VarLong.DecodeVarInt(inputBytes, ref offset);
-
-        _VelocityX = NetworkShort.DecodeBytes(inputBytes, ref offset);
-        _VelocityY = NetworkShort.DecodeBytes(inputBytes, ref offset);
-        _VelocityZ = NetworkShort.DecodeBytes(inputBytes, ref offset);
 
         return offset;
     }
