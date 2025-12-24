@@ -9,7 +9,7 @@ using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Interfaces
 {
-    public interface IServerPlayHandlerModule
+    public interface IServerPlayHandlerModule : IModuleBase
     {
         public void InitPlaySession(Guid remoteHostID);
     }

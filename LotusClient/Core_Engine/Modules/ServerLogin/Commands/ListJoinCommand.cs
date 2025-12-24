@@ -29,7 +29,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
                 serverListName += (serverListName == "") ? s : $" {s}";
             }
             (string ip, string port) = Core_Engine
-                .GetModule<IServerListModule>("ServerList")!
+                .GetModule<IServerListModule>()!
                 .ServerListIPRequest(serverListName);
             if (ip == "")
             {

@@ -24,8 +24,6 @@ namespace LotusCore;
 public static class Core_Engine
 {
     private static Dictionary<string, ICommandBase> _Commands = new();
-    private static Dictionary<string, IModuleBase> _Modules = new();
-    private static Dictionary<string, IGraphicsModule> _GraphicsModules = new();
     private static Dictionary<string, EngineEventHandler> _Events = new();
 
     public static State _CurrentState { private set; get; } = State.Noninteractive;
@@ -132,44 +130,31 @@ public static class Core_Engine
 
     private static void InitCoreModules()
     {
-        RegisterCoreModule("MojangLogin", new MojangLogin());
-        RegisterCoreModule("GameStateHandler", new GameStateHandler());
-        RegisterCoreModule("Networking", new Networking());
-        RegisterCoreModule("ServerList", new ServerList());
-        RegisterCoreModule("LoginHandler", new LoginHandler());
-        RegisterCoreModule("ServerConfiguration", new ServerConfiguration());
-        RegisterCoreModule("ServerPlayHandler", new ServerPlayHandler());
-        RegisterCoreModule("VulkanGraphics", new VulkanGraphics());
-        RegisterCoreModule("ServerChat", new ServerChat());
+        RegisterModule<IMojangLoginModule>(new MojangLogin());
+        RegisterModule<IGameStateHandlerModule>(new GameStateHandler());
+        RegisterModule<INetworkModule>(new Networking());
+        RegisterModule<IServerListModule>(new ServerList());
+        RegisterModule(new LoginHandler());
+        RegisterModule(new ServerConfiguration());
+        RegisterModule<IServerPlayHandlerModule>(new ServerPlayHandler());
+        RegisterModule<IServerChatModule>(new ServerChat());
 
-        foreach (var module in _Modules.Values)
-        {
-            module.LinkModules();
-        }
+        ModuleRegistry.LinkAllModules();
     }
 
     private static void InitCoreModuleEventSubscriptions()
     {
-        foreach (IModuleBase module in _Modules.Values)
-        {
-            module.SubscribeToEvents(SubscribeToEvent);
-        }
+        ModuleRegistry.SubscribeAllModulesToEvents();
     }
 
     //=========END===========
     //Initiate Core Engine
     //========================
 
-    public static T? GetModule<T>(string ModuleIdentifier)
+    public static T? GetModule<T>()
+        where T : IModuleBase
     {
-        if (!_Modules.ContainsKey(ModuleIdentifier))
-        {
-            throw new Exceptions.IdentifierNotFoundException(
-                $"Module {ModuleIdentifier} Does Not Exist"
-            );
-        }
-        _Modules.TryGetValue(ModuleIdentifier, out IModuleBase? moduleBase);
-        return (T?)moduleBase;
+        return ModuleRegistry.GetModule<T>();
     }
 
     public static async Task GoInteractiveMode(IEnumerable<string>? initialCmds = null)
@@ -326,30 +311,20 @@ public static class Core_Engine
         return true;
     }
 
-    private static void RegisterCoreModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
+    private static void RegisterModule<T>(T module)
+        where T : IModuleBase
     {
-        if (_Modules.ContainsKey(ModuleIdentifier))
-        {
-            throw new Exceptions.IdentifierMustBeUniqueException(
-                $"Module Identifier {ModuleIdentifier} Already Exists"
-            );
-        }
-        ModuleToRegister.RegisterEvents(RegisterEvent);
-        ModuleToRegister.RegisterCommands(RegisterCommand);
-        _Modules.Add(ModuleIdentifier, ModuleToRegister);
-        if (ModuleToRegister is IGraphicsModule graphicsModule)
-        {
-            _GraphicsModules.Add(ModuleIdentifier, graphicsModule);
-        }
+        ModuleRegistry.RegisterModule(module);
     }
 
-    public static void RegisterModule(string ModuleIdentifier, IModuleBase ModuleToRegister)
+    public static void RegisterAndLinkModule<T>()
+        where T : IModuleBase
     {
-        RegisterCoreModule(ModuleIdentifier, ModuleToRegister);
-        ModuleToRegister.LinkModules();
+        T module = ModuleRegistry.GetModule<T>();
+        module.LinkModules();
     }
 
-    public static bool UnregisterModule(string ModuleIdentifier)
+    /* public static bool UnregisterModule(string ModuleIdentifier)
     {
         if (!_Modules.ContainsKey(ModuleIdentifier))
         {
@@ -362,7 +337,7 @@ public static class Core_Engine
         }
         return true;
     }
-
+ */
     public static void RegisterEvent(string EventIdentifier)
     {
         if (_Events.ContainsKey(EventIdentifier))

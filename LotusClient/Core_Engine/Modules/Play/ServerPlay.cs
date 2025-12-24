@@ -24,8 +24,8 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase, IPacketH
 
     public void LinkModules()
     {
-        _networkingModule = Core_Engine.GetModule<INetworkModule>("Networking")!;
-        _serverChat = Core_Engine.GetModule<IServerChatModule>("ServerChat")!;
+        _networkingModule = Core_Engine.GetModule<INetworkModule>()!;
+        _serverChat = Core_Engine.GetModule<IServerChatModule>()!;
         _playInternals = new(_serverChat, _networkingModule);
     }
 

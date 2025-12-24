@@ -4,6 +4,8 @@ using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat.Internals;
 using LotusCore.Modules.Chat.Types;
+using LotusCore.Modules.GameStateHandlerModule;
+using LotusCore.Modules.LotusNetty;
 using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play;
 using LotusCore.Modules.LotusNetty.Packets.ServerBound.Play.Chat;
@@ -52,8 +54,8 @@ public class ServerChat : IServerChatModule
 
     public void LinkModules()
     {
-        _networking = Core_Engine.GetModule<INetworkModule>("Networking")!;
-        _gamestate = Core_Engine.GetModule<IGameStateHandlerModule>("GameStateHandler")!;
+        _networking = Core_Engine.GetModule<Networking>()!;
+        _gamestate = Core_Engine.GetModule<GameStateHandler>()!;
     }
 
     public async Task SendTestMessages(Guid remoteHostID)

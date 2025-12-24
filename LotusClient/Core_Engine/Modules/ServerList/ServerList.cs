@@ -68,7 +68,7 @@ namespace LotusCore.Modules.ServerList
 
         public void LinkModules()
         {
-            _networking = Core_Engine.GetModule<INetworkModule>("Networking")!;
+            _networking = Core_Engine.GetModule<INetworkModule>()!;
         }
 
         private async Task PingServerlist()

@@ -44,11 +44,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
             )!; */
-            if (
-                Core_Engine
-                    .GetModule<INetworkModule>("Networking")!
-                    .IsClientConnectedToPrimaryServer()
-            )
+            if (Core_Engine.GetModule<INetworkModule>()!.IsClientConnectedToPrimaryServer())
             {
                 Console.WriteLine("you are already connected to a server");
                 return;

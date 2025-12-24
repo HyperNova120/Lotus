@@ -9,7 +9,7 @@ using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Interfaces
 {
-    public interface IMojangLoginModule
+    public interface IMojangLoginModule : IModuleBase
     {
         public MinecraftProfile? GetUserProfile();
 

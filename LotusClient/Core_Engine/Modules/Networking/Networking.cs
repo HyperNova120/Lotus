@@ -7,6 +7,9 @@ using LotusCore.Interfaces;
 using LotusCore.Modules.LotusNetty.Internals;
 using LotusCore.Modules.LotusNetty.Packets;
 using LotusCore.Modules.LotusNetty.Types;
+using LotusCore.Modules.ServerConfig;
+using LotusCore.Modules.ServerLogin;
+using LotusCore.Modules.ServerPlay;
 using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Modules.LotusNetty
@@ -34,18 +37,11 @@ namespace LotusCore.Modules.LotusNetty
 
         public void LinkModules()
         {
-            _connectionHandler._loginPacketHandler = Core_Engine.GetModule<IPacketHandler>(
-                "LoginHandler"
-            )!;
-            _connectionHandler._configPacketHandler = Core_Engine.GetModule<IPacketHandler>(
-                "ServerConfiguration"
-            )!;
-            _connectionHandler._playPacketHandler = Core_Engine.GetModule<IPacketHandler>(
-                "ServerPlayHandler"
-            )!;
-            _connectionHandler._statusPacketHandler = Core_Engine.GetModule<IPacketHandler>(
-                "ServerList"
-            )!;
+            _connectionHandler._loginPacketHandler = Core_Engine.GetModule<LoginHandler>()!;
+            _connectionHandler._configPacketHandler = Core_Engine.GetModule<ServerConfiguration>()!;
+            _connectionHandler._playPacketHandler = Core_Engine.GetModule<ServerPlayHandler>()!;
+            _connectionHandler._statusPacketHandler =
+                Core_Engine.GetModule<ServerList.ServerList>()!;
         }
 
         public void LoginSuccessful(Guid remoteHostID)

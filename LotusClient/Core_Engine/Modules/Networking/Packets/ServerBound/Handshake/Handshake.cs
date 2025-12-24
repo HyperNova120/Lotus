@@ -27,7 +27,7 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake
             return
             [
                 .. VarInt_VarLong.EncodeInt(
-                    (int)Core_Engine.GetModule<INetworkModule>("Networking")!.GetProtocolVersion()
+                    (int)Core_Engine.GetModule<Networking>()!.GetProtocolVersion()
                 ),
                 .. StringN.GetBytes(_ServerAddress),
                 .. BitConverter.GetBytes(_ServerPort),

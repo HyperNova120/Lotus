@@ -7,7 +7,7 @@ using static LotusCore.Modules.LotusNetty.Internals.ProtocolVersionUtils;
 
 namespace LotusCore.Interfaces
 {
-    public interface INetworkModule
+    public interface INetworkModule : IModuleBase
     {
         public void LoginSuccessful(Guid remoteHostID);
 

@@ -41,12 +41,12 @@ namespace LotusCore.Modules.ServerLogin
 
         public void LinkModules()
         {
-            _networkModule = Core_Engine.GetModule<INetworkModule>("Networking")!;
-            _mojangLoginModule = Core_Engine.GetModule<IMojangLoginModule>("MojangLogin")!;
+            _networkModule = Core_Engine.GetModule<INetworkModule>()!;
+            _mojangLoginModule = Core_Engine.GetModule<IMojangLoginModule>()!;
             _internals = new(
                 _networkModule,
                 _mojangLoginModule,
-                Core_Engine.GetModule<IGameStateHandlerModule>("GameStateHandler")!
+                Core_Engine.GetModule<IGameStateHandlerModule>()!
             );
         }
 

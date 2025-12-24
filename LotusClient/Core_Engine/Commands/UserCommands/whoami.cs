@@ -1,4 +1,5 @@
 using LotusCore.Interfaces;
+using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.GameStateHandlerModule.Types;
 using LotusCore.Modules.MojangLogin;
 using LotusCore.Modules.MojangLogin.Models;
@@ -20,7 +21,7 @@ namespace LotusCore.Commands.UserCommands
         public Task ProcessCommand(string[] commandArgs)
         {
             MinecraftProfile? userProfile = Core_Engine
-                .GetModule<IGameStateHandlerModule>("GameStateHandler")!
+                .GetModule<GameStateHandler>()!
                 .GetUserProfile();
 
             if (userProfile != null)
