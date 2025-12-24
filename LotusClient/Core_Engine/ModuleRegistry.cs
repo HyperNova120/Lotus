@@ -28,6 +28,21 @@ public static class ModuleRegistry
         return true;
     }
 
+    public static bool RegisterModule<T>()
+        where T : IModuleBase, new()
+    {
+        Type type = typeof(T);
+        if (_registeredModules.ContainsKey(type))
+        {
+            return false;
+        }
+        lock (_registeredModules)
+        {
+            _registeredModules[type] = new T();
+        }
+        return true;
+    }
+
     public static void LinkModule<T>()
         where T : IModuleBase
     {

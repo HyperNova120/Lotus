@@ -8,6 +8,7 @@ using LotusCore.EngineEvents;
 using LotusCore.Exceptions;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat;
+using LotusCore.Modules.Entity;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.LotusNetty;
 using LotusCore.Modules.MojangLogin;
@@ -138,6 +139,7 @@ public static class Core_Engine
         RegisterModule(new ServerConfiguration());
         RegisterModule<IServerPlayHandlerModule>(new ServerPlayHandler());
         RegisterModule<IServerChatModule>(new ServerChat());
+        RegisterModule<IEntityModule>(new EntityModule());
 
         ModuleRegistry.LinkAllModules();
     }
