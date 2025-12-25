@@ -26,18 +26,18 @@ namespace LotusCore.Modules.ServerList.Commands
             return "Correct usage: 'list'";
         }
 
-        public async Task ProcessCommand(string[] commandArgs)
+        public async Task ProcessCommand(ICoreModule coreModule, string[] commandArgs)
         {
             if (commandArgs.Length != 0)
             {
                 Console.WriteLine(GetCommandCorrectUsage());
                 return;
             }
-            Core_Engine.SignalInteractiveHold(Core_Engine.State.ServerList);
+            coreModule.SignalInteractiveHold(Core_Engine.State.ServerList);
             TAG_List? serverList = _serverList.TryGetTag<TAG_List>("servers");
             if (serverList == null)
             {
-                Core_Engine.SignalInteractiveFree(Core_Engine.State.ServerList);
+                coreModule.SignalInteractiveFree(Core_Engine.State.ServerList);
                 return;
             }
             List<string[]> rows = new();
@@ -99,7 +99,7 @@ namespace LotusCore.Modules.ServerList.Commands
                     rows.ToArray()
                 )
             );
-            Core_Engine.SignalInteractiveFree(Core_Engine.State.ServerList);
+            coreModule.SignalInteractiveFree(Core_Engine.State.ServerList);
         }
     }
 }

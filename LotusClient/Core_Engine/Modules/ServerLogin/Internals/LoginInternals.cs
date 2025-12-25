@@ -37,12 +37,16 @@ namespace LotusCore.Modules.ServerLogin.Internals
 
         private IGameStateHandlerModule _gameStateHandler;
 
+        ICoreModule? _coreModule;
+
         public ServerLoginInternals(
+            ICoreModule coreModule,
             INetworkModule networking,
             IMojangLoginModule mojangLogin,
             IGameStateHandlerModule gameStateHandler
         )
         {
+            _coreModule = coreModule;
             _networking = networking;
             _mojangLogin = mojangLogin;
             _gameStateHandler = gameStateHandler;
@@ -58,7 +62,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
             Console.WriteLine(test.GetNBTAsString());
             _networking.DisconnectFromServer(packet._remoteHostID);
             //Core_Engine.CurrentState = Core_Engine.State.Interactive;
-            Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+            _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
         }
 
         public async Task HandleEncryptionRequest(MinecraftServerPacket packet)
@@ -187,14 +191,14 @@ namespace LotusCore.Modules.ServerLogin.Internals
             /* NetworkModuleCache.GetServerConnection(packet.remoteHost)!.connectionStatF =
                 ConnectionState.CONFIGURATION; */
 
-            Core_Engine.signalInteractiveHoldTransfer(
+            _coreModule!.SignalInteractiveHoldTransfer(
                 Core_Engine.State.JoiningServer,
                 Core_Engine.State.Configuration
             );
 
             _networking.SendPacket(packet._remoteHostID, new EmptyPacket(0x03));
             _networking.LoginSuccessful(packet._remoteHostID);
-            Core_Engine.InvokeEvent(
+            _coreModule!.InvokeEvent(
                 nameof(RegisteredEventIdentifiers.CONFIG_Start_Config_Process),
                 new ConnectionEventArgs(packet._remoteHostID)
             );
@@ -215,7 +219,7 @@ namespace LotusCore.Modules.ServerLogin.Internals
                 value
             );
 
-            Core_Engine.InvokeEvent("PLUGIN_Packet_Received", args);
+            _coreModule!.InvokeEvent("PLUGIN_Packet_Received", args);
         }
 
         internal void HandleCookieRequest(MinecraftServerPacket packet)

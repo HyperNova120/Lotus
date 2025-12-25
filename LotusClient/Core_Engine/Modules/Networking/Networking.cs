@@ -16,7 +16,7 @@ namespace LotusCore.Modules.LotusNetty
 {
     public class Networking : INetworkModule, IModuleBase
     {
-        private ConnectionHandler _connectionHandler = new();
+        private ConnectionHandler? _connectionHandler;
 
         public readonly ProtocolVersionUtils.ProtocolVersion _protocolVersion = ProtocolVersionUtils
             .ProtocolVersion
@@ -35,20 +35,22 @@ namespace LotusCore.Modules.LotusNetty
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
-        public void LinkModules()
+        public void LinkModules(ICoreModule coreModule)
         {
-            _connectionHandler._loginPacketHandler = Core_Engine.GetModule<LoginHandler>()!;
-            _connectionHandler._configPacketHandler = Core_Engine.GetModule<ServerConfiguration>()!;
-            _connectionHandler._playPacketHandler = Core_Engine.GetModule<ServerPlayHandler>()!;
+            _connectionHandler = new(coreModule);
+            _connectionHandler._loginPacketHandler = coreModule.GetModule<LoginHandler>()!;
+            _connectionHandler._configPacketHandler = coreModule.GetModule<ServerConfiguration>()!;
+            _connectionHandler._playPacketHandler =
+                coreModule.GetModule<IServerPlayHandlerModule>()!;
             _connectionHandler._statusPacketHandler =
-                Core_Engine.GetModule<ServerList.ServerList>()!;
+                coreModule.GetModule<ServerList.ServerList>()!;
         }
 
         public void LoginSuccessful(Guid remoteHostID)
         {
             GetServerConnection(remoteHostID)!._connectionState = ConnectionState.CONFIGURATION;
             SetIsClientConnectedToPrimaryServer(true);
-            _connectionHandler.SetPrimaryConnection(remoteHostID);
+            _connectionHandler!.SetPrimaryConnection(remoteHostID);
         }
 
         public int SendPacket(
@@ -150,17 +152,17 @@ namespace LotusCore.Modules.LotusNetty
 
         public Guid? ConnectToServer(string ip, int port = 25565)
         {
-            return _connectionHandler.ConnectToServer(ip, port);
+            return _connectionHandler!.ConnectToServer(ip, port);
         }
 
         public void DisconnectFromServer(Guid remoteHostID)
         {
-            _connectionHandler.DisconnectFromServer(remoteHostID);
+            _connectionHandler!.DisconnectFromServer(remoteHostID);
         }
 
         public ServerConnection? GetServerConnection(Guid connectionID)
         {
-            return _connectionHandler.GetServerConnection(connectionID);
+            return _connectionHandler!.GetServerConnection(connectionID);
         }
 
         public ProtocolVersion GetProtocolVersion()
@@ -170,12 +172,12 @@ namespace LotusCore.Modules.LotusNetty
 
         public bool IsClientConnectedToPrimaryServer()
         {
-            return _connectionHandler.IsClientConnectedToPrimaryServer();
+            return _connectionHandler!.IsClientConnectedToPrimaryServer();
         }
 
         public void SetIsClientConnectedToPrimaryServer(bool value)
         {
-            _connectionHandler._isClientConnectedToPrimaryServer = value;
+            _connectionHandler!._isClientConnectedToPrimaryServer = value;
         }
 
         public Guid? GetServerConnectionInState(
@@ -183,7 +185,7 @@ namespace LotusCore.Modules.LotusNetty
             IEnumerable<ConnectionState> connectionStates
         )
         {
-            return _connectionHandler.GetConnectionInState(connectionID, connectionStates);
+            return _connectionHandler!.GetConnectionInState(connectionID, connectionStates);
         }
     }
 

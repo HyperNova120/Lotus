@@ -19,6 +19,8 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake
         public ushort _ServerPort = 25565;
         public int _NextState = 1;
 
+        ICoreModule? _coreModule;
+
         public override byte[] GetBytes()
         {
             /* Logging.LogDebug(
@@ -27,7 +29,7 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake
             return
             [
                 .. VarInt_VarLong.EncodeInt(
-                    (int)Core_Engine.GetModule<Networking>()!.GetProtocolVersion()
+                    (int)_coreModule!.GetModule<INetworkModule>()!.GetProtocolVersion()
                 ),
                 .. StringN.GetBytes(_ServerAddress),
                 .. BitConverter.GetBytes(_ServerPort),
@@ -35,11 +37,17 @@ namespace LotusCore.Modules.LotusNetty.Packets.ServerBound.Handshake
             ];
         }
 
-        public HandshakePacket(string serverAddress, Intent nextState, ushort serverPort = 25565)
+        public HandshakePacket(
+            ICoreModule coreModule,
+            string serverAddress,
+            Intent nextState,
+            ushort serverPort = 25565
+        )
         {
             this._ServerAddress = serverAddress;
             this._ServerPort = serverPort;
             this._NextState = (int)nextState;
+            _coreModule = coreModule;
         }
     }
 }

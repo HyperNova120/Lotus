@@ -1,15 +1,22 @@
+using System.Security.Cryptography;
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
+using LotusCore.BaseClasses.World.Entities;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 
-namespace LotusCore.Modules.Entity;
+namespace LotusCore.Modules.EntitiesModule;
 
 public class EntityModule : IEntityModule
 {
-    public void AddEntity(BaseClasses.World.Entities.Entity entity)
+    Dictionary<int, Entity> _trackedEntities = new();
+
+    public void AddEntity(Entity entity)
     {
-        throw new NotImplementedException();
+        lock (_trackedEntities)
+        {
+            _trackedEntities[entity._EntityID] = entity;
+        }
     }
 
     public void EntityDamageEvent()
@@ -32,10 +39,7 @@ public class EntityModule : IEntityModule
         throw new NotImplementedException();
     }
 
-    public void LinkModules()
-    {
-        throw new NotImplementedException();
-    }
+    public void LinkModules(ICoreModule coreModule) { }
 
     public void MoveMinecartAlongTrack(int entityID, IEnumerable<IEntityModule.TrackSteps> steps)
     {
@@ -47,19 +51,19 @@ public class EntityModule : IEntityModule
         throw new NotImplementedException();
     }
 
-    public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
-    {
-        throw new NotImplementedException();
-    }
+    public void RegisterCommands(Action<string, ICommandBase> RegisterCommand) { }
 
-    public void RegisterEvents(Action<string> RegisterEvent)
-    {
-        throw new NotImplementedException();
-    }
+    public void RegisterEvents(Action<string> RegisterEvent) { }
 
     public void RemoveEntities(IEnumerable<int> entityIDs)
     {
-        throw new NotImplementedException();
+        for (int i = 0; i < entityIDs.Count(); i++)
+        {
+            lock (_trackedEntities)
+            {
+                _trackedEntities.Remove(entityIDs.ElementAt(i));
+            }
+        }
     }
 
     public void RemoveEntityEffect(int entityID, int effectID)
@@ -82,10 +86,7 @@ public class EntityModule : IEntityModule
         throw new NotImplementedException();
     }
 
-    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent)
-    {
-        throw new NotImplementedException();
-    }
+    public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
     public void TeleportEntity(
         int entityID,
@@ -107,7 +108,10 @@ public class EntityModule : IEntityModule
         bool onGround
     )
     {
-        throw new NotImplementedException();
+        Entity entity = _trackedEntities[entityID];
+        entity._Position!._X += deltaX;
+        entity._Position._Y += deltaY;
+        entity._Position._Z += deltaZ;
     }
 
     public void UpdateEntityPositionAndRotation(

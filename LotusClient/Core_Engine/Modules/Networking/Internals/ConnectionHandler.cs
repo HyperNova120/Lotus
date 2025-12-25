@@ -18,6 +18,13 @@ public class ConnectionHandler
     public IPacketHandler? _playPacketHandler;
     public IPacketHandler? _statusPacketHandler;
 
+    ICoreModule _coreModule;
+
+    public ConnectionHandler(ICoreModule coreModule)
+    {
+        _coreModule = coreModule;
+    }
+
     //==========================================
     //            Connection States
     //==========================================
@@ -142,7 +149,7 @@ public class ConnectionHandler
         Logging.LogInfo("Disconnected from Server:" + remoteHostID);
         if (IsConnectionPrimary(remoteHostID))
         {
-            Core_Engine.SignalInteractiveResetServerHolds();
+            _coreModule.SignalInteractiveResetServerHolds();
             SetPrimaryConnection(null);
         }
         if (connection!._tcpSocket != null)
@@ -168,7 +175,7 @@ public class ConnectionHandler
                 //DisconnectFromServer(serverConnection._id);
                 if (IsConnectionPrimary(serverConnection._id))
                 {
-                    Core_Engine.SignalInteractiveResetServerHolds();
+                    _coreModule.SignalInteractiveResetServerHolds();
                 }
                 return;
             }
@@ -178,7 +185,7 @@ public class ConnectionHandler
         DisconnectFromServer(serverConnection._id);
         if (IsConnectionPrimary(serverConnection._id))
         {
-            Core_Engine.SignalInteractiveResetServerHolds();
+            _coreModule.SignalInteractiveResetServerHolds();
         }
     }
 
@@ -264,9 +271,9 @@ public class ConnectionHandler
                     DisconnectFromServer(connection._id);
                     if (IsConnectionPrimary(connection._id))
                     {
-                        Core_Engine.SignalInteractiveResetServerHolds();
+                        _coreModule.SignalInteractiveResetServerHolds();
                     }
-                    Core_Engine.SignalInteractiveResetServerHolds();
+                    _coreModule.SignalInteractiveResetServerHolds();
                     return;
             }
         }
@@ -275,7 +282,7 @@ public class ConnectionHandler
             DisconnectFromServer(connection._id);
             if (IsConnectionPrimary(connection._id))
             {
-                Core_Engine.SignalInteractiveResetServerHolds();
+                _coreModule.SignalInteractiveResetServerHolds();
             }
             return;
         }

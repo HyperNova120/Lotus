@@ -18,6 +18,6 @@ namespace LotusCore.Interfaces
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand);
 
-        public void LinkModules();
+        public void LinkModules(ICoreModule coreModule);
     }
 }

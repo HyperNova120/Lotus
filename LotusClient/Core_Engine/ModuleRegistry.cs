@@ -2,18 +2,22 @@ using LotusCore.Interfaces;
 
 namespace LotusCore;
 
-public static class ModuleRegistry
+public class ModuleRegistry
 {
-    static Dictionary<Type, IModuleBase> _registeredModules = new();
+    Dictionary<Type, IModuleBase> _registeredModules = new();
 
-    public static T GetModule<T>()
+    public T? GetModule<T>()
         where T : IModuleBase
     {
         Type type = typeof(T);
+        if (!_registeredModules.ContainsKey(type))
+        {
+            return default;
+        }
         return (T)_registeredModules[type];
     }
 
-    public static bool RegisterModule<T>(T module)
+    public bool RegisterModule<T>(T module)
         where T : IModuleBase
     {
         Type type = typeof(T);
@@ -28,7 +32,7 @@ public static class ModuleRegistry
         return true;
     }
 
-    public static bool RegisterModule<T>()
+    public bool RegisterModule<T>()
         where T : IModuleBase, new()
     {
         Type type = typeof(T);
@@ -43,25 +47,25 @@ public static class ModuleRegistry
         return true;
     }
 
-    public static void LinkModule<T>()
+    public void LinkModule<T>(ICoreModule coreModule)
         where T : IModuleBase
     {
-        GetModule<T>().LinkModules();
+        GetModule<T>()?.LinkModules(coreModule);
     }
 
-    public static void LinkAllModules()
+    public void LinkAllModules(ICoreModule coreModule)
     {
         foreach (IModuleBase module in _registeredModules.Values)
         {
-            module.LinkModules();
+            module.LinkModules(coreModule);
         }
     }
 
-    public static void SubscribeAllModulesToEvents()
+    public void SubscribeAllModulesToEvents(ICoreModule coreModule)
     {
         foreach (IModuleBase module in _registeredModules.Values)
         {
-            module.SubscribeToEvents(Core_Engine.SubscribeToEvent);
+            module.SubscribeToEvents(coreModule.SubscribeToEvent);
         }
     }
 }

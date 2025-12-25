@@ -34,12 +34,13 @@ namespace LotusCore.Modules.ServerConfig
             );
         }
 
-        public void LinkModules()
+        public void LinkModules(ICoreModule coreModule)
         {
             _ConfigurationInternals = new(
-                Core_Engine.GetModule<INetworkModule>()!,
-                Core_Engine.GetModule<IGameStateHandlerModule>()!,
-                Core_Engine.GetModule<IServerPlayHandlerModule>()!
+                coreModule,
+                coreModule.GetModule<INetworkModule>()!,
+                coreModule.GetModule<IGameStateHandlerModule>()!,
+                coreModule.GetModule<IServerPlayHandlerModule>()!
             );
         }
 

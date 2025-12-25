@@ -28,12 +28,16 @@ public class ConfigurationInternals
 
     private IServerPlayHandlerModule _serverPlayHandler;
 
+    ICoreModule? _coreModule;
+
     public ConfigurationInternals(
+        ICoreModule coreModule,
         INetworkModule networkModule,
         IGameStateHandlerModule gamestateHandler,
         IServerPlayHandlerModule serverPlayHandler
     )
     {
+        _coreModule = coreModule;
         _networkModule = networkModule;
         _gamestateHandler = gamestateHandler;
         _serverPlayHandler = serverPlayHandler;
@@ -123,15 +127,15 @@ public class ConfigurationInternals
         try
         {
             Logging.LogDebug("Transfer");
-            Core_Engine.InvokeEvent("GAMESTATE_ProcessTransfer");
+            _coreModule!.InvokeEvent("GAMESTATE_ProcessTransfer");
             ConfigTransferPacket configTransferPacket = new();
             configTransferPacket.DecodeFromBytes(minecraftPacket._data);
-            Core_Engine.signalInteractiveHoldTransfer(
+            _coreModule.SignalInteractiveHoldTransfer(
                 Core_Engine.State.Configuration,
                 Core_Engine.State.JoiningServer
             );
             _networkModule.DisconnectFromServer(minecraftPacket._remoteHostID);
-            _ = Core_Engine.HandleCommand(
+            _ = _coreModule.HandleCommand(
                 "join",
                 [configTransferPacket._Host, "-t", configTransferPacket._Port.ToString()]
             );
@@ -235,7 +239,7 @@ public class ConfigurationInternals
             packet._data[offset..]
         );
 
-        Core_Engine.InvokeEvent("PLUGIN_Packet_Received", args);
+        _coreModule!.InvokeEvent("PLUGIN_Packet_Received", args);
     }
 
     internal void HandleDisconnect(MinecraftServerPacket packet)
@@ -257,13 +261,13 @@ public class ConfigurationInternals
 
         _networkModule.DisconnectFromServer(packet._remoteHostID);
         //Core_Engine.CurrentState = Core_Engine.State.Interactive;
-        Core_Engine.SignalInteractiveFree(Core_Engine.State.Configuration);
+        _coreModule!.SignalInteractiveFree(Core_Engine.State.Configuration);
     }
 
     internal void HandleFinishConfiguration(MinecraftServerPacket packet)
     {
         Logging.LogInfo("Server Config Success!");
-        Core_Engine.signalInteractiveHoldTransfer(
+        _coreModule!.SignalInteractiveHoldTransfer(
             Core_Engine.State.Configuration,
             Core_Engine.State.Play
         );

@@ -25,7 +25,7 @@ namespace LotusCore.Modules.MojangLogin.Commands
             return "Correct Usage: 'login'";
         }
 
-        public async Task ProcessCommand(string[] commandArgs)
+        public async Task ProcessCommand(ICoreModule coreModule, string[] commandArgs)
         {
             var userProfile = _mojangLogin.GetUserProfile();
             if (userProfile != null)
@@ -34,7 +34,7 @@ namespace LotusCore.Modules.MojangLogin.Commands
                 return;
             }
 
-            Core_Engine.SignalInteractiveHold(Core_Engine.State.AccountLogin);
+            coreModule.SignalInteractiveHold(Core_Engine.State.AccountLogin);
             bool sucessfullSignIn = await _mojangLogin.LoginAsync();
             userProfile = _mojangLogin.GetUserProfile();
             if (!sucessfullSignIn)

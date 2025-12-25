@@ -1,14 +1,7 @@
-using System.Reflection;
-using System.Threading.Tasks;
-using Graphics_Engine;
-using LotusCore.Commands;
 using LotusCore.Commands.UserCommands;
-using LotusCore.EngineEventArgs;
-using LotusCore.EngineEvents;
-using LotusCore.Exceptions;
 using LotusCore.Interfaces;
 using LotusCore.Modules.Chat;
-using LotusCore.Modules.Entity;
+using LotusCore.Modules.EntitiesModule;
 using LotusCore.Modules.GameStateHandlerModule;
 using LotusCore.Modules.LotusNetty;
 using LotusCore.Modules.MojangLogin;
@@ -17,16 +10,11 @@ using LotusCore.Modules.ServerList;
 using LotusCore.Modules.ServerLogin;
 using LotusCore.Modules.ServerPlay;
 using LotusCore.Utils.MinecraftPaths;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Silk.NET.Vulkan;
 
 namespace LotusCore;
 
-public static class Core_Engine
+public class Core_Engine : CoreModule, ICoreModule
 {
-    private static Dictionary<string, ICommandBase> _Commands = new();
-    private static Dictionary<string, EngineEventHandler> _Events = new();
-
     public static State _CurrentState { private set; get; } = State.Noninteractive;
 
     static ManualResetEventSlim _InteractiveHold = new(true); // Initially signaled
@@ -48,7 +36,7 @@ public static class Core_Engine
         ServerList,
     }
 
-    public static bool SignalInteractiveHold(State RequestedState)
+    public bool SignalInteractiveHold(State RequestedState)
     {
         Logging.LogDebug($"signalInteractiveHold From:{RequestedState}");
         if (_BlockingStates.Contains(RequestedState))
@@ -66,7 +54,7 @@ public static class Core_Engine
         return true;
     }
 
-    public static bool signalInteractiveHoldTransfer(State CallingState, State RequestedState)
+    public bool SignalInteractiveHoldTransfer(State CallingState, State RequestedState)
     {
         Logging.LogDebug($"signalInteractiveTransferHold From:{CallingState} To:{RequestedState}");
         if (!_BlockingStates.Contains(CallingState))
@@ -79,7 +67,7 @@ public static class Core_Engine
         return true;
     }
 
-    public static bool SignalInteractiveFree(State CallingState)
+    public bool SignalInteractiveFree(State CallingState)
     {
         Logging.LogDebug($"signalInteractiveFree From:{CallingState}");
         if (!_BlockingStates.Contains(CallingState))
@@ -100,7 +88,7 @@ public static class Core_Engine
         return true;
     }
 
-    public static void SignalInteractiveResetServerHolds()
+    public void SignalInteractiveResetServerHolds()
     {
         if (_BlockingStates.Contains(State.JoiningServer))
             SignalInteractiveFree(State.JoiningServer);
@@ -116,7 +104,7 @@ public static class Core_Engine
     //Initiate Core Engine
     //========================
 
-    public static void InitCore()
+    public void InitCore()
     {
         MinecraftPathsStruct.InitRequiredFolderStructure();
         InitCoreCommands();
@@ -124,12 +112,12 @@ public static class Core_Engine
         InitCoreModuleEventSubscriptions();
     }
 
-    private static void InitCoreCommands()
+    private void InitCoreCommands()
     {
         RegisterCommand("whoami", new Whoami());
     }
 
-    private static void InitCoreModules()
+    private void InitCoreModules()
     {
         RegisterModule<IMojangLoginModule>(new MojangLogin());
         RegisterModule<IGameStateHandlerModule>(new GameStateHandler());
@@ -141,25 +129,25 @@ public static class Core_Engine
         RegisterModule<IServerChatModule>(new ServerChat());
         RegisterModule<IEntityModule>(new EntityModule());
 
-        ModuleRegistry.LinkAllModules();
+        LinkAllModules();
     }
 
-    private static void InitCoreModuleEventSubscriptions()
+    private void InitCoreModuleEventSubscriptions()
     {
-        ModuleRegistry.SubscribeAllModulesToEvents();
+        SubscribeAllModulesToEvents();
     }
 
     //=========END===========
     //Initiate Core Engine
     //========================
 
-    public static T? GetModule<T>()
+    /* public T? GetModule<T>()
         where T : IModuleBase
     {
-        return ModuleRegistry.GetModule<T>();
-    }
+        return GetModule<T>();
+    } */
 
-    public static async Task GoInteractiveMode(IEnumerable<string>? initialCmds = null)
+    public async Task GoInteractiveMode(IEnumerable<string>? initialCmds = null)
     {
         initialCmds ??= [];
         int initCmdIndex = 0;
@@ -198,7 +186,7 @@ public static class Core_Engine
         Console.WriteLine("Interactive Mode Ended");
     }
 
-    private static bool CheckAndRunInteractivityCommand(string command, ref bool shouldRun)
+    private bool CheckAndRunInteractivityCommand(string command, ref bool shouldRun)
     {
         switch (command)
         {
@@ -208,11 +196,11 @@ public static class Core_Engine
             case "help":
                 Console.WriteLine("Available Commands Are");
                 int descIndent = 2;
-                foreach (string CommandIdentifier in _Commands.Keys)
+                foreach (string CommandIdentifier in _commands.Keys)
                 {
                     int numIndentDecrement = CommandIdentifier.Length / 7;
                     Console.WriteLine(
-                        $"\t{CommandIdentifier} {new string('\t', descIndent - numIndentDecrement)}-{_Commands[CommandIdentifier].GetCommandDescription()}"
+                        $"\t{CommandIdentifier} {new string('\t', descIndent - numIndentDecrement)}-{_commands[CommandIdentifier].GetCommandDescription()}"
                     );
                 }
                 break;
@@ -222,7 +210,7 @@ public static class Core_Engine
         return true;
     }
 
-    public static async Task HandleCommand(string command, string[] args)
+    /* public static async Task HandleCommand(string command, string[] args)
     {
         if (!_Commands.ContainsKey(command.ToLower()))
         {
@@ -231,35 +219,35 @@ public static class Core_Engine
             return;
         }
         await _Commands[command].ProcessCommand(args);
-    }
+    } */
 
-    private static T? InvokeEvent<T>(string EventIdentifier, IEngineEventArgs? args)
-        where T : EngineEventResult
-    {
-        if (!_Events.ContainsKey(EventIdentifier))
-        {
-            throw new IdentifierNotFoundException(
-                $"Event {EventIdentifier} has not been registered"
-            );
-        }
-        if (_Events[EventIdentifier] == null)
-        {
-            //throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
-            Logging.LogError($"Event {EventIdentifier} null");
-            return null;
-        }
-        try
-        {
-            return (T?)_Events[EventIdentifier].Invoke(null, args);
-        }
-        catch (Exception e)
-        {
-            Logging.LogError($"CoreEngine.InvokeEvent: EventIdentifier: {EventIdentifier}, \n{e}");
-            return null;
-        }
-    }
+    /*  private static T? InvokeEvent<T>(string EventIdentifier, IEngineEventArgs? args)
+         where T : EngineEventResult
+     {
+         if (!_Events.ContainsKey(EventIdentifier))
+         {
+             throw new IdentifierNotFoundException(
+                 $"Event {EventIdentifier} has not been registered"
+             );
+         }
+         if (_Events[EventIdentifier] == null)
+         {
+             //throw new IdentifierNotFoundException($"Event {EventIdentifier} null");
+             Logging.LogError($"Event {EventIdentifier} null");
+             return null;
+         }
+         try
+         {
+             return (T?)_Events[EventIdentifier].Invoke(null, args);
+         }
+         catch (Exception e)
+         {
+             Logging.LogError($"CoreEngine.InvokeEvent: EventIdentifier: {EventIdentifier}, \n{e}");
+             return null;
+         }
+     } */
 
-    private static T? InvokeEvent<T>(string EventIdentifier)
+    /* private static T? InvokeEvent<T>(string EventIdentifier)
         where T : EngineEventResult
     {
         return InvokeEvent<T>(EventIdentifier, null);
@@ -285,13 +273,13 @@ public static class Core_Engine
     public static void InvokeEvent(string EventIdentifier)
     {
         InvokeEvent(EventIdentifier, null);
-    }
+    } */
 
     //=========START===========
     //Register and Unregister
     //========================
 
-    public static void RegisterCommand(string CommandIdentifier, ICommandBase CommandToRegister)
+    /* public static void RegisterCommand(string CommandIdentifier, ICommandBase CommandToRegister)
     {
         //Logging.LogDebug("REGISTER COMMAND: " + CommandIdentifier);
         if (_Commands.ContainsKey(CommandIdentifier))
@@ -311,20 +299,20 @@ public static class Core_Engine
         }
         _Commands.Remove(CommandIdentifier);
         return true;
-    }
+    } */
 
-    private static void RegisterModule<T>(T module)
+    /* private static void RegisterModule<T>(T module)
         where T : IModuleBase
     {
-        ModuleRegistry.RegisterModule(module);
+        _moduleRegistry.RegisterModule(module);
     }
 
     public static void RegisterAndLinkModule<T>()
         where T : IModuleBase
     {
-        T module = ModuleRegistry.GetModule<T>();
-        module.LinkModules();
-    }
+        T module = _moduleRegistry.GetModule<T>();
+        module.LinkModules(this);
+    } */
 
     /* public static bool UnregisterModule(string ModuleIdentifier)
     {
@@ -340,7 +328,7 @@ public static class Core_Engine
         return true;
     }
  */
-    public static void RegisterEvent(string EventIdentifier)
+    /* public static void RegisterEvent(string EventIdentifier)
     {
         if (_Events.ContainsKey(EventIdentifier))
         {
@@ -376,7 +364,7 @@ public static class Core_Engine
             );
         }
         _Events[EventIdentifier] -= callback;
-    }
+    } */
 
     //==========END===========
     //Register and Unregister

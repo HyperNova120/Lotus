@@ -13,6 +13,7 @@ using LotusCore.Modules.MojangLogin.Types;
 using LotusCore.Modules.ServerLogin.Commands;
 using LotusCore.Modules.ServerLogin.Internals;
 using LotusCore.Utils;
+using Microsoft.Identity.Client.NativeInterop;
 using static LotusCore.Modules.LotusNetty.Networking;
 
 namespace LotusCore.Modules.ServerLogin
@@ -24,6 +25,8 @@ namespace LotusCore.Modules.ServerLogin
         private INetworkModule? _networkModule;
 
         private IMojangLoginModule? _mojangLoginModule;
+
+        ICoreModule? _coreModule;
 
         public void RegisterCommands(Action<string, ICommandBase> RegisterCommand)
         {
@@ -39,15 +42,17 @@ namespace LotusCore.Modules.ServerLogin
 
         public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
-        public void LinkModules()
+        public void LinkModules(ICoreModule coreModule)
         {
-            _networkModule = Core_Engine.GetModule<INetworkModule>()!;
-            _mojangLoginModule = Core_Engine.GetModule<IMojangLoginModule>()!;
+            _networkModule = coreModule.GetModule<INetworkModule>()!;
+            _mojangLoginModule = coreModule.GetModule<IMojangLoginModule>()!;
             _internals = new(
+                coreModule,
                 _networkModule,
                 _mojangLoginModule,
-                Core_Engine.GetModule<IGameStateHandlerModule>()!
+                coreModule.GetModule<IGameStateHandlerModule>()!
             );
+            _coreModule = coreModule;
         }
 
         public async Task ProcessPacket(MinecraftServerPacket packet)
@@ -79,14 +84,14 @@ namespace LotusCore.Modules.ServerLogin
                             $"LoginHandler State 0x{packet._protocol_ID:X} Not Implemented"
                         );
                         _networkModule!.DisconnectFromServer(packet._remoteHostID);
-                        Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                        _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                         break;
                 }
             }
             catch (Exception e)
             {
                 Logging.LogError($"LoginHandler; ProcessPacket ERROR: {e}");
-                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
 
@@ -105,7 +110,7 @@ namespace LotusCore.Modules.ServerLogin
             if (serverIP == null)
             {
                 Logging.LogInfo("Invalid Server IP");
-                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                 return;
             }
             remoteHost = IPAddress.Parse(serverIP);
@@ -123,7 +128,7 @@ namespace LotusCore.Modules.ServerLogin
                 {
                     Core_Engine.CurrentState = Core_Engine.State.Interactive;
                 } */
-                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                 return;
             }
             try
@@ -144,7 +149,7 @@ namespace LotusCore.Modules.ServerLogin
                 if (conGuid == null)
                 {
                     Logging.LogInfo("Unable to connect to server");
-                    Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                    _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
                     return;
                 }
 
@@ -153,7 +158,7 @@ namespace LotusCore.Modules.ServerLogin
 
                 _networkModule.SendPacket(
                     (Guid)conGuid,
-                    new HandshakePacket(serverIp, HandshakePacket.Intent.Login, port)
+                    new HandshakePacket(_coreModule!, serverIp, HandshakePacket.Intent.Login, port)
                     {
                         _NextState = isTransfer
                             ? (int)HandshakePacket.Intent.Transfer
@@ -172,7 +177,7 @@ namespace LotusCore.Modules.ServerLogin
             {
                 Logging.LogError($"LoginToServer Failed: {e.ToString()}");
                 //networking.DisconnectFromServer(remoteHost);
-                Core_Engine.SignalInteractiveFree(Core_Engine.State.JoiningServer);
+                _coreModule!.SignalInteractiveFree(Core_Engine.State.JoiningServer);
             }
         }
     }

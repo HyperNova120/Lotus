@@ -2,7 +2,7 @@ namespace LotusCore.BaseClasses;
 
 public class Position
 {
-    public int _X,
+    public double _X,
         _Y,
         _Z;
 
@@ -15,7 +15,7 @@ public class Position
 
     public long GetAsBigEndianLongValue()
     {
-        return ((_X & 0x3FFFFFF) << 38) | ((_Z & 0x3FFFFFF) << 12) | (_Y & 0xFFF);
+        return (((int)_X & 0x3FFFFFF) << 38) | (((int)_Z & 0x3FFFFFF) << 12) | ((int)_Y & 0xFFF);
     }
 
     public void SetFromBigEndianLong(long BigEndianPositionLong)

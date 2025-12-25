@@ -9,7 +9,7 @@ public class ChatMessage : MinecraftPacket
 {
     public ChatMessage()
     {
-        _protocol_ID = (int)PlayPacketsClientbound.PLAYER_CHAT_MESSAGE;
+        _protocol_ID = (int)PlayPacketsServerbound.CHAT_MESSAGE;
     }
 
     public string? _message;

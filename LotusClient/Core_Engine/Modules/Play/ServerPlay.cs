@@ -22,10 +22,10 @@ public class ServerPlayHandler : IServerPlayHandlerModule, IModuleBase, IPacketH
 
     public void SubscribeToEvents(Action<string, EngineEventHandler> SubscribeToEvent) { }
 
-    public void LinkModules()
+    public void LinkModules(ICoreModule coreModule)
     {
-        _networkingModule = Core_Engine.GetModule<INetworkModule>()!;
-        _serverChat = Core_Engine.GetModule<IServerChatModule>()!;
+        _networkingModule = coreModule.GetModule<INetworkModule>()!;
+        _serverChat = coreModule.GetModule<IServerChatModule>()!;
         _playInternals = new(_serverChat, _networkingModule);
     }
 

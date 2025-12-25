@@ -52,10 +52,10 @@ public class ServerChat : IServerChatModule
         _ = SendTestMessages(remoteHostID);
     }
 
-    public void LinkModules()
+    public void LinkModules(ICoreModule coreModule)
     {
-        _networking = Core_Engine.GetModule<Networking>()!;
-        _gamestate = Core_Engine.GetModule<GameStateHandler>()!;
+        _networking = coreModule.GetModule<INetworkModule>()!;
+        _gamestate = coreModule.GetModule<IGameStateHandlerModule>()!;
     }
 
     public async Task SendTestMessages(Guid remoteHostID)

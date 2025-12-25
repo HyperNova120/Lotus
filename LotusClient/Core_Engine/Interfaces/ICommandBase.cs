@@ -2,7 +2,7 @@ namespace LotusCore.Interfaces
 {
     public interface ICommandBase
     {
-        public Task ProcessCommand(string[] commandArgs);
+        public Task ProcessCommand(ICoreModule coreMoudle, string[] commandArgs);
 
         public string GetCommandCorrectUsage();
 

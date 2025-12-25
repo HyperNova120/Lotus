@@ -11,6 +11,7 @@ using LotusCore.Modules.ServerList.Commands;
 using LotusCore.Utils;
 using LotusCore.Utils.MinecraftPaths;
 using LotusCore.Utils.NBTInternals.Tags;
+using Microsoft.Identity.Client.NativeInterop;
 
 namespace LotusCore.Modules.ServerList
 {
@@ -19,6 +20,8 @@ namespace LotusCore.Modules.ServerList
         private NBT _ServerListDat;
 
         private INetworkModule _networking;
+
+        ICoreModule? _coreModule;
 
         public ServerList()
         {
@@ -66,9 +69,10 @@ namespace LotusCore.Modules.ServerList
             }
         }
 
-        public void LinkModules()
+        public void LinkModules(ICoreModule coreModule)
         {
-            _networking = Core_Engine.GetModule<INetworkModule>()!;
+            _coreModule = coreModule;
+            _networking = coreModule.GetModule<INetworkModule>()!;
         }
 
         private async Task PingServerlist()
@@ -124,7 +128,7 @@ namespace LotusCore.Modules.ServerList
             connection._connectionState = ConnectionState.STATUS;
             _networking.SendPacket(
                 connection._id,
-                new HandshakePacket(ip.Value, HandshakePacket.Intent.Status, 25565)
+                new HandshakePacket(_coreModule!, ip.Value, HandshakePacket.Intent.Status, 25565)
                 {
                     _protocol_ID = 0x00,
                     _NextState = (int)HandshakePacket.Intent.Status,

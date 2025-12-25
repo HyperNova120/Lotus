@@ -80,7 +80,7 @@ namespace LotusCore.Modules.GameStateHandlerModule
             );
         }
 
-        public void LinkModules() { }
+        public void LinkModules(ICoreModule coreModule) { }
 
         //===========
         //IGameStateHandler

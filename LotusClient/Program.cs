@@ -120,9 +120,9 @@ namespace LotusCore
                 test.GetBytes();
             }
             return; */
-
-            Core_Engine.InitCore();
-            await Core_Engine.GoInteractiveMode(["login", "listjoin VanillaServer"]);
+            Core_Engine core_Engine = new();
+            core_Engine.InitCore();
+            await core_Engine.GoInteractiveMode(["login", "listjoin VanillaServer"]);
 
             /* FixedBitSet test = new(20);
             test[19] = true;

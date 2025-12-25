@@ -2,6 +2,7 @@ using LotusCore.EngineEventArgs;
 using LotusCore.EngineEvents;
 using LotusCore.Interfaces;
 using LotusCore.Modules.GameStateHandlerModule;
+using Microsoft.Identity.Client.NativeInterop;
 
 namespace LotusCore.Modules.ServerLogin.Commands
 {
@@ -24,7 +25,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
             return "Correct usage: 'join <server/ip> <port>(optional); ex join play.hypixel.net'";
         }
 
-        public async Task ProcessCommand(string[] commandArgs)
+        public async Task ProcessCommand(ICoreModule coreModule, string[] commandArgs)
         {
             /* ServerListServerIPResult? result = (ServerListServerIPResult?)
                 Core_Engine.InvokeEvent(
@@ -44,13 +45,13 @@ namespace LotusCore.Modules.ServerLogin.Commands
             Networking.Networking networking = Core_Engine.GetModule<Networking.Networking>(
                 "Networking"
             )!; */
-            if (Core_Engine.GetModule<INetworkModule>()!.IsClientConnectedToPrimaryServer())
+            if (coreModule.GetModule<INetworkModule>()!.IsClientConnectedToPrimaryServer())
             {
                 Console.WriteLine("you are already connected to a server");
                 return;
             }
             //Core_Engine.CurrentState = Core_Engine.State.Waiting;
-            Core_Engine.SignalInteractiveHold(Core_Engine.State.JoiningServer);
+            coreModule.SignalInteractiveHold(Core_Engine.State.JoiningServer);
             Logging.LogInfo("Attempting to connect to server");
 
             bool isTransfer = false;

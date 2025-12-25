@@ -18,9 +18,9 @@ namespace LotusCore.Commands.UserCommands
             return "Correct Usage: 'whoami'";
         }
 
-        public Task ProcessCommand(string[] commandArgs)
+        public Task ProcessCommand(ICoreModule coreModule, string[] commandArgs)
         {
-            MinecraftProfile? userProfile = Core_Engine
+            MinecraftProfile? userProfile = coreModule
                 .GetModule<GameStateHandler>()!
                 .GetUserProfile();
 

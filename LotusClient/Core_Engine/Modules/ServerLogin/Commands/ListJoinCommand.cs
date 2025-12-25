@@ -16,7 +16,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
             return "Correct usage: 'listjoin <server list name>";
         }
 
-        public async Task ProcessCommand(string[] commandArgs)
+        public async Task ProcessCommand(ICoreModule coreModule, string[] commandArgs)
         {
             if (commandArgs.Length == 0)
             {
@@ -28,7 +28,7 @@ namespace LotusCore.Modules.ServerLogin.Commands
             {
                 serverListName += (serverListName == "") ? s : $" {s}";
             }
-            (string ip, string port) = Core_Engine
+            (string ip, string port) = coreModule
                 .GetModule<IServerListModule>()!
                 .ServerListIPRequest(serverListName);
             if (ip == "")
@@ -39,11 +39,11 @@ namespace LotusCore.Modules.ServerLogin.Commands
 
             if (port == "")
             {
-                await Core_Engine.HandleCommand("join", [ip]);
+                await coreModule.HandleCommand("join", [ip]);
             }
             else
             {
-                await Core_Engine.HandleCommand("join", [ip, port]);
+                await coreModule.HandleCommand("join", [ip, port]);
             }
 
             /* string resultString = (result == null) ? "NULL" : $"{result._ip}:{result._port}";
