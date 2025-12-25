@@ -128,7 +128,7 @@ public class Core_Engine : CoreModule, ICoreModule
         RegisterModule<IServerPlayHandlerModule>(new ServerPlayHandler());
         RegisterModule<IServerChatModule>(new ServerChat());
         RegisterModule<IEntityModule>(new EntityModule());
-
+        RegisterModule(new GraphicsEngine());
         LinkAllModules();
     }
 

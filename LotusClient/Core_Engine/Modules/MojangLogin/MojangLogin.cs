@@ -103,7 +103,6 @@ namespace LotusCore.Modules.MojangLogin
                     return false;
                 }
 
-                _coreModule!.SignalInteractiveFree(Core_Engine.State.AccountLogin);
                 _coreModule!.InvokeEvent(
                     "MOJANGLOGIN_loginSuccessful",
                     new MojangLoginEventArgs()
@@ -112,6 +111,7 @@ namespace LotusCore.Modules.MojangLogin
                         _UserProfile = this._userProfile,
                     }
                 );
+                _coreModule!.SignalInteractiveFree(Core_Engine.State.AccountLogin);
                 return true;
             }
             catch (Exception e)
