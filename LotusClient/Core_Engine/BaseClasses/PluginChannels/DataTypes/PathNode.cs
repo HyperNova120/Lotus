@@ -2,17 +2,17 @@ namespace LotusCore.BaseClasses.PluginChannels.DataTypes;
 
 struct PathNode
 {
-    public  int X,
+    public int X,
         Y,
         Z;
 
-    public  float Distance_From_Origin,
+    public float Distance_From_Origin,
         Cost,
         Heap_Weight;
 
-    public  bool Has_Been_Visited;
+    public bool Has_Been_Visited;
 
-    public  NodeTypeEnum NodeType;
+    public NodeTypeEnum NodeType;
 
     public enum NodeTypeEnum
     {

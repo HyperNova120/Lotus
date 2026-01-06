@@ -97,7 +97,9 @@ public class EntityModule : IEntityModule
         bool onGround
     )
     {
-        throw new NotImplementedException();
+        Entity entity = _trackedEntities[entityID];
+        entity._Position = pos;
+        entity._Velocity = vel;
     }
 
     public void UpdateEntityPosition(
@@ -124,11 +126,14 @@ public class EntityModule : IEntityModule
         bool onGround
     )
     {
-        throw new NotImplementedException();
+        UpdateEntityPosition(entityID, deltaX, deltaY, deltaZ, onGround);
+        UpdateEntityRotation(entityID, yaw, pitch, onGround);
     }
 
     public void UpdateEntityRotation(int entityID, Angle yaw, Angle pitch, bool onGround)
     {
-        throw new NotImplementedException();
+        Entity entity = _trackedEntities[entityID];
+        entity._Yaw = yaw;
+        entity._Pitch = pitch;
     }
 }
