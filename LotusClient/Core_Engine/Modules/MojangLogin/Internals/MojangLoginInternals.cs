@@ -47,43 +47,57 @@ namespace LotusCore.Modules.MojangLogin.Internals
 
         public async Task<AuthenticationResult?> GetUserAuth()
         {
-            var scopes = new[] { "XboxLive.signin" };
-            BrokerOptions options = new BrokerOptions(
-                BrokerOptions.OperatingSystems.Windows | BrokerOptions.OperatingSystems.Linux
-            );
-            options.Title = "Lotus Client";
-
-            IPublicClientApplication app = PublicClientApplicationBuilder
-                .Create(Environment.GetEnvironmentVariable("AppID"))
-                .WithDefaultRedirectUri()
-                .WithParentActivityOrWindow(GetConsoleOrTerminalWindow)
-                .WithBroker(options)
-                .Build();
-
-            app.UserTokenCache.SetBeforeAccess(BeforeAccess);
-            app.UserTokenCache.SetAfterAccess(AfterAccess);
-
-            var accounts = await app.GetAccountsAsync();
-            var existingAccount = accounts.FirstOrDefault();
             try
             {
+                var scopes = new[] { "XboxLive.signin" };
+                BrokerOptions options = new BrokerOptions(
+                    BrokerOptions.OperatingSystems.Windows | BrokerOptions.OperatingSystems.Linux
+                );
+                options.Title = "Lotus Client";
+
+                IPublicClientApplication app = PublicClientApplicationBuilder
+                    .Create(Environment.GetEnvironmentVariable("AppID"))
+                    .WithDefaultRedirectUri()
+                    .WithParentActivityOrWindow(GetConsoleOrTerminalWindow)
+                    .WithBroker(options)
+                    .Build();
+
+                app.UserTokenCache.SetBeforeAccess(BeforeAccess);
+                app.UserTokenCache.SetAfterAccess(AfterAccess);
+
+                var accounts = await app.GetAccountsAsync();
+                var existingAccount = accounts.FirstOrDefault();
                 try
                 {
-                    return await app.AcquireTokenSilent(scopes, existingAccount).ExecuteAsync();
+                    try
+                    {
+                        return await app.AcquireTokenSilent(scopes, existingAccount).ExecuteAsync();
+                    }
+                    catch (MsalUiRequiredException ex)
+                    {
+                        //Logging.LogDebug(ex.ToJsonString());
+                        return await app.AcquireTokenInteractive(scopes)
+                            .WithParentActivityOrWindow(GetConsoleOrTerminalWindow())
+                            .ExecuteAsync();
+                    }
                 }
-                catch (MsalUiRequiredException ex)
+                catch
                 {
-                    //Logging.LogDebug(ex.ToJsonString());
-                    return await app.AcquireTokenInteractive(scopes)
-                        .WithParentActivityOrWindow(GetConsoleOrTerminalWindow())
-                        .ExecuteAsync();
+                    Logging.LogError("Login Failed");
+                    return null;
                 }
             }
             catch
             {
-                Logging.LogError("Login Failed");
-                return null;
+                //browser fallback
+                Logging.LogError("MSAL Auth Failed, Falling back to Browser Auth");
+                return await GetUserAuthFallback();
             }
+        }
+
+        private async Task<AuthenticationResult?> GetUserAuthFallback()
+        {
+            return null;
         }
 
         public async Task<TokenAuthCert?> AuthWithXboxLive(string accessToken)

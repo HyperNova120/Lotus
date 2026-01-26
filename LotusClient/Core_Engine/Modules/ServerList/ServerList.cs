@@ -11,7 +11,6 @@ using LotusCore.Modules.ServerList.Commands;
 using LotusCore.Utils;
 using LotusCore.Utils.MinecraftPaths;
 using LotusCore.Utils.NBTInternals.Tags;
-using Microsoft.Identity.Client.NativeInterop;
 
 namespace LotusCore.Modules.ServerList
 {
@@ -26,6 +25,7 @@ namespace LotusCore.Modules.ServerList
         public ServerList()
         {
             _ServerListDat = new();
+            Console.WriteLine(MinecraftPathsStruct._ServerData);
             _ServerListDat.ReadFromBytes(File.ReadAllBytes(MinecraftPathsStruct._ServerData));
             //Logging.LogDebug(_ServerListDat.GetNBTAsString());
             _ = PingServerlist();

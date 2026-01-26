@@ -2,6 +2,7 @@
 using LotusCore.BaseClasses;
 using LotusCore.BaseClasses.Types;
 using LotusCore.Utils;
+using LotusCore.Utils.MinecraftPaths;
 using LotusCore.Utils.NBTInternals.Tags;
 using Microsoft.Extensions.Configuration;
 
@@ -27,8 +28,7 @@ namespace LotusCore
                         )
                         .WriteTag(
                             new NBT("Ham").WriteTag("name", "Hampus").WriteTag("value", 0.75f)
-                        )
-                )
+                        ))
                 .WriteTag("intTest", 2147483647)
                 .WriteTag("byteTest", (byte)127)
                 .WriteTag("stringTest", "HELLO WORLD THIS IS A TEST STRING!")
